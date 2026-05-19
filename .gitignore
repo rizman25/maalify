@@ -1,3 +1,6 @@
 # Binary output files
 DOC/*.docx
 DOC/*.png
+
+# Claude Code internal
+.claude/
