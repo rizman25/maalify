@@ -36,7 +36,7 @@ const ROLE_COLOR: Record<Role, string> = {
 
 function NavItem({ href, icon, label }: { href: string; icon: React.ReactNode; label: string }) {
   const pathname = usePathname();
-  const isActive = pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
+  const isActive = pathname === href || (href !== "/dashboard" && pathname.startsWith(href + "/"));
 
   return (
     <Link

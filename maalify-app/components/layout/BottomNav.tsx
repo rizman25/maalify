@@ -108,7 +108,7 @@ export default function BottomNav({ userRole, onMenuClick }: Props) {
     <nav className="fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-[var(--bg-surface)] border-t border-[var(--border)] safe-area-bottom">
       <div className="flex items-stretch h-16">
         {mainItems.map((item) => {
-          const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
+          const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href + "/"));
           return (
             <Link
               key={item.href}
