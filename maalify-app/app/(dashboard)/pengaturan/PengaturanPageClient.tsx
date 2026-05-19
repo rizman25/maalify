@@ -2,7 +2,6 @@
 
 import { useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
-import KategoriModal from "@/components/pengaturan/KategoriModal";
 import { formatRupiah } from "@/lib/utils";
 
 interface Profile { id: string; name: string; email: string; avatar_url: string | null; }
@@ -22,7 +21,7 @@ interface Props {
   userRole: string;
 }
 
-type Tab = "profil" | "household" | "kategori" | "aktivitas" | "keamanan";
+type Tab = "profil" | "household" | "aktivitas" | "keamanan";
 
 export default function PengaturanPageClient({ profile, household, members, categories, activity, householdId, userId, userRole }: Props) {
   const router = useRouter();
@@ -133,8 +132,6 @@ export default function PengaturanPageClient({ profile, household, members, cate
   const [memberMsg, setMemberMsg] = useState("");
 
   // Kategori state
-  const [catModal, setCatModal] = useState<{ mode: "add" | "edit"; cat?: Category } | null>(null);
-  const [catFilter, setCatFilter] = useState<"all" | "expense" | "income">("all");
 
   // Keamanan state
   const [newPass, setNewPass] = useState("");
@@ -144,7 +141,6 @@ export default function PengaturanPageClient({ profile, household, members, cate
   const [passErr, setPassErr] = useState("");
 
   const handleSaved = useCallback(() => {
-    setCatModal(null);
     router.refresh();
   }, [router]);
 
@@ -251,9 +247,6 @@ export default function PengaturanPageClient({ profile, household, members, cate
 
   const initials = profile.name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2) || "?";
 
-  const filteredCats = categories.filter(c =>
-    catFilter === "all" ? true : c.type === catFilter
-  );
 
   const myMembership = members.find(m => m.user?.id === userId);
   const managerCount = members.filter(m => m.role === "super_admin" || m.role === "admin").length;
@@ -284,7 +277,6 @@ export default function PengaturanPageClient({ profile, household, members, cate
   const TABS: { id: Tab; label: string }[] = [
     { id: "profil",    label: "Profil" },
     { id: "household", label: "Household" },
-    { id: "kategori",  label: "Kategori" },
     { id: "aktivitas", label: "Aktivitas" },
     { id: "keamanan",  label: "Keamanan" },
   ];
@@ -629,93 +621,6 @@ export default function PengaturanPageClient({ profile, household, members, cate
           </div>
         )}
 
-        {/* ─── KATEGORI ─── */}
-        {tab === "kategori" && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex gap-1.5">
-                {(["all","expense","income"] as const).map(f => (
-                  <button key={f} onClick={() => setCatFilter(f)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                      catFilter === f ? "bg-brand-primary text-white" : "bg-[var(--bg-surface)] border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
-                    }`}>
-                    {f === "all" ? "Semua" : f === "expense" ? "Pengeluaran" : "Pemasukan"}
-                  </button>
-                ))}
-              </div>
-              <button onClick={() => setCatModal({ mode: "add" })}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-brand-primary text-white text-xs font-medium hover:bg-brand-primary/90 transition-colors">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                Tambah
-              </button>
-            </div>
-
-            <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border)] overflow-hidden">
-              <div className="px-4 py-3 border-b border-[var(--border)] bg-[var(--bg-elevated)]">
-                <p className="text-xs font-semibold text-[var(--text-secondary)] tracking-widest uppercase">Default</p>
-              </div>
-              <div className="divide-y divide-[var(--border)]">
-                {filteredCats.filter(c => c.is_default).map(c => (
-                  <div key={c.id} className="flex items-center gap-3 px-4 py-3">
-                    <div className="w-8 h-8 rounded-lg flex items-center justify-center text-base flex-shrink-0"
-                      style={{ backgroundColor: (c.color ?? "#94A3B8") + "20" }}>
-                      {c.icon ?? "💰"}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-[var(--text-primary)]">{c.name}</p>
-                    </div>
-                    <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
-                      c.type === "expense" ? "bg-red-50 text-red-500" : "bg-green-50 text-green-600"
-                    }`}>
-                      {c.type === "expense" ? "Pengeluaran" : "Pemasukan"}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border)] overflow-hidden">
-              <div className="px-4 py-3 border-b border-[var(--border)] bg-[var(--bg-elevated)]">
-                <p className="text-xs font-semibold text-[var(--text-secondary)] tracking-widest uppercase">
-                  Kategori Saya ({categories.filter(c => !c.is_default).length})
-                </p>
-              </div>
-              {filteredCats.filter(c => !c.is_default).length === 0 ? (
-                <div className="py-8 text-center">
-                  <p className="text-sm text-[var(--text-secondary)]">Belum ada kategori custom</p>
-                  <button onClick={() => setCatModal({ mode: "add" })}
-                    className="text-xs text-brand-primary hover:underline mt-1 inline-block">
-                    + Buat kategori baru
-                  </button>
-                </div>
-              ) : (
-                <div className="divide-y divide-[var(--border)]">
-                  {filteredCats.filter(c => !c.is_default).map(c => (
-                    <button key={c.id} onClick={() => setCatModal({ mode: "edit", cat: c })}
-                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[var(--bg-elevated)] transition-colors text-left">
-                      <div className="w-8 h-8 rounded-lg flex items-center justify-center text-base flex-shrink-0"
-                        style={{ backgroundColor: (c.color ?? "#94A3B8") + "20" }}>
-                        {c.icon ?? "💰"}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm text-[var(--text-primary)]">{c.name}</p>
-                      </div>
-                      <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full mr-1 ${
-                        c.type === "expense" ? "bg-red-50 text-red-500" : "bg-green-50 text-green-600"
-                      }`}>
-                        {c.type === "expense" ? "Pengeluaran" : "Pemasukan"}
-                      </span>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--text-secondary)] flex-shrink-0">
-                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                      </svg>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
         {/* ─── AKTIVITAS ─── */}
         {tab === "aktivitas" && (
           <div className="space-y-3">
@@ -819,15 +724,6 @@ export default function PengaturanPageClient({ profile, household, members, cate
         )}
       </div>
 
-      {catModal && (
-        <KategoriModal
-          mode={catModal.mode}
-          category={catModal.cat}
-          householdId={householdId}
-          onClose={() => setCatModal(null)}
-          onSaved={handleSaved}
-        />
-      )}
     </div>
   );
 }
