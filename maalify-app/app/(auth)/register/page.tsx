@@ -131,8 +131,8 @@ export default function RegisterPage() {
           <label className={labelCls}>
             No. WhatsApp <span className="font-normal text-[var(--text-secondary)]">(opsional)</span>
           </label>
-          <div className="flex items-center border-[1.5px] border-[#E2E8F0] rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-[#1E3A5F] focus-within:ring-offset-1 bg-white">
-            <span className="px-3 py-2.5 bg-[#F8FAFC] text-sm text-[#475569] border-r border-[#E2E8F0] flex-shrink-0 flex items-center gap-1.5">
+          <div className="auth-phone-wrap flex items-center border-[1.5px] border-[#E2E8F0] rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-[#1E3A5F] focus-within:ring-offset-1">
+            <span className="auth-phone-prefix px-3 py-2.5 text-sm border-r border-[#E2E8F0] flex-shrink-0 flex items-center gap-1.5">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.091.535 4.06 1.476 5.779L.057 23.514a.75.75 0 0 0 .93.93l5.735-1.419A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.898 0-3.68-.499-5.23-1.374l-.374-.22-3.877.96.977-3.877-.22-.374A10 10 0 1 1 12 22z"/></svg>
               +62
             </span>
