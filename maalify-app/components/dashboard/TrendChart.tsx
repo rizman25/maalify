@@ -38,7 +38,7 @@ export default function TrendChart({ data }: { data: DataPoint[] }) {
         <XAxis dataKey="label" tick={{ fontSize: 11, fill: "var(--text-secondary)" }} axisLine={false} tickLine={false} />
         <YAxis tickFormatter={formatY} tick={{ fontSize: 11, fill: "var(--text-secondary)" }} axisLine={false} tickLine={false} />
         <Tooltip
-          formatter={(value: number, name: string) => [formatTooltip(value), name === "income" ? "Pemasukan" : "Pengeluaran"]}
+          formatter={(value, name) => [formatTooltip(Number(value)), name === "income" ? "Pemasukan" : "Pengeluaran"]}
           labelStyle={{ color: "var(--text-primary)", fontWeight: 600 }}
           contentStyle={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }}
         />
