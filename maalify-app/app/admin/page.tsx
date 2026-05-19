@@ -87,7 +87,7 @@ export default async function AdminPage() {
 
     // Recent users
     svc.from("users")
-      .select("id, name, email, created_at")
+      .select("id, name, email, phone, created_at")
       .order("created_at", { ascending: false })
       .limit(10),
 
@@ -180,7 +180,7 @@ export default async function AdminPage() {
       }}
       dailyTxData={dailyTxData}
       topHouseholds={topHouseholds}
-      recentUsers={(recentUsersRes.data ?? []) as { id: string; name: string; email: string; created_at: string }[]}
+      recentUsers={(recentUsersRes.data ?? []) as { id: string; name: string; email: string; phone: string | null; created_at: string }[]}
       generatedAt={new Date().toISOString()}
     />
   );
