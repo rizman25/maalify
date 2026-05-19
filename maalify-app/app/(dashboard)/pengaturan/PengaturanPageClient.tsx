@@ -124,6 +124,7 @@ export default function PengaturanPageClient({ profile, household, members, cate
   const [savingHh, setSavingHh] = useState(false);
   const [hhMsg, setHhMsg] = useState("");
   const [copied, setCopied] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
 
   // Member management state
   type MemberActionType = "remove" | "promote" | "promote_super" | "demote" | "demote_admin" | "leave";
@@ -180,6 +181,22 @@ export default function PengaturanPageClient({ profile, household, members, cate
     await navigator.clipboard.writeText(household.invite_code);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  }
+
+  function getInviteLink() {
+    return `${window.location.origin}/join?code=${household.invite_code}`;
+  }
+
+  async function copyInviteLink() {
+    await navigator.clipboard.writeText(getInviteLink());
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2000);
+  }
+
+  function shareWhatsApp() {
+    const link = getInviteLink();
+    const text = `Halo! Bergabunglah ke household *${household.name}* di Maalify untuk mencatat keuangan keluarga bersama. Klik link ini: ${link}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
   }
 
   async function executeMemberAction() {
@@ -465,24 +482,61 @@ export default function PengaturanPageClient({ profile, household, members, cate
             {/* Invite code */}
             <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border)] p-5 space-y-3">
               <div>
-                <p className="font-semibold text-[var(--text-primary)]">Kode Undangan</p>
-                <p className="text-xs text-[var(--text-secondary)] mt-0.5">Bagikan ke anggota keluarga untuk bergabung</p>
+                <p className="font-semibold text-[var(--text-primary)]">Undang Anggota</p>
+                <p className="text-xs text-[var(--text-secondary)] mt-0.5">Bagikan kode atau link ke anggota keluarga</p>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="flex-1 bg-[var(--bg-elevated)] border border-[var(--border)] rounded-xl px-4 py-3">
-                  <p className="font-mono font-bold text-lg text-[var(--text-primary)] tracking-widest text-center">
-                    {household.invite_code}
-                  </p>
+
+              {/* Kode undangan */}
+              <div>
+                <p className="text-[10px] font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">Kode Undangan</p>
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 bg-[var(--bg-elevated)] border border-[var(--border)] rounded-xl px-4 py-3">
+                    <p className="font-mono font-bold text-lg text-[var(--text-primary)] tracking-widest text-center">
+                      {household.invite_code}
+                    </p>
+                  </div>
+                  <button onClick={copyInviteCode}
+                    className={`px-4 py-3 rounded-xl text-sm font-medium transition-all flex-shrink-0 ${
+                      copied ? "bg-green-100 text-green-700" : "bg-[var(--bg-elevated)] border border-[var(--border)] text-[var(--text-secondary)] hover:bg-brand-primary hover:text-white hover:border-brand-primary"
+                    }`}>
+                    {copied ? "✓ Disalin" : "Salin"}
+                  </button>
                 </div>
-                <button onClick={copyInviteCode}
-                  className={`px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-                    copied ? "bg-green-100 text-green-700" : "bg-[var(--bg-elevated)] border border-[var(--border)] text-[var(--text-secondary)] hover:bg-brand-primary hover:text-white hover:border-brand-primary"
-                  }`}>
-                  {copied ? "✓ Disalin" : "Salin"}
+              </div>
+
+              {/* Link undangan */}
+              <div>
+                <p className="text-[10px] font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">Link Undangan</p>
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 bg-[var(--bg-elevated)] border border-[var(--border)] rounded-xl px-3 py-2.5 min-w-0">
+                    <p className="text-xs text-[var(--text-secondary)] truncate font-mono">
+                      .../join?code={household.invite_code}
+                    </p>
+                  </div>
+                  <button onClick={copyInviteLink}
+                    className={`px-3 py-2.5 rounded-xl text-xs font-medium transition-all flex-shrink-0 ${
+                      copiedLink ? "bg-green-100 text-green-700" : "bg-[var(--bg-elevated)] border border-[var(--border)] text-[var(--text-secondary)] hover:bg-brand-primary hover:text-white hover:border-brand-primary"
+                    }`}>
+                    {copiedLink ? "✓" : "Salin"}
+                  </button>
+                </div>
+              </div>
+
+              {/* Share buttons */}
+              <div className="flex gap-2 pt-1">
+                <button
+                  onClick={shareWhatsApp}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#25D366] text-white text-xs font-semibold hover:opacity-90 transition-opacity flex-1 justify-center"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                  </svg>
+                  Kirim via WhatsApp
                 </button>
               </div>
+
               <p className="text-[10px] text-[var(--text-secondary)]">
-                Anggota baru dapat memasukkan kode ini saat mendaftar di halaman Register → "Gabung via Kode"
+                Anggota yang klik link akan langsung diarahkan ke halaman bergabung. Kode dapat dimasukkan manual saat daftar.
               </p>
             </div>
 
