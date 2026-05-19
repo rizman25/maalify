@@ -3,7 +3,7 @@
 **Versi:** v1.0.0
 **Tanggal:** 19 Mei 2026
 **Target Launch:** 12 Minggu dari kick-off
-**Dokumen Terkait:** [PRD.md](./PRD.md) · [ERD.md](./ERD.md) · [SAD.md](./SAD.md)
+**Dokumen Terkait:** [PRD.md](./PRD.md) · [ERD.md](./ERD.md) · [SAD.md](./SAD.md) · [DESIGN.md](./DESIGN.md)
 
 ---
 
@@ -26,7 +26,19 @@ Fondasi proyek yang benar di awal menghemat refactor besar di tengah jalan.
 | Struktur direktori | Buat folder sesuai SAD §3.3: `app/`, `components/`, `lib/`, `types/` | P0 |
 | Environment variables | Setup `.env.local` + `.env.example` (tanpa secret); tambahkan ke `.gitignore` | P0 |
 
-### 1.2 Integrasi Library
+### 1.2 Design System Setup
+
+Implementasikan konfigurasi dari [DESIGN.md](./DESIGN.md) sebelum menulis satu komponen pun — ini fondasi visual seluruh aplikasi.
+
+| Task | Referensi DESIGN.md | Detail |
+|---|---|---|
+| Tailwind config | §9 | Copy konfigurasi lengkap: `brand`, `neutral`, `success/danger/warning`, `borderRadius`, `boxShadow` |
+| Font setup | §3.1 | Install `Inter` + `JetBrains Mono` via `next/font` — Inter untuk semua teks, Mono khusus nominal uang |
+| CSS variables dark mode | §2.4 | Setup `--bg-base`, `--bg-surface`, `--text-primary`, `--border` di `globals.css` |
+| shadcn/ui theme | §2.1 | Override warna shadcn dengan Deep Ocean Navy (`#1E3A5F`) sebagai primary |
+| Dark mode toggle | §2.4 | `darkMode: 'class'` di Tailwind — simpan preferensi di localStorage |
+
+### 1.3 Integrasi Library
 
 | Library | Versi | Fungsi |
 |---|---|---|
@@ -38,7 +50,7 @@ Fondasi proyek yang benar di awal menghemat refactor besar di tengah jalan.
 | `recharts` | 2.x | Grafik dashboard (line, pie, bar) |
 | `@sentry/nextjs` | Latest | Error tracking production |
 
-### 1.3 Konfigurasi Supabase Project
+### 1.4 Konfigurasi Supabase Project
 
 | Task | Detail | Prioritas |
 |---|---|---|
@@ -47,7 +59,7 @@ Fondasi proyek yang benar di awal menghemat refactor besar di tengah jalan.
 | Enable Realtime | Aktifkan untuk tabel `transactions` dan `notifications` | P0 |
 | Konfigurasi Storage | Buat bucket `avatars` (public) dan `receipts` (private) sesuai SAD §3.4.3 | P1 |
 
-### 1.4 CI/CD Pipeline
+### 1.5 CI/CD Pipeline
 
 | Task | Detail | Prioritas |
 |---|---|---|
@@ -191,33 +203,41 @@ Dashboard adalah halaman yang paling sering dilihat — investasi UX di sini ber
 
 ### 4.1 Layout & Navigation
 
-| Task | Detail | Prioritas |
+Referensi: [DESIGN.md §4.4 Navigation](./DESIGN.md) · [DESIGN.md §5.3 Dashboard Layout](./DESIGN.md)
+
+| Task | Spesifikasi | Prioritas |
 |---|---|---|
-| App shell | Sidebar navigasi, header dengan notifikasi + avatar, main content area | P0 |
-| Responsive layout | Sidebar collapse jadi bottom nav di mobile (320px–768px) | P0 |
-| Dark mode toggle | Tailwind dark mode via `class` strategy | P1 |
-| Loading skeletons | Skeleton UI untuk semua data fetch — tidak pernah blank putih | P0 |
+| Sidebar desktop | Width 240px · Background Deep Ocean Navy `#1E3A5F` · Active item: Growth Green accent bar kiri | P0 |
+| Bottom nav mobile | Muncul di `< 768px` · max 5 item · active icon warna `brand-primary` | P0 |
+| Top header | Height 56px · background putih · `border-bottom` saja, tanpa shadow berlebihan | P0 |
+| Dashboard grid | 3-kolom stat card (top) → full-width chart → 2-kolom → full-width table (lihat DESIGN.md §5.3) | P0 |
+| Loading skeletons | Skeleton menyerupai bentuk konten nyata — bukan spinner kosong (DESIGN.md §6.3) | P0 |
+| Dark mode | Toggle via `class` strategy · CSS variables `--bg-base`, `--bg-surface` sudah disiapkan di Phase 1 | P1 |
 
 ### 4.2 Dashboard Utama (F-21)
 
-Referensi SAD §5.2 — data flow catat transaksi + realtime update.
+Referensi: SAD §5.2 · [DESIGN.md §4.2 Cards](./DESIGN.md) · [DESIGN.md §4.6 Badges](./DESIGN.md)
 
-| Widget | Data Source | Detail |
+| Widget | Data Source | Spesifikasi Visual |
 |---|---|---|
-| Total saldo semua dompet | `SUM(wallets.current_balance)` | Update realtime via Supabase subscription |
-| Pemasukan bulan ini | `SUM(transactions.amount WHERE type='income' AND month=now)` | |
-| Pengeluaran bulan ini | `SUM(transactions.amount WHERE type='expense' AND month=now)` | |
-| Grafik donat per kategori | `GROUP BY category_id` pada transactions bulan ini | Recharts PieChart |
-| 5 transaksi terbaru | `ORDER BY created_at DESC LIMIT 5` | Link ke halaman transaksi |
-| Budget summary | Progress bar per kategori — merah jika > 80% | |
+| Total saldo semua dompet | `SUM(wallets.current_balance)` | Stat Card · font `mono-lg` · strip Navy kiri · realtime |
+| Pemasukan bulan ini | `SUM(transactions.amount WHERE type='income')` | Stat Card · strip Growth Green · angka hijau |
+| Pengeluaran bulan ini | `SUM(transactions.amount WHERE type='expense')` | Stat Card · strip Danger Red |
+| Grafik donat per kategori | `GROUP BY category_id` bulan ini | Recharts Donut · 8-warna palet DESIGN.md §4.7 · center: total nominal |
+| 5 transaksi terbaru | `ORDER BY created_at DESC LIMIT 5` | Data table · amount right-aligned mono · income: hijau · expense: neutral-800 |
+| Budget summary | `SUM(spent) / budget * 100%` per kategori | Progress bar · amber jika ≥ 80% · red jika ≥ 100% |
 
 ### 4.3 Grafik & Laporan (F-22, F-25)
 
-| Fitur | Chart Type | Data |
+Referensi: [DESIGN.md §4.7 Charts & Visualizations](./DESIGN.md)
+
+| Fitur | Chart Type | Spesifikasi Visual |
 |---|---|---|
-| Tren pemasukan vs pengeluaran | Line/Bar chart | 6 bulan terakhir, group by month |
-| Breakdown pengeluaran | Donut chart | Group by category, bulan aktif |
-| Saldo per dompet | Bar chart horizontal | Semua wallet aktif |
+| Tren pemasukan vs pengeluaran | Line chart | Line income: Growth Green · line expense: Navy · stroke 2.5px · area gradient 20% opacity |
+| Breakdown pengeluaran | Donut chart | Stroke width 20px · 8-warna palet tetap per kategori · center text `mono-lg` |
+| Saldo per dompet | Bar chart horizontal | Income bar: green · expense bar: navy · `rounded-t-sm` di ujung |
+
+**Aturan chart (DESIGN.md §4.7):** Grid lines sangat ringan (`neutral-100`) · dot hanya muncul saat hover · animasi masuk 500ms `ease-out` saat pertama load.
 
 ### 4.4 Realtime Update
 
@@ -242,6 +262,14 @@ supabase
 **Durasi:** Minggu 4–9 · Est. 3–4 minggu
 
 Dibangun paralel setelah dashboard layout selesai. Urutan pengerjaan berdasarkan dependency antar fitur.
+
+> **Panduan komponen** (berlaku untuk semua fitur di phase ini — referensi [DESIGN.md](./DESIGN.md)):
+> - **Tombol:** Primary = Navy, Danger = hanya setelah dialog konfirmasi (§4.1)
+> - **Form input:** `rounded-lg`, focus ring 2px Navy, Amount input = font mono right-aligned prefix "Rp" (§4.3)
+> - **Status badge:** Pill-shaped `rounded-full`, warna bg opacity 15% (§4.6)
+> - **Empty state:** SVG minimal `neutral-300` + heading + CTA button — jangan biarkan halaman kosong tanpa petunjuk (§4.8)
+> - **Toast feedback:** Bottom-right desktop · 4 detik sukses · left border sesuai status (§4.9)
+> - **Angka uang:** Selalu format ribuan (`1.500.000`), selalu font mono — tidak ada pengecualian (§3.3)
 
 ### 5.1 Dompet / Wallet (F-05, F-06, F-07) — Minggu 4–5
 
@@ -355,11 +383,27 @@ Test bukan akhir — test adalah yang memastikan phase sebelumnya benar-benar se
 | Core Web Vitals | LCP < 2.5s · CLS < 0.1 · FID < 100ms | Vercel Analytics |
 | DB query P99 | < 100ms | Supabase Dashboard |
 
-### 6.5 Security Review
+### 6.5 Design & Accessibility Review
+
+Referensi: [DESIGN.md §8 Accessibility](./DESIGN.md) · [DESIGN.md §10 Do's & Don'ts](./DESIGN.md)
+
+| Checklist | Detail |
+|---|---|
+| Contrast ratio | Semua teks: minimum 4.5:1 (WCAG AA) — test dengan browser DevTools atau Polypane |
+| Keyboard navigation | Seluruh alur utama (catat transaksi, buat budget, login) harus bisa dilakukan tanpa mouse |
+| Focus ring | Semua elemen interaktif punya `ring-2 ring-brand-primary` saat fokus |
+| Icon buttons | Semua icon-only button harus punya `aria-label` |
+| Touch target | Minimum 44×44px untuk semua elemen di mobile |
+| Angka keuangan | Semua nominal menggunakan font mono + format ribuan — audit seluruh halaman |
+| Warna semantik | Income = hijau, error = merah — tidak ada inkonsistensi lintas halaman |
+| No infinite animation | Tidak ada elemen yang bergerak sendiri tanpa interaksi pengguna |
+
+### 6.6 Security Review
 
 | Checklist | Detail |
 |---|---|
 | RLS bypass test | Coba akses data household lain dengan token user berbeda — harus 403 |
+
 | Input injection | Test SQL/XSS pada semua form input |
 | File upload | Upload executable + oversized file — harus ditolak |
 | MIME type spoofing | Upload file .exe dengan header image/jpeg — harus ditolak |
