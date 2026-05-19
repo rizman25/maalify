@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
+import BottomNav from "./BottomNav";
 
 interface Props {
   householdName: string;
@@ -69,8 +70,11 @@ export default function DashboardShell({ householdName, userName, userRole, chil
           onToggleDark={toggleDark}
           onMenuClick={() => setSidebarOpen(true)}
         />
-        <main className="flex-1 overflow-y-auto">{children}</main>
+        <main className="flex-1 overflow-y-auto pb-16 lg:pb-0">{children}</main>
       </div>
+
+      {/* Mobile bottom nav */}
+      <BottomNav userRole={userRole} onMenuClick={() => setSidebarOpen(true)} />
     </div>
   );
 }

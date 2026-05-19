@@ -84,3 +84,8 @@ body {
   outline: 2px solid #1E3A5F;
   outline-offset: 2px;
 }
+
+/* Safe area for iPhone home indicator */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
