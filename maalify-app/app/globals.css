@@ -42,28 +42,50 @@
 
 /* ─── CSS Variables: Surface & Text (Light / Dark) ─────────────────── */
 :root {
+  color-scheme: light;
   --bg-base:        #F8FAFB;
   --bg-surface:     #FFFFFF;
   --bg-elevated:    #F1F5F9;
+  --bg-overlay:     rgba(15, 23, 42, 0.5);
   --text-primary:   #0F172A;
   --text-secondary: #475569;
   --border:         #E2E8F0;
+  --shadow-sm:      0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md:      0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.05);
+  --shadow-lg:      0 20px 60px rgba(0,0,0,0.12);
 }
 
 .dark {
-  /* Surfaces — warm dark gray, tidak terlalu biru agar tidak melelahkan mata */
-  --bg-base:        #111827;
-  --bg-surface:     #1F2937;
-  --bg-elevated:    #2D3748;
+  color-scheme: dark;
+  /* Surfaces */
+  --bg-base:        #0F172A;
+  --bg-surface:     #1E293B;
+  --bg-elevated:    #293548;
+  --bg-overlay:     rgba(0, 0, 0, 0.6);
+  /* Text */
+  --text-primary:   #F1F5F9;
+  --text-secondary: #94A3B8;
+  --border:         #334155;
+  /* Shadows lebih subtle di dark */
+  --shadow-sm:      0 1px 3px rgba(0,0,0,0.3);
+  --shadow-md:      0 4px 12px rgba(0,0,0,0.4);
+  --shadow-lg:      0 20px 60px rgba(0,0,0,0.5);
+}
 
-  /* Teks — kontras tinggi untuk keterbacaan maksimal (ramah lansia) */
-  --text-primary:   #FFFFFF;
-  --text-secondary: #D1D5DB;   /* jauh lebih terang dari #94A3B8 */
-  --border:         #4B5563;
+/* ─── Smooth theme transition ────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-duration: 150ms;
+  transition-timing-function: ease;
+}
+/* Exclude elements that shouldn't animate */
+input, select, textarea, button, a, img, svg, [data-no-transition] {
+  transition-property: none;
 }
 
 /* ─── Dark mode: brand colors lebih terang agar tetap visible ─── */
-/* brand-primary (#1E3A5F) terlalu gelap di dark background */
 .dark .bg-brand-primary          { background-color: #2563EB !important; }
 .dark .hover\:bg-brand-primary\/90:hover { background-color: #1D4ED8 !important; }
 .dark .text-brand-primary        { color: #60A5FA !important; }
@@ -74,26 +96,40 @@
 .dark .bg-brand-primary\/5       { background-color: rgba(59,130,246,0.08) !important; }
 .dark .border-brand-primary\/20  { border-color: rgba(59,130,246,0.25) !important; }
 
-/* Semantic colors — sedikit lebih cerah di dark mode */
+/* Semantic colors */
 .dark .text-success { color: #4ADE80 !important; }
 .dark .text-danger  { color: #F87171 !important; }
 .dark .text-warning { color: #FBBF24 !important; }
 
-/* Input & select background di dark mode */
-.dark input,
+/* ─── Input & form elements dark mode ────────────────────────────────── */
+.dark input:not([type="checkbox"]):not([type="radio"]),
 .dark select,
 .dark textarea {
-  background-color: #374151;
-  border-color: #4B5563;
-  color: #FFFFFF;
+  background-color: #1E293B;
+  border-color: #334155;
+  color: #F1F5F9;
+}
+.dark input:not([type="checkbox"]):not([type="radio"]):focus,
+.dark select:focus,
+.dark textarea:focus {
+  border-color: #3B82F6;
+  background-color: #1E293B;
 }
 .dark input::placeholder,
-.dark textarea::placeholder { color: #9CA3AF; }
+.dark textarea::placeholder { color: #64748B; }
 
-/* Scrollbar dark mode */
-.dark ::-webkit-scrollbar-track { background: #1F2937; }
-.dark ::-webkit-scrollbar-thumb { background: #4B5563; border-radius: 4px; }
-.dark ::-webkit-scrollbar-thumb:hover { background: #6B7280; }
+/* ─── Scrollbar ──────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+
+.dark ::-webkit-scrollbar-thumb { background: #334155; }
+.dark ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+/* ─── Selection highlight ────────────────────────────────────────────── */
+::selection { background-color: rgba(30, 58, 95, 0.2); }
+.dark ::selection { background-color: rgba(59, 130, 246, 0.35); }
 
 /* ─── Base Styles ────────────────────────────────────────────────────── */
 html {

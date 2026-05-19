@@ -24,8 +24,13 @@ interface Props {
 
 export default function DashboardShell({ householdName, userName, avatarUrl, userRole, notifications, hasWallets, householdId, userId, children }: Props) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  // Init from DOM directly — anti-FOUC script already set the class
+  const [darkMode, setDarkMode] = useState(() =>
+    typeof document !== "undefined"
+      ? document.documentElement.classList.contains("dark")
+      : false
+  );
   const pathname = usePathname();
 
   // Close mobile sidebar on navigation
@@ -43,14 +48,6 @@ export default function DashboardShell({ householdName, userName, avatarUrl, use
     }
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
-  }, []);
-
-  // Init dark mode from localStorage
-  useEffect(() => {
-    const stored = localStorage.getItem("maalify-theme");
-    const isDark = stored === "dark" || (!stored && window.matchMedia("(prefers-color-scheme: dark)").matches);
-    setDarkMode(isDark);
-    document.documentElement.classList.toggle("dark", isDark);
   }, []);
 
   function toggleDark() {
