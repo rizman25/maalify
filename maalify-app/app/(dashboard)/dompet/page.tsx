@@ -20,16 +20,24 @@ export default async function DompetPage() {
 
   const householdId = membership?.household_id ?? "";
 
-  const { data: wallets } = await supabase
+  const { data: activeWallets } = await supabase
     .from("wallets")
     .select("*")
     .eq("household_id", householdId)
     .eq("is_active", true)
     .order("created_at");
 
+  const { data: inactiveWallets } = await supabase
+    .from("wallets")
+    .select("*")
+    .eq("household_id", householdId)
+    .eq("is_active", false)
+    .order("created_at");
+
   return (
     <WalletPageClient
-      wallets={(wallets ?? []) as Wallet[]}
+      wallets={(activeWallets ?? []) as Wallet[]}
+      inactiveWallets={(inactiveWallets ?? []) as Wallet[]}
       householdId={householdId}
       userId={user.id}
     />

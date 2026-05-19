@@ -29,14 +29,17 @@ const TYPE_DEFAULT_COLOR: Record<WalletType, string> = {
 
 interface Props {
   wallets: Wallet[];
+  inactiveWallets: Wallet[];
   householdId: string;
   userId: string;
 }
 
-export default function WalletPageClient({ wallets, householdId, userId }: Props) {
+export default function WalletPageClient({ wallets, inactiveWallets, householdId, userId }: Props) {
   const router = useRouter();
   const [modalOpen, setModalOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<Wallet | null>(null);
+  const [showInactive, setShowInactive] = useState(false);
+  const [activating, setActivating] = useState<string | null>(null);
 
   const totalAset = wallets.reduce((sum, w) => sum + Number(w.current_balance), 0);
 
@@ -57,6 +60,15 @@ export default function WalletPageClient({ wallets, householdId, userId }: Props
 
   function handleSaved() {
     handleClose();
+    router.refresh();
+  }
+
+  async function handleActivate(walletId: string) {
+    setActivating(walletId);
+    const { createClient } = await import("@/lib/supabase/client");
+    const supabase = createClient();
+    await supabase.from("wallets").update({ is_active: true }).eq("id", walletId);
+    setActivating(null);
     router.refresh();
   }
 
@@ -181,6 +193,70 @@ export default function WalletPageClient({ wallets, householdId, userId }: Props
             <span className="text-sm font-medium">Tambah Dompet</span>
           </button>
         </div>
+      )}
+
+      {/* Dompet Nonaktif */}
+      {inactiveWallets.length > 0 && (
+        <section>
+          <button
+            onClick={() => setShowInactive((v) => !v)}
+            className="flex items-center gap-2 text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+          >
+            <svg
+              width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+              className={`transition-transform ${showInactive ? "rotate-90" : ""}`}
+            >
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+            Dompet nonaktif ({inactiveWallets.length})
+          </button>
+
+          {showInactive && (
+            <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {inactiveWallets.map((wallet) => {
+                const color = wallet.color ?? TYPE_DEFAULT_COLOR[wallet.type];
+                return (
+                  <div
+                    key={wallet.id}
+                    className="bg-[var(--bg-surface)] rounded-xl border border-[var(--border)] p-5 opacity-60"
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="w-10 h-10 rounded-xl flex items-center justify-center text-lg grayscale"
+                          style={{ backgroundColor: color + "20" }}
+                        >
+                          {TYPE_ICON[wallet.type]}
+                        </div>
+                        <div>
+                          <p className="font-semibold text-[var(--text-primary)] leading-tight">
+                            {wallet.name}
+                          </p>
+                          <span className="text-xs text-[var(--text-secondary)] bg-[var(--bg-elevated)] px-2 py-0.5 rounded-full">
+                            Nonaktif
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <p className="font-financial text-lg font-bold text-[var(--text-secondary)]">
+                      Rp {formatRupiah(Number(wallet.current_balance))}
+                    </p>
+
+                    <button
+                      onClick={() => handleActivate(wallet.id)}
+                      disabled={activating === wallet.id}
+                      className="mt-3 w-full py-2 rounded-lg border border-brand-primary text-brand-primary text-xs font-medium hover:bg-brand-primary hover:text-white transition-colors disabled:opacity-50"
+                    >
+                      {activating === wallet.id ? "Mengaktifkan..." : "Aktifkan Kembali"}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
       )}
 
       {/* Modal */}
