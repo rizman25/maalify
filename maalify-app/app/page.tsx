@@ -256,22 +256,44 @@ export default async function HomePage() {
             <h2 className="text-3xl sm:text-4xl font-bold text-[#1E3A5F]">Mulai dalam 3 langkah</h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* Desktop: flex dengan connector ANTARA item agar garis nyambung */}
+          <div className="hidden md:flex items-start">
             {[
               { step: "01", title: "Daftar & Buat Household", desc: "Buat akun dan siapkan 'rumah digital' keluarga kamu. Beri nama keluarga dan undang anggota lewat kode unik atau link WhatsApp." },
               { step: "02", title: "Tambahkan Dompet", desc: "Daftarkan semua sumber dana — rekening bank, dompet tunai, e-wallet. Masukkan saldo awal masing-masing." },
               { step: "03", title: "Catat & Biarkan AI Bantu", desc: "Foto struk untuk input otomatis, atau catat manual. Tanya Maali AI kapan saja untuk saran dan analisis keuangan keluarga." },
             ].map((s, i) => (
-              <div key={s.step} className="relative">
-                {i < 2 && (
-                  <div className="hidden md:block absolute top-8 left-full w-full h-0.5 bg-gradient-to-r from-neutral-200 to-transparent -translate-x-6 z-0" />
-                )}
-                <div className="relative">
-                  <div className="w-16 h-16 rounded-2xl bg-[#1E3A5F] flex items-center justify-center mb-5">
+              <>
+                <div key={s.step} className="flex-1 min-w-0">
+                  <div className="w-16 h-16 rounded-2xl bg-[#1E3A5F] flex items-center justify-center mb-5 relative z-10">
                     <span className="text-white font-bold text-xl">{s.step}</span>
                   </div>
                   <h3 className="font-bold text-[#1E3A5F] text-xl mb-3">{s.title}</h3>
                   <p className="text-neutral-500 leading-relaxed">{s.desc}</p>
+                </div>
+                {i < 2 && (
+                  <div key={`connector-${i}`} className="flex-shrink-0 w-16 flex items-start" style={{ paddingTop: "31px" }}>
+                    <div className="w-full h-0.5 bg-neutral-200" />
+                  </div>
+                )}
+              </>
+            ))}
+          </div>
+
+          {/* Mobile: stack vertikal */}
+          <div className="flex flex-col gap-10 md:hidden">
+            {[
+              { step: "01", title: "Daftar & Buat Household", desc: "Buat akun dan siapkan 'rumah digital' keluarga kamu. Beri nama keluarga dan undang anggota lewat kode unik atau link WhatsApp." },
+              { step: "02", title: "Tambahkan Dompet", desc: "Daftarkan semua sumber dana — rekening bank, dompet tunai, e-wallet. Masukkan saldo awal masing-masing." },
+              { step: "03", title: "Catat & Biarkan AI Bantu", desc: "Foto struk untuk input otomatis, atau catat manual. Tanya Maali AI kapan saja untuk saran dan analisis keuangan keluarga." },
+            ].map((s) => (
+              <div key={s.step} className="flex gap-4 items-start">
+                <div className="w-14 h-14 flex-shrink-0 rounded-2xl bg-[#1E3A5F] flex items-center justify-center">
+                  <span className="text-white font-bold text-lg">{s.step}</span>
+                </div>
+                <div className="pt-1">
+                  <h3 className="font-bold text-[#1E3A5F] text-lg mb-2">{s.title}</h3>
+                  <p className="text-neutral-500 leading-relaxed text-sm">{s.desc}</p>
                 </div>
               </div>
             ))}
