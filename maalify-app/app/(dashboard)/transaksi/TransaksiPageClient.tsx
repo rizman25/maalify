@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { formatRupiah } from "@/lib/utils";
 import type { Wallet, Category, TransactionWithCategory } from "@/types";
 import TransaksiModal from "@/components/transaksi/TransaksiModal";
+import ScanStrukModal from "@/components/transaksi/ScanStrukModal";
 
 const BULAN = [
   "Januari","Februari","Maret","April","Mei","Juni",
@@ -33,6 +34,7 @@ export default function TransaksiPageClient({
   const [search, setSearch] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<TransactionWithCategory | null>(null);
+  const [scanOpen, setScanOpen] = useState(false);
 
   const totalIncome  = transactions.filter(t => t.type === "income").reduce((s, t) => s + Number(t.amount), 0);
   const totalExpense = transactions.filter(t => t.type === "expense").reduce((s, t) => s + Number(t.amount), 0);
@@ -99,17 +101,30 @@ export default function TransaksiPageClient({
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-[var(--text-primary)]">Transaksi</h1>
-        <button
-          onClick={openAdd}
-          disabled={wallets.length === 0}
-          className="flex items-center gap-2 px-4 py-2.5 bg-brand-primary text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
-          title={wallets.length === 0 ? "Tambahkan dompet dulu" : ""}
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
-          Catat Transaksi
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setScanOpen(true)}
+            disabled={wallets.length === 0}
+            className="flex items-center gap-1.5 px-3 py-2.5 border border-[var(--border)] bg-[var(--bg-surface)] text-[var(--text-secondary)] text-sm font-medium rounded-lg hover:bg-[var(--bg-elevated)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            title={wallets.length === 0 ? "Tambahkan dompet dulu" : "Scan struk/kuitansi"}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+            </svg>
+            <span className="hidden sm:inline">Scan Struk</span>
+          </button>
+          <button
+            onClick={openAdd}
+            disabled={wallets.length === 0}
+            className="flex items-center gap-2 px-4 py-2.5 bg-brand-primary text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+            title={wallets.length === 0 ? "Tambahkan dompet dulu" : ""}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            Catat Transaksi
+          </button>
+        </div>
       </div>
 
       {/* Navigasi Bulan + Summary */}
@@ -308,6 +323,18 @@ export default function TransaksiPageClient({
             </div>
           ))}
         </div>
+      )}
+
+      {/* Scan Struk Modal */}
+      {scanOpen && (
+        <ScanStrukModal
+          wallets={wallets}
+          categories={categories}
+          householdId={householdId}
+          userId={userId}
+          onClose={() => setScanOpen(false)}
+          onSaved={() => { setScanOpen(false); router.refresh(); }}
+        />
       )}
 
       {/* Modal */}
