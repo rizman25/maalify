@@ -39,7 +39,7 @@ export default function CategoryChart({ data, total }: { data: CategoryItem[]; t
               ))}
             </Pie>
             <Tooltip
-              formatter={(value: number) => [`Rp ${formatRupiah(value)}`, ""]}
+              formatter={(value) => [`Rp ${formatRupiah(Number(value))}`, ""]}
               contentStyle={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }}
             />
           </PieChart>
