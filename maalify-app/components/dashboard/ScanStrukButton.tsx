@@ -19,13 +19,13 @@ export default function ScanStrukButton({ wallets, categories, householdId, user
     <>
       <button
         onClick={() => setOpen(true)}
-        className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] text-[var(--text-secondary)] text-sm font-medium hover:border-brand-primary hover:text-brand-primary transition-colors"
+        className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-[var(--border)] bg-[var(--bg-surface)] text-[var(--text-secondary)] text-sm font-medium hover:border-brand-primary hover:text-brand-primary transition-colors flex-shrink-0"
       >
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
           <circle cx="12" cy="13" r="3"/>
         </svg>
-        <span className="hidden sm:inline">Scan Struk</span>
+        <span>Scan Struk</span>
       </button>
 
       {open && (
