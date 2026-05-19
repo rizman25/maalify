@@ -44,7 +44,7 @@ export default async function DashboardPage() {
   sixMonthsAgo.setDate(1);
   const trendStart = `${sixMonthsAgo.getFullYear()}-${pad(sixMonthsAgo.getMonth() + 1)}-01`;
 
-  const [curMonthRes, prevMonthRes, walletsRes, trendRes, catRes, budgetsRes, debtsRes, recentTxRes, activeWalletsRes, catsRes] = await Promise.all([
+  const [curMonthRes, prevMonthRes, walletsRes, trendRes, catRes, budgetsRes, debtsRes, recentTxRes, activeWalletsRes, catsRes, goalsRes] = await Promise.all([
     supabase.from("transactions").select("type, amount")
       .eq("household_id", householdId).gte("date", monthStart).lt("date", monthEnd),
 
@@ -86,6 +86,13 @@ export default async function DashboardPage() {
     supabase.from("categories").select("id, name, icon, color, type")
       .or(`household_id.eq.${householdId},household_id.is.null`)
       .order("is_default", { ascending: false }).order("name"),
+
+    supabase.from("savings_goals")
+      .select("id, name, target_amount, current_amount, color, icon, is_completed")
+      .eq("household_id", householdId)
+      .eq("is_completed", false)
+      .order("created_at", { ascending: false })
+      .limit(4),
   ]);
 
   const curIncome  = (curMonthRes.data ?? []).filter(t => t.type === "income").reduce((s,t) => s + Number(t.amount), 0);
@@ -93,6 +100,9 @@ export default async function DashboardPage() {
   const prevIncome  = (prevMonthRes.data ?? []).filter(t => t.type === "income").reduce((s,t) => s + Number(t.amount), 0);
   const prevExpense = (prevMonthRes.data ?? []).filter(t => t.type === "expense").reduce((s,t) => s + Number(t.amount), 0);
   const totalAset  = (walletsRes.data ?? []).reduce((s, w) => s + Number(w.current_balance), 0);
+  const netSavings = curIncome - curExpense;
+  const prevNetSavings = prevIncome - prevExpense;
+  const activeGoals = (goalsRes.data ?? []) as { id: string; name: string; target_amount: number; current_amount: number; color: string; icon: string; is_completed: boolean }[];
 
   function pct(cur: number, prev: number) {
     if (prev === 0) return null;
@@ -183,7 +193,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <SummaryCard label={isMember ? "SALDO DOMPET SAYA" : "TOTAL SALDO"} value={totalAset} pctChange={null} color="#1E3A5F"
           icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>}
         />
@@ -196,6 +206,16 @@ export default async function DashboardPage() {
           prevLabel={`dari ${BULAN_SHORT[(month === 1 ? 12 : month - 1) - 1]} (Rp ${formatRupiah(prevExpense)})`}
           color="#E74C3C"
           icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>}
+        />
+        <SummaryCard
+          label="TABUNGAN BERSIH"
+          value={Math.abs(netSavings)}
+          pctChange={pct(Math.abs(netSavings), Math.abs(prevNetSavings))}
+          prevLabel={`dari ${BULAN_SHORT[(month === 1 ? 12 : month - 1) - 1]}`}
+          color={netSavings >= 0 ? "#8B5CF6" : "#E74C3C"}
+          positive
+          surplus={netSavings >= 0}
+          icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2a10 10 0 1 0 10 10H12V2z"/><path d="M12 2a10 10 0 0 1 10 10"/></svg>}
         />
       </div>
 
@@ -359,6 +379,50 @@ export default async function DashboardPage() {
         )}
       </div>
 
+      {/* Savings Goals Widget */}
+      <div className="bg-[var(--bg-surface)] rounded-xl border border-[var(--border)] p-5">
+        <div className="flex items-center justify-between mb-1">
+          <p className="font-semibold text-[var(--text-primary)]">Target Tabungan</p>
+          <Link href="/tabungan" className="text-xs text-brand-primary hover:underline font-medium">Lihat semua →</Link>
+        </div>
+        <p className="text-xs text-[var(--text-secondary)] mb-4">Progress tabungan aktif bulan ini</p>
+
+        {activeGoals.length === 0 ? (
+          <div className="py-8 text-center">
+            <p className="text-sm text-[var(--text-secondary)]">Belum ada target tabungan aktif</p>
+            <Link href="/tabungan" className="text-xs text-brand-primary hover:underline mt-1 inline-block">+ Buat Target</Link>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {activeGoals.map(g => {
+              const pctDone = g.target_amount > 0 ? Math.min((g.current_amount / g.target_amount) * 100, 100) : 0;
+              return (
+                <div key={g.id} className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg flex items-center justify-center text-lg flex-shrink-0"
+                    style={{ backgroundColor: (g.color || "#8B5CF6") + "20" }}>
+                    {g.icon || "🎯"}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="text-sm font-medium text-[var(--text-primary)] truncate">{g.name}</p>
+                      <span className="text-xs font-semibold ml-2 flex-shrink-0" style={{ color: g.color || "#8B5CF6" }}>
+                        {pctDone.toFixed(0)}%
+                      </span>
+                    </div>
+                    <div className="h-1.5 bg-[var(--bg-elevated)] rounded-full overflow-hidden">
+                      <div className="h-full rounded-full transition-all" style={{ width: `${pctDone}%`, backgroundColor: g.color || "#8B5CF6" }} />
+                    </div>
+                    <p className="text-[10px] text-[var(--text-secondary)] mt-1">
+                      Rp {formatRupiah(g.current_amount)} / Rp {formatRupiah(g.target_amount)}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
       {/* Transaksi Terbaru */}
       <div className="bg-[var(--bg-surface)] rounded-xl border border-[var(--border)] overflow-hidden">
         <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-[var(--border)]">
@@ -422,9 +486,9 @@ export default async function DashboardPage() {
   );
 }
 
-function SummaryCard({ label, value, pctChange, prevLabel, color, positive, icon }: {
+function SummaryCard({ label, value, pctChange, prevLabel, color, positive, surplus, icon }: {
   label: string; value: number; pctChange: string | null; prevLabel?: string;
-  color: string; positive?: boolean; icon: React.ReactNode;
+  color: string; positive?: boolean; surplus?: boolean; icon: React.ReactNode;
 }) {
   const isUp = pctChange !== null && parseFloat(pctChange) > 0;
   const isDown = pctChange !== null && parseFloat(pctChange) < 0;
@@ -434,9 +498,14 @@ function SummaryCard({ label, value, pctChange, prevLabel, color, positive, icon
         <p className="text-xs font-semibold text-[var(--text-secondary)] tracking-wide">{label}</p>
         <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ backgroundColor: color + "18", color }}>{icon}</div>
       </div>
-      <p className="font-financial text-2xl font-bold text-[var(--text-primary)]">Rp {formatRupiah(value)}</p>
+      <p className="font-financial text-2xl font-bold" style={{ color }}>{surplus === false ? "-" : ""}Rp {formatRupiah(value)}</p>
+      {surplus !== undefined && (
+        <span className={["text-[10px] font-semibold px-2 py-0.5 rounded-full mt-1 inline-block", surplus ? "bg-purple-100 text-purple-700" : "bg-red-100 text-danger"].join(" ")}>
+          {surplus ? "Surplus" : "Defisit"}
+        </span>
+      )}
       {pctChange !== null && (
-        <p className={["text-xs mt-2", isUp ? (positive ? "text-success" : "text-danger") : isDown ? (positive ? "text-danger" : "text-success") : "text-[var(--text-secondary)]"].join(" ")}>
+        <p className={["text-xs mt-1", isUp ? (positive ? "text-success" : "text-danger") : isDown ? (positive ? "text-danger" : "text-success") : "text-[var(--text-secondary)]"].join(" ")}>
           {isUp ? "↑" : isDown ? "↓" : "→"} {Math.abs(parseFloat(pctChange))}%{" "}
           {prevLabel && <span className="text-[var(--text-secondary)]">{prevLabel}</span>}
         </p>
