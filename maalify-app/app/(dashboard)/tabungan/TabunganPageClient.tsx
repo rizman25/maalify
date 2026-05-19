@@ -264,6 +264,7 @@ function GoalFormModal({ householdId, userId, goal, onClose, onSaved, userRole }
   const [color, setColor] = useState(goal?.color ?? "#3B82F6");
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [error, setError] = useState("");
 
   async function handleSave() {
@@ -387,22 +388,39 @@ function GoalFormModal({ householdId, userId, goal, onClose, onSaved, userRole }
 
           {error && <p className="text-xs text-danger bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
 
-          <div className="flex gap-3 pt-1">
-            {isEdit && (
-              <button type="button" onClick={handleDelete} disabled={deleting}
-                className="px-4 py-2.5 rounded-xl border border-red-200 text-danger text-sm hover:bg-red-50 disabled:opacity-50 transition-colors">
-                {deleting ? "..." : "Hapus"}
+          {confirmDelete ? (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-4 space-y-3">
+              <p className="text-sm font-semibold text-danger">Hapus goal ini?</p>
+              <p className="text-xs text-[var(--text-secondary)]">Goal <span className="font-semibold text-[var(--text-primary)]">{goal?.name}</span> dan semua riwayat kontribusinya akan dihapus permanen.</p>
+              <div className="flex gap-2">
+                <button type="button" onClick={() => setConfirmDelete(false)}
+                  className="flex-1 py-2 rounded-xl border border-[var(--border)] text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] transition-colors">
+                  Batal
+                </button>
+                <button type="button" onClick={handleDelete} disabled={deleting}
+                  className="flex-1 py-2 rounded-xl bg-danger text-white text-sm font-semibold hover:opacity-90 disabled:opacity-60 transition-opacity">
+                  {deleting ? "Menghapus..." : "Ya, Hapus"}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex gap-3 pt-1">
+              {isEdit && (
+                <button type="button" onClick={() => setConfirmDelete(true)}
+                  className="px-4 py-2.5 rounded-xl border border-red-200 text-danger text-sm hover:bg-red-50 transition-colors">
+                  Hapus
+                </button>
+              )}
+              <button type="button" onClick={onClose}
+                className="px-4 py-2.5 rounded-xl border border-[var(--border)] text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] transition-colors">
+                Batal
               </button>
-            )}
-            <button type="button" onClick={onClose}
-              className="px-4 py-2.5 rounded-xl border border-[var(--border)] text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] transition-colors">
-              Batal
-            </button>
-            <button type="button" onClick={handleSave} disabled={saving}
-              className="flex-1 py-2.5 rounded-xl bg-brand-primary text-white text-sm font-semibold hover:opacity-90 disabled:opacity-60 transition-opacity">
-              {saving ? "Menyimpan..." : isEdit ? "Simpan" : "Buat Goal"}
-            </button>
-          </div>
+              <button type="button" onClick={handleSave} disabled={saving}
+                className="flex-1 py-2.5 rounded-xl bg-brand-primary text-white text-sm font-semibold hover:opacity-90 disabled:opacity-60 transition-opacity">
+                {saving ? "Menyimpan..." : isEdit ? "Simpan" : "Buat Goal"}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
