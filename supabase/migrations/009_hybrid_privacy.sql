@@ -68,7 +68,7 @@ CREATE POLICY "transaction select" ON public.transactions FOR SELECT USING (
       WHERE user_id = auth.uid() AND household_id = transactions.household_id AND role = 'super_admin'
     )
     OR wallet_id IN (SELECT id FROM public.wallets WHERE is_shared = true)
-    OR created_by = auth.uid()
+    OR transactions.user_id = auth.uid()
   )
 );
 
@@ -79,7 +79,7 @@ CREATE POLICY "transaction insert" ON public.transactions FOR INSERT WITH CHECK 
 
 -- UPDATE: own transaction OR admin/super_admin
 CREATE POLICY "transaction update" ON public.transactions FOR UPDATE USING (
-  created_by = auth.uid()
+  transactions.user_id = auth.uid()
   OR EXISTS (
     SELECT 1 FROM public.household_members
     WHERE user_id = auth.uid() AND household_id = transactions.household_id AND role IN ('admin', 'super_admin')
@@ -88,7 +88,7 @@ CREATE POLICY "transaction update" ON public.transactions FOR UPDATE USING (
 
 -- DELETE: own transaction OR admin/super_admin
 CREATE POLICY "transaction delete" ON public.transactions FOR DELETE USING (
-  created_by = auth.uid()
+  transactions.user_id = auth.uid()
   OR EXISTS (
     SELECT 1 FROM public.household_members
     WHERE user_id = auth.uid() AND household_id = transactions.household_id AND role IN ('admin', 'super_admin')

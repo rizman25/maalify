@@ -23,10 +23,11 @@ export default async function AnggaranPage({ searchParams }: Props) {
   const monthEnd = `${nextY}-${pad(nextM)}-01`;
 
   const { data: membership } = await supabase
-    .from("household_members").select("household_id")
+    .from("household_members").select("household_id, role")
     .eq("user_id", user.id).limit(1).single();
 
   const householdId = membership?.household_id ?? "";
+  const userRole = (membership?.role ?? "member") as "super_admin" | "admin" | "member";
 
   const [budgetsRes, spendingRes, catsRes] = await Promise.all([
     supabase.from("budgets")
@@ -85,6 +86,7 @@ export default async function AnggaranPage({ searchParams }: Props) {
       householdId={householdId}
       month={month}
       year={year}
+      userRole={userRole}
     />
   );
 }

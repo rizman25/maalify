@@ -15,6 +15,7 @@ interface Props {
   categories: Category[];
   householdId: string;
   userId: string;
+  userRole: "super_admin" | "admin" | "member";
   justGenerated: number;
 }
 
@@ -50,9 +51,10 @@ function nextDate(item: RecurringItem): string {
 }
 
 export default function RecurringPageClient({
-  recurring, wallets, categories, householdId, userId, justGenerated,
+  recurring, wallets, categories, householdId, userId, userRole, justGenerated,
 }: Props) {
   const router = useRouter();
+  const canManage = userRole !== "member";
   const [modal, setModal] = useState<null | "add" | RecurringItem>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
 
@@ -95,15 +97,17 @@ export default function RecurringPageClient({
             <h1 className="text-xl font-bold text-[var(--text-primary)]">Transaksi Berulang</h1>
             <p className="text-sm text-[var(--text-secondary)]">Otomatis tercatat sesuai jadwal</p>
           </div>
-          <button
-            onClick={() => setModal("add")}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-brand-primary text-white text-sm font-medium hover:bg-brand-primary/90 transition-colors"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>
-            Tambah
-          </button>
+          {canManage && (
+            <button
+              onClick={() => setModal("add")}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-brand-primary text-white text-sm font-medium hover:bg-brand-primary/90 transition-colors"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              Tambah
+            </button>
+          )}
         </div>
 
         {/* Auto-generate banner */}
@@ -124,9 +128,11 @@ export default function RecurringPageClient({
               <p className="font-semibold text-[var(--text-primary)] text-base">Belum ada transaksi berulang</p>
               <p className="text-sm text-[var(--text-secondary)] mt-1">Set sekali, otomatis tercatat setiap periode</p>
             </div>
-            <button onClick={() => setModal("add")} className="px-5 py-2.5 rounded-xl bg-brand-primary text-white text-sm font-medium hover:bg-brand-primary/90">
-              Tambah Pertama
-            </button>
+            {canManage && (
+              <button onClick={() => setModal("add")} className="px-5 py-2.5 rounded-xl bg-brand-primary text-white text-sm font-medium hover:bg-brand-primary/90">
+                Tambah Pertama
+              </button>
+            )}
           </div>
         )}
 
@@ -183,21 +189,23 @@ export default function RecurringPageClient({
                       </div>
 
                       {/* Actions */}
-                      <div className="flex items-center gap-2 mt-3">
-                        <button
-                          onClick={() => setModal(item)}
-                          className="text-xs px-3 py-1.5 rounded-lg border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] transition-colors"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => toggleActive(item)}
-                          disabled={togglingId === item.id}
-                          className="text-xs px-3 py-1.5 rounded-lg border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] transition-colors disabled:opacity-50"
-                        >
-                          {togglingId === item.id ? "..." : "Nonaktifkan"}
-                        </button>
-                      </div>
+                      {canManage && (
+                        <div className="flex items-center gap-2 mt-3">
+                          <button
+                            onClick={() => setModal(item)}
+                            className="text-xs px-3 py-1.5 rounded-lg border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] transition-colors"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => toggleActive(item)}
+                            disabled={togglingId === item.id}
+                            className="text-xs px-3 py-1.5 rounded-lg border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] transition-colors disabled:opacity-50"
+                          >
+                            {togglingId === item.id ? "..." : "Nonaktifkan"}
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -234,13 +242,15 @@ export default function RecurringPageClient({
                       <p className="font-financial text-sm font-semibold text-[var(--text-secondary)]">
                         Rp {formatRupiah(item.amount)}
                       </p>
-                      <button
-                        onClick={() => toggleActive(item)}
-                        disabled={togglingId === item.id}
-                        className="text-[10px] text-brand-primary hover:underline mt-0.5 disabled:opacity-50"
-                      >
-                        {togglingId === item.id ? "..." : "Aktifkan"}
-                      </button>
+                      {canManage && (
+                        <button
+                          onClick={() => toggleActive(item)}
+                          disabled={togglingId === item.id}
+                          className="text-[10px] text-brand-primary hover:underline mt-0.5 disabled:opacity-50"
+                        >
+                          {togglingId === item.id ? "..." : "Aktifkan"}
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>

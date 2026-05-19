@@ -30,14 +30,16 @@ interface Props {
   householdId: string;
   month: number;
   year: number;
+  userRole: "super_admin" | "admin" | "member";
 }
 
 const MONTHS = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
 
 export default function AnggaranPageClient({
-  budgets, availableCategories, allCategories, householdId, month, year,
+  budgets, availableCategories, allCategories, householdId, month, year, userRole,
 }: Props) {
   const router = useRouter();
+  const canManage = userRole !== "member";
   const [modalMode, setModalMode] = useState<"add" | "edit" | null>(null);
   const [editBudget, setEditBudget] = useState<BudgetItem | undefined>();
 
@@ -76,14 +78,16 @@ export default function AnggaranPageClient({
             <h1 className="text-xl font-bold text-[var(--text-primary)]">Anggaran</h1>
             <p className="text-sm text-[var(--text-secondary)]">Kelola batas pengeluaran bulanan</p>
           </div>
-          <button
-            onClick={() => setModalMode("add")}
-            disabled={availableCategories.length === 0}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-brand-primary text-white text-sm font-medium hover:bg-brand-primary/90 disabled:opacity-50 transition-colors"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Tambah
-          </button>
+          {canManage && (
+            <button
+              onClick={() => setModalMode("add")}
+              disabled={availableCategories.length === 0}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-brand-primary text-white text-sm font-medium hover:bg-brand-primary/90 disabled:opacity-50 transition-colors"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Tambah
+            </button>
+          )}
         </div>
 
         {/* Month navigator */}
@@ -149,13 +153,15 @@ export default function AnggaranPageClient({
               <p className="font-semibold text-[var(--text-primary)]">Belum ada anggaran</p>
               <p className="text-sm text-[var(--text-secondary)] mt-1">Tambah anggaran untuk mengontrol pengeluaran bulan ini</p>
             </div>
-            <button
-              onClick={() => setModalMode("add")}
-              disabled={availableCategories.length === 0}
-              className="px-4 py-2 rounded-xl bg-brand-primary text-white text-sm font-medium hover:bg-brand-primary/90 disabled:opacity-50"
-            >
-              Tambah Anggaran Pertama
-            </button>
+            {canManage && (
+              <button
+                onClick={() => setModalMode("add")}
+                disabled={availableCategories.length === 0}
+                className="px-4 py-2 rounded-xl bg-brand-primary text-white text-sm font-medium hover:bg-brand-primary/90 disabled:opacity-50"
+              >
+                Tambah Anggaran Pertama
+              </button>
+            )}
           </div>
         ) : (
           <div className="space-y-3">
@@ -170,8 +176,8 @@ export default function AnggaranPageClient({
               return (
                 <button
                   key={b.id}
-                  onClick={() => openEdit(b)}
-                  className="w-full bg-[var(--bg-surface)] rounded-2xl border border-[var(--border)] p-4 text-left hover:border-brand-primary/30 hover:shadow-sm transition-all space-y-3"
+                  onClick={() => canManage && openEdit(b)}
+                  className={`w-full bg-[var(--bg-surface)] rounded-2xl border border-[var(--border)] p-4 text-left transition-all space-y-3 ${canManage ? "hover:border-brand-primary/30 hover:shadow-sm cursor-pointer" : "cursor-default"}`}
                 >
                   {/* Top row */}
                   <div className="flex items-center justify-between">
@@ -242,15 +248,17 @@ export default function AnggaranPageClient({
                     <span className="text-lg">{cat.icon ?? "💰"}</span>
                     <span className="text-sm text-[var(--text-secondary)]">{cat.name}</span>
                   </div>
-                  <button
-                    onClick={() => {
-                      setEditBudget(undefined);
-                      setModalMode("add");
-                    }}
-                    className="text-xs text-brand-primary font-medium hover:underline"
-                  >
-                    + Tambah
-                  </button>
+                  {canManage && (
+                    <button
+                      onClick={() => {
+                        setEditBudget(undefined);
+                        setModalMode("add");
+                      }}
+                      className="text-xs text-brand-primary font-medium hover:underline"
+                    >
+                      + Tambah
+                    </button>
+                  )}
                 </div>
               ))}
             </div>

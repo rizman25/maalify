@@ -28,12 +28,13 @@ export default async function RecurringPage() {
 
   const { data: membership } = await supabase
     .from("household_members")
-    .select("household_id")
+    .select("household_id, role")
     .eq("user_id", user.id)
     .limit(1)
     .single();
 
   const householdId = membership?.household_id ?? "";
+  const userRole = (membership?.role ?? "member") as "super_admin" | "admin" | "member";
 
   // Auto-generate pending recurring transactions
   const generated = await generateRecurringTransactions(supabase, householdId);
@@ -68,6 +69,7 @@ export default async function RecurringPage() {
       categories={catsRes.data ?? []}
       householdId={householdId}
       userId={user.id}
+      userRole={userRole}
       justGenerated={generated}
     />
   );

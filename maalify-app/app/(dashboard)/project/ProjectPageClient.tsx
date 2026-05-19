@@ -75,6 +75,7 @@ export default function ProjectPageClient({
   projects, wallets, householdId, userId, userRole,
 }: Props) {
   const router = useRouter();
+  const canManage = userRole !== "member";
   const [view, setView] = useState<View>("list");
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [projectItems, setProjectItems] = useState<ProjectItem[]>([]);
@@ -170,12 +171,14 @@ export default function ProjectPageClient({
                   Kontribusi
                 </button>
               ) : null}
-              <button
-                onClick={() => setModal({ kind: "edit", project: proj })}
-                className="px-3 py-2 rounded-xl border border-[var(--border)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] transition-colors"
-              >
-                Edit
-              </button>
+              {canManage && (
+                <button
+                  onClick={() => setModal({ kind: "edit", project: proj })}
+                  className="px-3 py-2 rounded-xl border border-[var(--border)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] transition-colors"
+                >
+                  Edit
+                </button>
+              )}
             </div>
           </div>
 
@@ -258,13 +261,15 @@ export default function ProjectPageClient({
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <p className="text-sm font-semibold text-[var(--text-primary)]">Rincian Anggaran</p>
-              <button
-                onClick={() => setModal({ kind: "item", projectId: proj.id })}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand-primary text-white text-xs font-medium hover:bg-brand-primary/90 transition-colors"
-              >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                Tambah Item
-              </button>
+              {canManage && (
+                <button
+                  onClick={() => setModal({ kind: "item", projectId: proj.id })}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand-primary text-white text-xs font-medium hover:bg-brand-primary/90 transition-colors"
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  Tambah Item
+                </button>
+              )}
             </div>
 
             {loadingItems ? (
@@ -283,7 +288,7 @@ export default function ProjectPageClient({
                       <ItemRow
                         key={item.id}
                         item={item}
-                        onEdit={() => setModal({ kind: "item", projectId: proj.id, item })}
+                        onEdit={canManage ? () => setModal({ kind: "item", projectId: proj.id, item }) : undefined}
                       />
                     ))}
                   </div>
@@ -298,7 +303,7 @@ export default function ProjectPageClient({
                       <ItemRow
                         key={item.id}
                         item={item}
-                        onEdit={() => setModal({ kind: "item", projectId: proj.id, item })}
+                        onEdit={canManage ? () => setModal({ kind: "item", projectId: proj.id, item }) : undefined}
                       />
                     ))}
                   </div>
@@ -374,13 +379,15 @@ export default function ProjectPageClient({
             <h1 className="text-xl font-bold text-[var(--text-primary)]">Project Keluarga</h1>
             <p className="text-sm text-[var(--text-secondary)]">Rencanakan dan capai tujuan keuangan bersama</p>
           </div>
-          <button
-            onClick={() => setModal({ kind: "create" })}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-brand-primary text-white text-sm font-medium hover:bg-brand-primary/90 transition-colors"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Buat Project
-          </button>
+          {canManage && (
+            <button
+              onClick={() => setModal({ kind: "create" })}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-brand-primary text-white text-sm font-medium hover:bg-brand-primary/90 transition-colors"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Buat Project
+            </button>
+          )}
         </div>
 
         {/* Status filter chips */}
@@ -414,7 +421,7 @@ export default function ProjectPageClient({
                 Buat project pertama — trip, pernikahan, beli rumah, dan lainnya
               </p>
             </div>
-            {statusFilter === "all" && (
+            {statusFilter === "all" && canManage && (
               <button
                 onClick={() => setModal({ kind: "create" })}
                 className="px-5 py-2.5 rounded-xl bg-brand-primary text-white text-sm font-medium hover:bg-brand-primary/90"
@@ -512,10 +519,10 @@ export default function ProjectPageClient({
   );
 }
 
-function ItemRow({ item, onEdit }: { item: ProjectItem; onEdit: () => void }) {
+function ItemRow({ item, onEdit }: { item: ProjectItem; onEdit?: () => void }) {
   return (
     <div
-      className={`flex items-center gap-3 px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] hover:bg-[var(--bg-elevated)] transition-colors cursor-pointer ${item.is_paid ? "opacity-70" : ""}`}
+      className={`flex items-center gap-3 px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] transition-colors ${item.is_paid ? "opacity-70" : ""} ${onEdit ? "hover:bg-[var(--bg-elevated)] cursor-pointer" : "cursor-default"}`}
       onClick={onEdit}
     >
       <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
