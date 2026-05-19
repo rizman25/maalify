@@ -110,16 +110,28 @@ export default function AdminDashboardClient({ stats, dailyTxData, topHouseholds
                   )}
                 </div>
               </div>
-              <div className="flex items-end gap-1 h-32">
-                {dailyTxData.map((d, i) => (
-                  <div key={i} className="flex-1 flex flex-col items-center gap-1 group relative">
-                    <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-slate-700 text-white text-[9px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap z-10">
-                      {d.date.slice(5)}: {d.count}
+              <div className="flex items-end gap-[2px] h-32">
+                {dailyTxData.map((d, i) => {
+                  const heightPct = Math.max((d.count / maxDailyTx) * 100, 2);
+                  return (
+                    <div key={i} className="flex-1 h-full flex flex-col justify-end group relative">
+                      <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-slate-700 text-white text-[9px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap z-10 pointer-events-none">
+                        {d.date.slice(5)}: {d.count}
+                      </div>
+                      <div
+                        className="w-full rounded-t-sm transition-all duration-300"
+                        style={{
+                          height: `${heightPct}%`,
+                          backgroundColor: d.count === 0
+                            ? "#1E293B"
+                            : i === dailyTxData.length - 1
+                            ? "#3B82F6"
+                            : "#2563EB",
+                        }}
+                      />
                     </div>
-                    <div className="w-full rounded-t-sm transition-all"
-                      style={{ height: `${Math.max((d.count / maxDailyTx) * 100, 2)}%`, backgroundColor: i === dailyTxData.length - 1 ? "#3B82F6" : "#1E3A5F" }} />
-                  </div>
-                ))}
+                  );
+                })}
               </div>
               <div className="flex justify-between mt-2">
                 <p className="text-[10px] text-slate-500">{dailyTxData[0]?.date.slice(5)}</p>
