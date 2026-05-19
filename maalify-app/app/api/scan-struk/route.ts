@@ -22,8 +22,7 @@ Aturan penting:
 - Jika nominal tidak terbaca jelas → confidence = "low", total = 0
 - Jika tanggal tidak ada → date = null`;
 
-// Free vision models on OpenRouter
-const MODEL = "google/gemini-2.0-flash-exp:free";
+const MODEL = "google/gemini-2.0-flash-001";
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
