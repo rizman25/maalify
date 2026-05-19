@@ -85,12 +85,13 @@ export default async function DashboardPage() {
   });
 
   // Kategori breakdown
-  type CatRow = { amount: number; categories: { name: string; color: string } | null };
   const catMap = new Map<string, { name: string; color: string; amount: number }>();
-  for (const row of (catRes.data ?? []) as CatRow[]) {
-    const cat = row.categories;
+  for (const row of catRes.data ?? []) {
+    const cats = row.categories as { name: string; color: string } | { name: string; color: string }[] | null;
+    const cat = Array.isArray(cats) ? cats[0] : cats;
     if (!cat) continue;
-    if (catMap.has(cat.name)) catMap.get(cat.name)!.amount += Number(row.amount);
+    const existing = catMap.get(cat.name);
+    if (existing) existing.amount += Number(row.amount);
     else catMap.set(cat.name, { name: cat.name, color: cat.color ?? "#94A3B8", amount: Number(row.amount) });
   }
   const categoryData = Array.from(catMap.values())
