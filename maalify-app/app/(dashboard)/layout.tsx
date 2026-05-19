@@ -24,13 +24,20 @@ export default async function DashboardLayout({
 
   const { data: membership } = await supabase
     .from("household_members")
-    .select("household_id, households(name)")
+    .select("household_id")
     .eq("user_id", user.id)
     .limit(1)
     .single();
 
-  const householdName =
-    (membership?.households as { name: string } | null)?.name ?? "Keluarga Saya";
+  const { data: household } = membership?.household_id
+    ? await supabase
+        .from("households")
+        .select("name")
+        .eq("id", membership.household_id)
+        .single()
+    : { data: null };
+
+  const householdName = household?.name ?? "Keluarga Saya";
   const userName = profile?.name ?? user.email ?? "Pengguna";
 
   return (
