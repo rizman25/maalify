@@ -131,6 +131,25 @@ input, select, textarea, button, a, img, svg, [data-no-transition] {
 ::selection { background-color: rgba(30, 58, 95, 0.2); }
 .dark ::selection { background-color: rgba(59, 130, 246, 0.35); }
 
+/* ─── Force light mode on auth pages (override .dark input rules) ────── */
+[data-force-light] input,
+[data-force-light] select,
+[data-force-light] textarea {
+  background-color: #FFFFFF !important;
+  border-color: #E2E8F0 !important;
+  color: #0F172A !important;
+}
+[data-force-light] input::placeholder,
+[data-force-light] textarea::placeholder {
+  color: #94A3B8 !important;
+}
+[data-force-light] input:focus,
+[data-force-light] select:focus,
+[data-force-light] textarea:focus {
+  background-color: #FFFFFF !important;
+  border-color: #1E3A5F !important;
+}
+
 /* ─── Base Styles ────────────────────────────────────────────────────── */
 html {
   height: 100%;

@@ -4,6 +4,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
   return (
     // Force light mode on auth pages — always white regardless of user theme
     <div
+      data-force-light="true"
       className="min-h-screen flex flex-col items-center justify-center px-4 py-10"
       style={{
         backgroundColor: "#F8FAFB",
