@@ -76,7 +76,8 @@ export default function PengaturanPageClient({ profile, household, members, cate
   const [copied, setCopied] = useState(false);
 
   // Member management state
-  const [memberAction, setMemberAction] = useState<{ id: string; action: "remove" | "promote" | "demote" | "leave" } | null>(null);
+  type MemberActionType = "remove" | "promote" | "promote_super" | "demote" | "demote_admin" | "leave";
+  const [memberAction, setMemberAction] = useState<{ id: string; action: MemberActionType } | null>(null);
   const [memberLoading, setMemberLoading] = useState(false);
   const [memberMsg, setMemberMsg] = useState("");
 
@@ -150,13 +151,18 @@ export default function PengaturanPageClient({ profile, household, members, cate
         if (error) throw error;
 
         if (memberAction.action === "leave") {
-          // Redirect to login since user no longer has a household
           await supabase.auth.signOut();
           router.push("/login");
           return;
         }
       } else {
-        const newRole = memberAction.action === "promote" ? "admin" : "member";
+        const roleMap: Record<string, string> = {
+          promote: "admin",
+          promote_super: "super_admin",
+          demote: "member",
+          demote_admin: "admin",
+        };
+        const newRole = roleMap[memberAction.action];
         const { error } = await supabase
           .from("household_members")
           .update({ role: newRole })
@@ -198,9 +204,31 @@ export default function PengaturanPageClient({ profile, household, members, cate
     catFilter === "all" ? true : c.type === catFilter
   );
 
-  const adminCount = members.filter(m => m.role === "admin").length;
   const myMembership = members.find(m => m.user?.id === userId);
-  const isLastAdmin = userRole === "admin" && adminCount === 1;
+  const managerCount = members.filter(m => m.role === "super_admin" || m.role === "admin").length;
+  const canLeave = managerCount > 1 || userRole === "member";
+
+  const isSuperAdmin = userRole === "super_admin";
+  const isManager = userRole === "super_admin" || userRole === "admin";
+
+  const ROLE_BADGE: Record<string, string> = {
+    super_admin: "bg-amber-100 text-amber-700",
+    admin: "bg-brand-primary/10 text-brand-primary",
+    member: "bg-[var(--bg-elevated)] text-[var(--text-secondary)]",
+  };
+  const ROLE_LABEL: Record<string, string> = {
+    super_admin: "Super Admin",
+    admin: "Admin",
+    member: "Member",
+  };
+
+  const ACTION_LABEL: Record<string, string> = {
+    remove: "Hapus anggota ini?",
+    promote: "Jadikan Admin?",
+    promote_super: "Jadikan Super Admin?",
+    demote: "Jadikan Member?",
+    demote_admin: "Jadikan Admin?",
+  };
 
   const TABS: { id: Tab; label: string }[] = [
     { id: "profil",    label: "Profil" },
@@ -286,7 +314,7 @@ export default function PengaturanPageClient({ profile, household, members, cate
               <div>
                 <p className="font-semibold text-[var(--text-primary)]">{profile.name}</p>
                 <p className="text-sm text-[var(--text-secondary)]">{profile.email}</p>
-                <p className="text-xs text-[var(--text-secondary)] mt-0.5 capitalize">{userRole}</p>
+                <p className="text-xs text-[var(--text-secondary)] mt-0.5">{ROLE_LABEL[userRole] ?? userRole}</p>
               </div>
             </div>
 
@@ -322,21 +350,21 @@ export default function PengaturanPageClient({ profile, household, members, cate
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-[var(--text-secondary)]">Nama Household</label>
                 <input type="text" value={hhName} onChange={(e) => setHhName(e.target.value)}
-                  disabled={userRole !== "admin"}
+                  disabled={!isManager}
                   maxLength={100}
                   className="w-full border border-[var(--border)] rounded-xl px-3 py-2.5 text-sm text-[var(--text-primary)] bg-[var(--bg-card)] outline-none focus:border-brand-primary transition-colors disabled:bg-[var(--bg-elevated)] disabled:text-[var(--text-secondary)]" />
               </div>
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-[var(--text-secondary)]">Deskripsi <span className="font-normal italic">(opsional)</span></label>
                 <textarea value={hhDesc} onChange={(e) => setHhDesc(e.target.value)}
-                  disabled={userRole !== "admin"}
+                  disabled={!isManager}
                   rows={2} maxLength={200}
                   className="w-full border border-[var(--border)] rounded-xl px-3 py-2.5 text-sm text-[var(--text-primary)] bg-[var(--bg-card)] outline-none focus:border-brand-primary transition-colors resize-none disabled:bg-[var(--bg-elevated)] disabled:text-[var(--text-secondary)]" />
               </div>
               {hhMsg && (
                 <p className={`text-xs ${hhMsg.includes("berhasil") ? "text-green-600" : "text-red-500"}`}>{hhMsg}</p>
               )}
-              {userRole === "admin" && (
+              {isManager && (
                 <button onClick={saveHousehold} disabled={savingHh}
                   className="w-full py-2.5 rounded-xl bg-brand-primary text-white text-sm font-medium hover:bg-brand-primary/90 disabled:opacity-50 transition-colors">
                   {savingHh ? "Menyimpan..." : "Simpan Household"}
@@ -399,57 +427,63 @@ export default function PengaturanPageClient({ profile, household, members, cate
                           </p>
                           <p className="text-xs text-[var(--text-secondary)] truncate">{u?.email ?? ""}</p>
                         </div>
-                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0 ${
-                          m.role === "admin" ? "bg-brand-primary/10 text-brand-primary" : "bg-[var(--bg-elevated)] text-[var(--text-secondary)]"
-                        }`}>
-                          {m.role === "admin" ? "Admin" : "Member"}
+                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0 ${ROLE_BADGE[m.role] ?? ROLE_BADGE.member}`}>
+                          {ROLE_LABEL[m.role] ?? m.role}
                         </span>
                       </div>
 
-                      {/* Admin controls for non-self members */}
-                      {userRole === "admin" && !isMe && (
-                        <div className="flex gap-2 mt-2 ml-12">
+                      {/* Manager controls for non-self members */}
+                      {isManager && !isMe && !(userRole === "admin" && m.role === "super_admin") && (
+                        <div className="flex gap-1.5 mt-2 ml-12 flex-wrap">
                           {!isPendingAction ? (
                             <>
-                              {m.role === "member" ? (
-                                <button
-                                  onClick={() => setMemberAction({ id: m.id, action: "promote" })}
-                                  className="text-[10px] px-2.5 py-1 rounded-lg border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] transition-colors"
-                                >
+                              {/* Promote/demote buttons */}
+                              {m.role === "member" && (
+                                <button onClick={() => setMemberAction({ id: m.id, action: "promote" })}
+                                  className="text-[10px] px-2.5 py-1 rounded-lg border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] transition-colors">
                                   Jadikan Admin
                                 </button>
-                              ) : (
-                                <button
-                                  onClick={() => setMemberAction({ id: m.id, action: "demote" })}
-                                  className="text-[10px] px-2.5 py-1 rounded-lg border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] transition-colors"
-                                >
+                              )}
+                              {m.role === "member" && isSuperAdmin && (
+                                <button onClick={() => setMemberAction({ id: m.id, action: "promote_super" })}
+                                  className="text-[10px] px-2.5 py-1 rounded-lg border border-amber-200 text-amber-700 hover:bg-amber-50 transition-colors">
+                                  Jadikan Super Admin
+                                </button>
+                              )}
+                              {m.role === "admin" && (
+                                <button onClick={() => setMemberAction({ id: m.id, action: "demote" })}
+                                  className="text-[10px] px-2.5 py-1 rounded-lg border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] transition-colors">
                                   Jadikan Member
                                 </button>
                               )}
-                              <button
-                                onClick={() => setMemberAction({ id: m.id, action: "remove" })}
-                                className="text-[10px] px-2.5 py-1 rounded-lg border border-red-200 text-danger hover:bg-red-50 transition-colors"
-                              >
+                              {m.role === "admin" && isSuperAdmin && (
+                                <button onClick={() => setMemberAction({ id: m.id, action: "promote_super" })}
+                                  className="text-[10px] px-2.5 py-1 rounded-lg border border-amber-200 text-amber-700 hover:bg-amber-50 transition-colors">
+                                  Jadikan Super Admin
+                                </button>
+                              )}
+                              {m.role === "super_admin" && isSuperAdmin && (
+                                <button onClick={() => setMemberAction({ id: m.id, action: "demote_admin" })}
+                                  className="text-[10px] px-2.5 py-1 rounded-lg border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] transition-colors">
+                                  Jadikan Admin
+                                </button>
+                              )}
+                              <button onClick={() => setMemberAction({ id: m.id, action: "remove" })}
+                                className="text-[10px] px-2.5 py-1 rounded-lg border border-red-200 text-danger hover:bg-red-50 transition-colors">
                                 Hapus
                               </button>
                             </>
                           ) : (
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
                               <p className="text-[10px] text-[var(--text-secondary)]">
-                                {memberAction.action === "remove" ? "Hapus anggota ini?" :
-                                 memberAction.action === "promote" ? "Jadikan admin?" : "Jadikan member?"}
+                                {ACTION_LABEL[memberAction.action] ?? "Konfirmasi?"}
                               </p>
-                              <button
-                                onClick={executeMemberAction}
-                                disabled={memberLoading}
-                                className="text-[10px] px-2.5 py-1 rounded-lg bg-danger text-white disabled:opacity-50"
-                              >
+                              <button onClick={executeMemberAction} disabled={memberLoading}
+                                className="text-[10px] px-2.5 py-1 rounded-lg bg-brand-primary text-white disabled:opacity-50">
                                 {memberLoading ? "..." : "Ya"}
                               </button>
-                              <button
-                                onClick={() => setMemberAction(null)}
-                                className="text-[10px] px-2.5 py-1 rounded-lg border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)]"
-                              >
+                              <button onClick={() => setMemberAction(null)}
+                                className="text-[10px] px-2.5 py-1 rounded-lg border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)]">
                                 Batal
                               </button>
                             </div>
@@ -483,12 +517,12 @@ export default function PengaturanPageClient({ profile, household, members, cate
                     </div>
                   ) : (
                     <button
-                      onClick={() => isLastAdmin ? null : setMemberAction({ id: myMembership.id, action: "leave" })}
-                      disabled={isLastAdmin}
+                      onClick={() => canLeave && setMemberAction({ id: myMembership.id, action: "leave" })}
+                      disabled={!canLeave}
                       className="text-xs text-danger hover:underline disabled:opacity-40 disabled:cursor-not-allowed disabled:no-underline"
-                      title={isLastAdmin ? "Tidak bisa keluar karena kamu satu-satunya admin" : undefined}
+                      title={!canLeave ? "Tidak bisa keluar karena kamu satu-satunya manager" : undefined}
                     >
-                      {isLastAdmin ? "Tidak bisa keluar (satu-satunya admin)" : "Keluar dari Household"}
+                      {!canLeave ? "Tidak bisa keluar (satu-satunya manager)" : "Keluar dari Household"}
                     </button>
                   )}
                 </div>
@@ -675,7 +709,7 @@ export default function PengaturanPageClient({ profile, household, members, cate
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-[var(--text-secondary)]">Role</span>
-                  <span className="font-medium text-[var(--text-primary)] capitalize">{userRole}</span>
+                  <span className="font-medium text-[var(--text-primary)]">{ROLE_LABEL[userRole] ?? userRole}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-[var(--text-secondary)]">Household</span>
