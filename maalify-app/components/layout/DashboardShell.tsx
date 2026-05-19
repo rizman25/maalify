@@ -5,15 +5,22 @@ import { usePathname } from "next/navigation";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 import BottomNav from "./BottomNav";
+import OnboardingWizard from "@/components/onboarding/OnboardingWizard";
+import type { AppNotification } from "@/types";
 
 interface Props {
   householdName: string;
   userName: string;
+  avatarUrl?: string | null;
   userRole: "super_admin" | "admin" | "member";
+  notifications: AppNotification[];
+  hasWallets: boolean;
+  householdId: string;
+  userId: string;
   children: React.ReactNode;
 }
 
-export default function DashboardShell({ householdName, userName, userRole, children }: Props) {
+export default function DashboardShell({ householdName, userName, avatarUrl, userRole, notifications, hasWallets, householdId, userId, children }: Props) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const pathname = usePathname();
@@ -66,15 +73,26 @@ export default function DashboardShell({ householdName, userName, userRole, chil
         <Topbar
           householdName={householdName}
           userName={userName}
+          avatarUrl={avatarUrl}
           darkMode={darkMode}
           onToggleDark={toggleDark}
           onMenuClick={() => setSidebarOpen(true)}
+          notifications={notifications}
         />
         <main className="flex-1 overflow-y-auto pb-16 lg:pb-0">{children}</main>
       </div>
 
       {/* Mobile bottom nav */}
       <BottomNav userRole={userRole} onMenuClick={() => setSidebarOpen(true)} />
+
+      {/* Onboarding wizard — shown once for new users with no wallet */}
+      {!hasWallets && (
+        <OnboardingWizard
+          householdId={householdId}
+          userId={userId}
+          userName={userName}
+        />
+      )}
     </div>
   );
 }

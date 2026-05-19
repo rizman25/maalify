@@ -139,3 +139,12 @@ export interface Debt {
   status: DebtStatus;
   created_at: string;
 }
+
+export interface AppNotification {
+  id: string;
+  type: "debt_overdue" | "debt_due_soon" | "budget_over" | "budget_near";
+  title: string;
+  message: string;
+  href: string;
+  urgency: "high" | "medium";
+}

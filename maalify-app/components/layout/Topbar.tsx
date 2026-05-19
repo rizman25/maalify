@@ -1,14 +1,23 @@
+"use client";
+
+import { useState } from "react";
 import LogoutButton from "./LogoutButton";
+import NotificationPanel from "./NotificationPanel";
+import type { AppNotification } from "@/types";
 
 interface TopbarProps {
   householdName: string;
   userName: string;
+  avatarUrl?: string | null;
   darkMode: boolean;
   onToggleDark: () => void;
   onMenuClick: () => void;
+  notifications: AppNotification[];
 }
 
-export default function Topbar({ householdName, userName, darkMode, onToggleDark, onMenuClick }: TopbarProps) {
+export default function Topbar({ householdName, userName, avatarUrl, darkMode, onToggleDark, onMenuClick, notifications }: TopbarProps) {
+  const [panelOpen, setPanelOpen] = useState(false);
+
   const initials = userName
     .split(" ")
     .map((n) => n[0])
@@ -16,11 +25,13 @@ export default function Topbar({ householdName, userName, darkMode, onToggleDark
     .join("")
     .toUpperCase();
 
+  const highCount = notifications.filter(n => n.urgency === "high").length;
+  const badgeCount = notifications.length;
+
   return (
     <header className="h-14 flex-shrink-0 bg-[var(--bg-surface)] border-b border-[var(--border)] px-4 flex items-center justify-between gap-3">
-      {/* Left: hamburger (mobile) + household name */}
+      {/* Left: logo (mobile) + household name */}
       <div className="flex items-center gap-3 min-w-0">
-        {/* Logo — mobile only (sidebar hidden on mobile) */}
         <div className="lg:hidden flex items-center gap-2 flex-shrink-0">
           <div className="w-7 h-7 rounded-lg bg-brand-primary flex items-center justify-center">
             <span className="text-white font-bold text-xs">M</span>
@@ -34,7 +45,7 @@ export default function Topbar({ householdName, userName, darkMode, onToggleDark
         </div>
       </div>
 
-      {/* Right: dark mode + avatar + logout */}
+      {/* Right: dark mode + notifications + avatar + logout */}
       <div className="flex items-center gap-2 flex-shrink-0">
         {/* Dark mode toggle */}
         <button
@@ -62,11 +73,44 @@ export default function Topbar({ householdName, userName, darkMode, onToggleDark
           )}
         </button>
 
+        {/* Notification bell */}
+        <div className="relative">
+          <button
+            onClick={() => setPanelOpen(v => !v)}
+            className="p-2 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] transition-colors relative"
+            aria-label="Notifikasi"
+            title="Notifikasi"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            </svg>
+            {badgeCount > 0 && (
+              <span className={[
+                "absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full text-[10px] font-bold text-white flex items-center justify-center",
+                highCount > 0 ? "bg-danger" : "bg-warning",
+              ].join(" ")}>
+                {badgeCount > 9 ? "9+" : badgeCount}
+              </span>
+            )}
+          </button>
+          {panelOpen && (
+            <NotificationPanel
+              notifications={notifications}
+              onClose={() => setPanelOpen(false)}
+            />
+          )}
+        </div>
+
         {/* Avatar + name (hidden on xs) */}
         <div className="hidden sm:flex items-center gap-2">
           <p className="text-sm font-medium text-[var(--text-primary)]">{userName}</p>
-          <div className="w-8 h-8 rounded-full bg-brand-primary flex items-center justify-center flex-shrink-0">
-            <span className="text-white text-xs font-semibold">{initials}</span>
+          <div className="w-8 h-8 rounded-full bg-brand-primary flex items-center justify-center flex-shrink-0 overflow-hidden">
+            {avatarUrl ? (
+              <img src={avatarUrl} alt={userName} className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-white text-xs font-semibold">{initials}</span>
+            )}
           </div>
         </div>
 

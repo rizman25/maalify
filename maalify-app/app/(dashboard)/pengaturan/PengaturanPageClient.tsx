@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import KategoriModal from "@/components/pengaturan/KategoriModal";
 import { formatRupiah } from "@/lib/utils";
@@ -67,6 +67,57 @@ export default function PengaturanPageClient({ profile, household, members, cate
   const [profileName, setProfileName] = useState(profile.name);
   const [savingProfile, setSavingProfile] = useState(false);
   const [profileMsg, setProfileMsg] = useState("");
+
+  // Avatar state
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(profile.avatar_url);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [avatarError, setAvatarError] = useState("");
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+
+  async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) { setAvatarError("Ukuran foto maksimal 2MB"); return; }
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      setAvatarError("Format foto harus JPG, PNG, atau WebP");
+      return;
+    }
+
+    setAvatarError("");
+    setUploadingAvatar(true);
+
+    try {
+      const { createClient } = await import("@/lib/supabase/client");
+      const supabase = createClient();
+
+      const ext = file.name.split(".").pop() ?? "jpg";
+      const path = `${userId}/avatar.${ext}`;
+
+      const { error: uploadErr } = await supabase.storage
+        .from("avatars")
+        .upload(path, file, { upsert: true, contentType: file.type });
+
+      if (uploadErr) throw uploadErr;
+
+      const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(path);
+      const avatarUrl = `${publicUrl}?t=${Date.now()}`;
+
+      const { error: updateErr } = await supabase
+        .from("users")
+        .update({ avatar_url: avatarUrl })
+        .eq("id", userId);
+
+      if (updateErr) throw updateErr;
+
+      setAvatarPreview(avatarUrl);
+      router.refresh();
+    } catch (err: unknown) {
+      setAvatarError(err instanceof Error ? err.message : "Gagal upload foto");
+    } finally {
+      setUploadingAvatar(false);
+      if (avatarInputRef.current) avatarInputRef.current.value = "";
+    }
+  }
 
   // Household state
   const [hhName, setHhName] = useState(household.name);
@@ -308,15 +359,62 @@ export default function PengaturanPageClient({ profile, household, members, cate
         {tab === "profil" && (
           <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border)] overflow-hidden">
             <div className="flex items-center gap-4 p-5 border-b border-[var(--border)]">
-              <div className="w-16 h-16 rounded-2xl bg-brand-primary flex items-center justify-center text-white font-bold text-xl flex-shrink-0">
-                {initials}
-              </div>
+              {/* Clickable avatar */}
+              <button
+                type="button"
+                onClick={() => avatarInputRef.current?.click()}
+                disabled={uploadingAvatar}
+                className="relative w-16 h-16 rounded-2xl overflow-hidden flex-shrink-0 group focus:outline-none"
+                title="Ganti foto profil"
+              >
+                {avatarPreview ? (
+                  <img src={avatarPreview} alt="Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-brand-primary flex items-center justify-center text-white font-bold text-xl">
+                    {initials}
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  {uploadingAvatar ? (
+                    <svg className="animate-spin w-5 h-5 text-white" viewBox="0 0 24 24" fill="none">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                    </svg>
+                  ) : (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                      <polyline points="17 8 12 3 7 8"/>
+                      <line x1="12" y1="3" x2="12" y2="15"/>
+                    </svg>
+                  )}
+                </div>
+              </button>
+              <input
+                ref={avatarInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="hidden"
+                onChange={handleAvatarChange}
+              />
               <div>
                 <p className="font-semibold text-[var(--text-primary)]">{profile.name}</p>
                 <p className="text-sm text-[var(--text-secondary)]">{profile.email}</p>
                 <p className="text-xs text-[var(--text-secondary)] mt-0.5">{ROLE_LABEL[userRole] ?? userRole}</p>
+                <button
+                  type="button"
+                  onClick={() => avatarInputRef.current?.click()}
+                  disabled={uploadingAvatar}
+                  className="text-[10px] text-brand-primary hover:underline mt-1 disabled:opacity-50"
+                >
+                  {uploadingAvatar ? "Mengupload..." : "Ganti foto"}
+                </button>
               </div>
             </div>
+            {avatarError && (
+              <div className="px-5 py-2 bg-red-50 border-b border-red-100">
+                <p className="text-xs text-red-600">{avatarError}</p>
+              </div>
+            )}
 
             <div className="p-5 space-y-4">
               <div className="space-y-1.5">
