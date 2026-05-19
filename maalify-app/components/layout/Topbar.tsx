@@ -1,4 +1,3 @@
-import { createClient } from "@/lib/supabase/server";
 import LogoutButton from "./LogoutButton";
 
 interface TopbarProps {
