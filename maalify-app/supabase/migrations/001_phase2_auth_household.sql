@@ -28,7 +28,10 @@ CREATE TABLE IF NOT EXISTS public.households (
 );
 
 -- ─── household_members ───────────────────────────────────────
-CREATE TYPE IF NOT EXISTS household_role AS ENUM ('admin', 'member');
+DO $$ BEGIN
+  CREATE TYPE household_role AS ENUM ('admin', 'member');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 CREATE TABLE IF NOT EXISTS public.household_members (
   id           UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -40,8 +43,15 @@ CREATE TABLE IF NOT EXISTS public.household_members (
 );
 
 -- ─── subscriptions ───────────────────────────────────────────
-CREATE TYPE IF NOT EXISTS subscription_plan   AS ENUM ('free', 'basic', 'premium');
-CREATE TYPE IF NOT EXISTS subscription_status AS ENUM ('active', 'cancelled', 'expired');
+DO $$ BEGIN
+  CREATE TYPE subscription_plan AS ENUM ('free', 'basic', 'premium');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+  CREATE TYPE subscription_status AS ENUM ('active', 'cancelled', 'expired');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 CREATE TABLE IF NOT EXISTS public.subscriptions (
   id           UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
