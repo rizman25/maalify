@@ -32,11 +32,10 @@ export default function Topbar({ householdName, userName, avatarUrl, darkMode, o
     <header className="h-14 flex-shrink-0 bg-[var(--bg-surface)] border-b border-[var(--border)] px-4 flex items-center justify-between gap-3">
       {/* Left: logo (mobile) + household name */}
       <div className="flex items-center gap-3 min-w-0">
-        <div className="lg:hidden flex items-center gap-2 flex-shrink-0">
+        <div className="lg:hidden flex-shrink-0">
           <div className="w-7 h-7 rounded-lg bg-brand-primary flex items-center justify-center">
             <span className="text-white font-bold text-xs">M</span>
           </div>
-          <span className="font-bold text-[var(--text-primary)] text-base tracking-tight">Maalify</span>
         </div>
 
         <div className="min-w-0">
