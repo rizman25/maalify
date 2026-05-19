@@ -74,6 +74,7 @@ export interface Transaction {
   description: string;
   date: string;
   note: string | null;
+  attachment_url: string | null;
   created_at: string;
   updated_at: string;
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { formatRupiah } from "@/lib/utils";
 import type { Wallet, Category, TransactionWithCategory, TransactionType } from "@/types";
@@ -32,6 +32,13 @@ export default function TransaksiModal({
   const [error, setError] = useState("");
   const [showDelete, setShowDelete] = useState(false);
 
+  // Attachment
+  const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
+  const [attachmentPreview, setAttachmentPreview] = useState<string | null>(transaction?.attachment_url ?? null);
+  const [removeAttachment, setRemoveAttachment] = useState(false);
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const filteredCategories = useMemo(
     () => categories.filter((c) => c.type === type),
     [categories, type]
@@ -43,6 +50,23 @@ export default function TransaksiModal({
       setCategoryId(filteredCategories[0].id);
     }
   }, [type]);
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { setError("Ukuran file maksimal 5MB"); return; }
+    setAttachmentFile(file);
+    setAttachmentPreview(URL.createObjectURL(file));
+    setRemoveAttachment(false);
+    setError("");
+  }
+
+  function handleRemoveAttachment() {
+    setAttachmentFile(null);
+    setAttachmentPreview(null);
+    setRemoveAttachment(true);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
 
   function formatAmountInput(val: string) {
     const digits = val.replace(/\D/g, "");
@@ -66,23 +90,37 @@ export default function TransaksiModal({
     setLoading(true);
     const supabase = createClient();
 
-    if (isEdit) {
-      const { error: err } = await supabase
-        .from("transactions")
-        .update({
-          type,
-          amount: parsedAmount,
-          description: description.trim(),
-          category_id: categoryId,
-          wallet_id: walletId,
-          date,
-          note: note.trim() || null,
-        })
-        .eq("id", transaction.id);
+    async function uploadAttachment(txId: string): Promise<string | null> {
+      if (!attachmentFile) return null;
+      const ext = attachmentFile.name.split(".").pop() ?? "jpg";
+      const path = `${householdId}/${txId}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("transaction-attachments")
+        .upload(path, attachmentFile, { upsert: true });
+      if (upErr) throw upErr;
+      const { data } = supabase.storage.from("transaction-attachments").getPublicUrl(path);
+      return data.publicUrl;
+    }
 
+    if (isEdit) {
+      let newUrl: string | null | undefined = undefined;
+      if (attachmentFile) {
+        try { newUrl = await uploadAttachment(transaction.id); }
+        catch (e: unknown) { setError(e instanceof Error ? e.message : "Gagal upload foto"); setLoading(false); return; }
+      } else if (removeAttachment) {
+        newUrl = null;
+      }
+
+      const updates: Record<string, unknown> = {
+        type, amount: parsedAmount, description: description.trim(),
+        category_id: categoryId, wallet_id: walletId, date, note: note.trim() || null,
+      };
+      if (newUrl !== undefined) updates.attachment_url = newUrl;
+
+      const { error: err } = await supabase.from("transactions").update(updates).eq("id", transaction.id);
       if (err) { setError(err.message); setLoading(false); return; }
     } else {
-      const { error: err } = await supabase.from("transactions").insert({
+      const { data: newTx, error: err } = await supabase.from("transactions").insert({
         household_id: householdId,
         user_id: userId,
         type,
@@ -92,9 +130,18 @@ export default function TransaksiModal({
         wallet_id: walletId,
         date,
         note: note.trim() || null,
-      });
+      }).select("id").single();
 
-      if (err) { setError(err.message); setLoading(false); return; }
+      if (err || !newTx) { setError(err?.message ?? "Gagal menyimpan"); setLoading(false); return; }
+
+      if (attachmentFile) {
+        try {
+          const url = await uploadAttachment(newTx.id);
+          await supabase.from("transactions").update({ attachment_url: url }).eq("id", newTx.id);
+        } catch {
+          // attachment upload failed — transaction still saved, non-critical
+        }
+      }
     }
 
     onSaved();
@@ -236,6 +283,60 @@ export default function TransaksiModal({
             </div>
           </div>
 
+          {/* Attachment */}
+          <div>
+            <label className="block text-xs font-medium text-[var(--text-primary)] mb-1.5">
+              Foto Struk <span className="text-[var(--text-secondary)] font-normal">(opsional)</span>
+            </label>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/heic"
+              className="hidden"
+              onChange={handleFileChange}
+            />
+            {attachmentPreview ? (
+              <div className="relative group">
+                <img
+                  src={attachmentPreview}
+                  alt="Struk"
+                  onClick={() => setViewerOpen(true)}
+                  className="w-full max-h-48 object-cover rounded-xl border border-[var(--border)] cursor-zoom-in"
+                />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 rounded-xl transition-colors" />
+                <button
+                  type="button"
+                  onClick={handleRemoveAttachment}
+                  className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80 transition-colors"
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewerOpen(true)}
+                  className="absolute bottom-2 right-2 text-[10px] bg-black/50 text-white px-2 py-1 rounded-md"
+                >
+                  Perbesar
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full border-2 border-dashed border-[var(--border)] rounded-xl py-5 flex flex-col items-center gap-2 text-[var(--text-secondary)] hover:border-brand-primary hover:text-brand-primary transition-colors"
+              >
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+                  <polyline points="21 15 16 10 5 21"/>
+                </svg>
+                <span className="text-xs font-medium">Upload foto struk</span>
+                <span className="text-[10px]">JPG, PNG, WebP — maks 5MB</span>
+              </button>
+            )}
+          </div>
+
           {/* Catatan */}
           <div>
             <label className="block text-xs font-medium text-[var(--text-primary)] mb-1.5">
@@ -287,6 +388,29 @@ export default function TransaksiModal({
           )}
         </form>
       </div>
+
+      {/* Image viewer lightbox */}
+      {viewerOpen && attachmentPreview && (
+        <div
+          className="fixed inset-0 z-[60] bg-black/90 flex items-center justify-center p-4"
+          onClick={() => setViewerOpen(false)}
+        >
+          <img
+            src={attachmentPreview}
+            alt="Struk"
+            className="max-w-full max-h-full object-contain rounded-lg"
+            onClick={(e) => e.stopPropagation()}
+          />
+          <button
+            onClick={() => setViewerOpen(false)}
+            className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/20 text-white flex items-center justify-center hover:bg-white/30"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+      )}
     </div>
   );
 }
