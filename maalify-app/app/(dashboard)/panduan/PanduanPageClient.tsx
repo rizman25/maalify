@@ -85,10 +85,10 @@ function RoleRow({ feature, sa, admin, member }: { feature: string; sa: boolean 
     : <span className="text-slate-300">—</span>;
   return (
     <tr className="border-b border-[var(--border)] last:border-0">
-      <td className="py-2.5 pr-4 text-sm text-[var(--text-primary)]">{feature}</td>
-      <td className="py-2.5 px-3 text-center">{cell(sa)}</td>
-      <td className="py-2.5 px-3 text-center">{cell(admin)}</td>
-      <td className="py-2.5 px-3 text-center">{cell(member)}</td>
+      <td className="py-3.5 pl-5 pr-4 text-sm text-[var(--text-primary)]">{feature}</td>
+      <td className="py-3.5 px-5 text-center">{cell(sa)}</td>
+      <td className="py-3.5 px-5 text-center">{cell(admin)}</td>
+      <td className="py-3.5 px-5 text-center">{cell(member)}</td>
     </tr>
   );
 }
@@ -249,48 +249,48 @@ export default function PanduanPageClient() {
                 <table className="w-full text-sm">
                   <thead className="bg-[var(--bg-elevated)]">
                     <tr>
-                      <th className="text-left py-3 px-4 font-semibold text-[var(--text-primary)]">Fitur / Aksi</th>
-                      <th className="py-3 px-3 text-center font-semibold text-amber-600">Super Admin</th>
-                      <th className="py-3 px-3 text-center font-semibold text-blue-600">Admin</th>
-                      <th className="py-3 px-3 text-center font-semibold text-slate-500">Member</th>
+                      <th className="text-left py-4 pl-5 pr-4 font-semibold text-[var(--text-primary)]">Fitur / Aksi</th>
+                      <th className="py-4 px-5 text-center font-semibold text-amber-600">Super Admin</th>
+                      <th className="py-4 px-5 text-center font-semibold text-blue-600">Admin</th>
+                      <th className="py-4 px-5 text-center font-semibold text-slate-500">Member</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[var(--border)]">
-                    <tr className="bg-[var(--bg-elevated)]/40"><td colSpan={4} className="py-1.5 px-4 text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-widest">Dashboard</td></tr>
+                    <tr className="bg-[var(--bg-elevated)]/40"><td colSpan={4} className="py-2 pl-5 pr-4 text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-widest">Dashboard</td></tr>
                     <RoleRow feature="Lihat ringkasan keuangan keluarga" sa={true} admin={true} member="Data sendiri" />
                     <RoleRow feature="Lihat hutang jatuh tempo" sa={true} admin={true} member={false} />
                     <RoleRow feature="Lihat widget dompet saya" sa={true} admin={true} member={true} />
 
-                    <tr className="bg-[var(--bg-elevated)]/40"><td colSpan={4} className="py-1.5 px-4 text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-widest">Transaksi</td></tr>
+                    <tr className="bg-[var(--bg-elevated)]/40"><td colSpan={4} className="py-2 pl-5 pr-4 text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-widest">Transaksi</td></tr>
                     <RoleRow feature="Lihat semua transaksi" sa={true} admin={true} member="Transaksi sendiri" />
                     <RoleRow feature="Tambah transaksi" sa={true} admin={true} member={true} />
                     <RoleRow feature="Edit / hapus transaksi sendiri" sa={true} admin={true} member={true} />
                     <RoleRow feature="Edit / hapus transaksi orang lain" sa={true} admin={true} member={false} />
 
-                    <tr className="bg-[var(--bg-elevated)]/40"><td colSpan={4} className="py-1.5 px-4 text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-widest">Dompet</td></tr>
+                    <tr className="bg-[var(--bg-elevated)]/40"><td colSpan={4} className="py-2 pl-5 pr-4 text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-widest">Dompet</td></tr>
                     <RoleRow feature="Lihat semua dompet" sa={true} admin={true} member={true} />
                     <RoleRow feature="Tambah / edit / hapus dompet" sa={true} admin={true} member={false} />
                     <RoleRow feature="Transfer antar dompet" sa={true} admin={true} member={false} />
 
-                    <tr className="bg-[var(--bg-elevated)]/40"><td colSpan={4} className="py-1.5 px-4 text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-widest">Anggaran</td></tr>
+                    <tr className="bg-[var(--bg-elevated)]/40"><td colSpan={4} className="py-2 pl-5 pr-4 text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-widest">Anggaran</td></tr>
                     <RoleRow feature="Lihat anggaran" sa={true} admin={true} member={true} />
                     <RoleRow feature="Buat / edit / hapus anggaran" sa={true} admin={true} member={false} />
 
-                    <tr className="bg-[var(--bg-elevated)]/40"><td colSpan={4} className="py-1.5 px-4 text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-widest">Tabungan</td></tr>
+                    <tr className="bg-[var(--bg-elevated)]/40"><td colSpan={4} className="py-2 pl-5 pr-4 text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-widest">Tabungan</td></tr>
                     <RoleRow feature="Lihat target tabungan" sa={true} admin={true} member={true} />
                     <RoleRow feature="Buat / edit / hapus target" sa={true} admin={true} member={false} />
                     <RoleRow feature="Top-up / tarik tabungan" sa={true} admin={true} member={false} />
 
-                    <tr className="bg-[var(--bg-elevated)]/40"><td colSpan={4} className="py-1.5 px-4 text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-widest">Hutang & Piutang</td></tr>
+                    <tr className="bg-[var(--bg-elevated)]/40"><td colSpan={4} className="py-2 pl-5 pr-4 text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-widest">Hutang & Piutang</td></tr>
                     <RoleRow feature="Lihat data hutang" sa={true} admin={true} member={false} />
                     <RoleRow feature="Tambah / edit / hapus hutang" sa={true} admin={true} member={false} />
                     <RoleRow feature="Tandai lunas" sa={true} admin={true} member={false} />
 
-                    <tr className="bg-[var(--bg-elevated)]/40"><td colSpan={4} className="py-1.5 px-4 text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-widest">Laporan</td></tr>
+                    <tr className="bg-[var(--bg-elevated)]/40"><td colSpan={4} className="py-2 pl-5 pr-4 text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-widest">Laporan</td></tr>
                     <RoleRow feature="Akses halaman laporan" sa={true} admin={true} member={false} />
                     <RoleRow feature="Export PDF / Excel" sa={true} admin={true} member={false} />
 
-                    <tr className="bg-[var(--bg-elevated)]/40"><td colSpan={4} className="py-1.5 px-4 text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-widest">Pengaturan</td></tr>
+                    <tr className="bg-[var(--bg-elevated)]/40"><td colSpan={4} className="py-2 pl-5 pr-4 text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-widest">Pengaturan</td></tr>
                     <RoleRow feature="Edit profil sendiri" sa={true} admin={true} member={true} />
                     <RoleRow feature="Undang anggota baru" sa={true} admin={false} member={false} />
                     <RoleRow feature="Ubah role anggota" sa={true} admin={false} member={false} />
@@ -630,15 +630,15 @@ export default function PanduanPageClient() {
                 <table className="w-full text-sm">
                   <thead className="bg-[var(--bg-elevated)]">
                     <tr>
-                      <th className="text-left py-3 px-4 font-semibold text-[var(--text-primary)]">Aspek</th>
-                      <th className="py-3 px-4 text-center font-semibold text-purple-600">Target Tabungan</th>
-                      <th className="py-3 px-4 text-center font-semibold text-blue-600">Project</th>
+                      <th className="text-left py-4 px-5 font-semibold text-[var(--text-primary)]">Aspek</th>
+                      <th className="py-4 px-5 text-center font-semibold text-purple-600">Target Tabungan</th>
+                      <th className="py-4 px-5 text-center font-semibold text-blue-600">Project</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr className="border-t border-[var(--border)]"><td className="py-2.5 px-4">Fokus</td><td className="py-2.5 px-4 text-center text-[var(--text-secondary)]">Menabung uang</td><td className="py-2.5 px-4 text-center text-[var(--text-secondary)]">Merencanakan pengerjaan</td></tr>
-                    <tr className="border-t border-[var(--border)]"><td className="py-2.5 px-4">Kompleksitas</td><td className="py-2.5 px-4 text-center text-[var(--text-secondary)]">Sederhana</td><td className="py-2.5 px-4 text-center text-[var(--text-secondary)]">Multi-item anggaran</td></tr>
-                    <tr className="border-t border-[var(--border)]"><td className="py-2.5 px-4">Kolaborasi</td><td className="py-2.5 px-4 text-center text-[var(--text-secondary)]">Individual/keluarga</td><td className="py-2.5 px-4 text-center text-[var(--text-secondary)]">Tim keluarga</td></tr>
+                    <tr className="border-t border-[var(--border)]"><td className="py-3.5 px-5">Fokus</td><td className="py-3.5 px-5 text-center text-[var(--text-secondary)]">Menabung uang</td><td className="py-3.5 px-5 text-center text-[var(--text-secondary)]">Merencanakan pengerjaan</td></tr>
+                    <tr className="border-t border-[var(--border)]"><td className="py-3.5 px-5">Kompleksitas</td><td className="py-3.5 px-5 text-center text-[var(--text-secondary)]">Sederhana</td><td className="py-3.5 px-5 text-center text-[var(--text-secondary)]">Multi-item anggaran</td></tr>
+                    <tr className="border-t border-[var(--border)]"><td className="py-3.5 px-5">Kolaborasi</td><td className="py-3.5 px-5 text-center text-[var(--text-secondary)]">Individual/keluarga</td><td className="py-3.5 px-5 text-center text-[var(--text-secondary)]">Tim keluarga</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -765,7 +765,7 @@ export default function PanduanPageClient() {
                 <table className="w-full text-sm">
                   <thead className="bg-[var(--bg-elevated)]">
                     <tr>
-                      <th className="text-left py-3 px-4 font-semibold text-[var(--text-primary)]">Aksi</th>
+                      <th className="text-left py-4 px-5 font-semibold text-[var(--text-primary)]">Aksi</th>
                       <th className="py-3 px-4 text-left font-semibold text-[var(--text-primary)]">Cara Cepat</th>
                     </tr>
                   </thead>
@@ -778,8 +778,8 @@ export default function PanduanPageClient() {
                       ["Filter transaksi per kategori", "Dropdown kategori di atas tabel transaksi"],
                     ].map(([aksi, cara], i) => (
                       <tr key={i} className="border-t border-[var(--border)]">
-                        <td className="py-2.5 px-4 text-[var(--text-primary)]">{aksi}</td>
-                        <td className="py-2.5 px-4 text-[var(--text-secondary)]">{cara}</td>
+                        <td className="py-3.5 px-5 text-[var(--text-primary)]">{aksi}</td>
+                        <td className="py-3.5 px-5 text-[var(--text-secondary)]">{cara}</td>
                       </tr>
                     ))}
                   </tbody>
