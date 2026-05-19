@@ -4,3 +4,9 @@ DOC/*.png
 
 # Claude Code internal
 .claude/
+
+# Next.js app
+maalify-app/.next/
+maalify-app/node_modules/
+maalify-app/.env.local
+maalify-app/.env*.local
