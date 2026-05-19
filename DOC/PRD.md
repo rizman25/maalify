@@ -3,7 +3,7 @@
 **Versi:** v1.0.0
 **Tanggal:** 15 Mei 2026
 **Status:** Draft
-**Penulis:** Rizman
+**Penulis:** Rizaluqman
 **Platform:** Web Application (SaaS)
 
 ---
