@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 import { createClient } from "@/lib/supabase/server";
 
 const PROMPT = `Kamu adalah asisten OCR untuk aplikasi keuangan keluarga Indonesia. Analisis struk/kuitansi/invoice/nota ini dan ekstrak informasi transaksi.
@@ -55,15 +55,22 @@ export async function POST(req: NextRequest) {
     const bytes = await file.arrayBuffer();
     const base64 = Buffer.from(bytes).toString("base64");
 
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
 
-    const result = await model.generateContent([
-      PROMPT,
-      { inlineData: { data: base64, mimeType: file.type } },
-    ]);
+    const result = await ai.models.generateContent({
+      model: "gemini-1.5-flash",
+      contents: [
+        {
+          role: "user",
+          parts: [
+            { text: PROMPT },
+            { inlineData: { data: base64, mimeType: file.type } },
+          ],
+        },
+      ],
+    });
 
-    const raw = result.response.text().trim();
+    const raw = (result.text ?? "").trim();
 
     // Strip markdown code blocks if present
     const cleaned = raw.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "").trim();
