@@ -29,7 +29,7 @@ export default async function PengaturanPage() {
   };
 
   const [profileRes, householdRes, membersRes, catsRes, activityRes] = await Promise.all([
-    supabase.from("users").select("id, name, email, avatar_url").eq("id", user.id).single(),
+    supabase.from("users").select("id, name, email, avatar_url, phone").eq("id", user.id).single(),
 
     supabase.from("households").select("id, name, description, invite_code")
       .eq("id", householdId).single(),

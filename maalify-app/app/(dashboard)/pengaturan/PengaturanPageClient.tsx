@@ -4,7 +4,7 @@ import { useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { formatRupiah } from "@/lib/utils";
 
-interface Profile { id: string; name: string; email: string; avatar_url: string | null; }
+interface Profile { id: string; name: string; email: string; avatar_url: string | null; phone: string | null; }
 interface Household { id: string; name: string; description: string | null; invite_code: string; }
 interface Member { id: string; role: string; joined_at: string; user: { id: string; name: string; email: string } | null; }
 interface Category { id: string; name: string; icon: string | null; color: string | null; type: string; is_default: boolean; household_id: string | null; }
@@ -64,6 +64,7 @@ export default function PengaturanPageClient({ profile, household, members, cate
 
   // Profil state
   const [profileName, setProfileName] = useState(profile.name);
+  const [profilePhone, setProfilePhone] = useState(profile.phone ?? "");
   const [savingProfile, setSavingProfile] = useState(false);
   const [profileMsg, setProfileMsg] = useState("");
 
@@ -152,7 +153,10 @@ export default function PengaturanPageClient({ profile, household, members, cate
     try {
       const { createClient } = await import("@/lib/supabase/client");
       const supabase = createClient();
-      const { error } = await supabase.from("users").update({ name: profileName.trim() }).eq("id", userId);
+      const cleanPhone = profilePhone.replace(/\D/g, "").replace(/^0/, "62") || null;
+      const { error } = await supabase.from("users")
+        .update({ name: profileName.trim(), phone: cleanPhone })
+        .eq("id", userId);
       if (error) throw error;
       setProfileMsg("Profil berhasil disimpan");
       router.refresh();
@@ -437,10 +441,40 @@ export default function PengaturanPageClient({ profile, household, members, cate
                 <input type="text" value={profile.email} disabled
                   className="w-full border border-[var(--border)] rounded-xl px-3 py-2.5 text-sm text-[var(--text-secondary)] bg-[var(--bg-elevated)] cursor-not-allowed" />
               </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-[var(--text-secondary)]">
+                  No. WhatsApp <span className="font-normal italic">(opsional)</span>
+                </label>
+                <div className="flex items-center border border-[var(--border)] rounded-xl overflow-hidden focus-within:border-brand-primary transition-colors">
+                  <span className="px-3 py-2.5 bg-[var(--bg-elevated)] text-xs text-[var(--text-secondary)] border-r border-[var(--border)] flex-shrink-0 flex items-center gap-1.5">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.091.535 4.06 1.476 5.779L.057 23.514a.75.75 0 0 0 .93.93l5.735-1.419A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.898 0-3.68-.499-5.23-1.374l-.374-.22-3.877.96.977-3.877-.22-.374A10 10 0 1 1 12 22z"/></svg>
+                    +62
+                  </span>
+                  <input
+                    type="tel"
+                    value={profilePhone}
+                    onChange={e => setProfilePhone(e.target.value)}
+                    placeholder="812 3456 7890"
+                    inputMode="numeric"
+                    className="flex-1 px-3 py-2.5 text-sm text-[var(--text-primary)] bg-[var(--bg-card)] outline-none placeholder:text-[var(--text-secondary)]"
+                  />
+                  {profilePhone && (
+                    <a
+                      href={`https://wa.me/${profilePhone.replace(/\D/g, "").replace(/^0/, "62")}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3 py-2.5 text-[#25D366] hover:bg-[var(--bg-elevated)] transition-colors flex-shrink-0"
+                      title="Buka WhatsApp"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.091.535 4.06 1.476 5.779L.057 23.514a.75.75 0 0 0 .93.93l5.735-1.419A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.898 0-3.68-.499-5.23-1.374l-.374-.22-3.877.96.977-3.877-.22-.374A10 10 0 1 1 12 22z"/></svg>
+                    </a>
+                  )}
+                </div>
+              </div>
               {profileMsg && (
                 <p className={`text-xs ${profileMsg.includes("berhasil") ? "text-green-600" : "text-red-500"}`}>{profileMsg}</p>
               )}
-              <button onClick={saveProfile} disabled={savingProfile || profileName === profile.name}
+              <button onClick={saveProfile} disabled={savingProfile || (profileName === profile.name && profilePhone === (profile.phone ?? ""))}
                 className="w-full py-2.5 rounded-xl bg-brand-primary text-white text-sm font-medium hover:bg-brand-primary/90 disabled:opacity-50 transition-colors">
                 {savingProfile ? "Menyimpan..." : "Simpan Perubahan"}
               </button>
