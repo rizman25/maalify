@@ -1,5 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createServiceClient } from "@supabase/supabase-js";
+
+// Gemini 2.0 Flash pricing (per 1M tokens)
+const PRICE_INPUT_PER_M  = 0.075;
+const PRICE_OUTPUT_PER_M = 0.30;
+
+async function logAiUsage(userId: string, householdId: string | null, model: string, usage: { prompt_tokens: number; completion_tokens: number; total_tokens: number }) {
+  try {
+    const supabase = createServiceClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+    const cost = (usage.prompt_tokens / 1_000_000) * PRICE_INPUT_PER_M
+               + (usage.completion_tokens / 1_000_000) * PRICE_OUTPUT_PER_M;
+    await supabase.from("ai_usage_logs").insert({
+      user_id: userId, household_id: householdId,
+      feature: "scan_struk", model,
+      prompt_tokens: usage.prompt_tokens,
+      completion_tokens: usage.completion_tokens,
+      total_tokens: usage.total_tokens,
+      estimated_cost_usd: cost,
+    });
+  } catch { /* silent fail — jangan block response user */ }
+}
 
 const PROMPT = `Kamu adalah asisten OCR untuk aplikasi keuangan keluarga Indonesia. Analisis struk/kuitansi/invoice/nota ini dan ekstrak informasi transaksi.
 
@@ -28,6 +52,10 @@ export async function POST(req: NextRequest) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { data: membership } = await supabase
+    .from("household_members").select("household_id").eq("user_id", user.id).limit(1).single();
+  const householdId = membership?.household_id ?? null;
 
   if (!process.env.OPENROUTER_API_KEY) {
     return NextResponse.json({ error: "OPENROUTER_API_KEY belum dikonfigurasi" }, { status: 500 });
@@ -89,6 +117,11 @@ export async function POST(req: NextRequest) {
     }
 
     const json = await res.json();
+
+    // Log AI usage
+    const usage = json.usage ?? { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 };
+    logAiUsage(user.id, householdId, MODEL, usage);
+
     const raw = (json.choices?.[0]?.message?.content ?? "").trim();
 
     // Strip markdown code blocks jika ada
