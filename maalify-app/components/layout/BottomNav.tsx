@@ -67,6 +67,20 @@ const mainItems: NavItem[] = [
     ),
   },
   {
+    href: "/tabungan",
+    label: "Tabungan",
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 2a10 10 0 1 0 10 10H12V2z"/><path d="M12 2a10 10 0 0 1 10 10"/><path d="M12 12l4-4"/>
+      </svg>
+    ),
+    activeIcon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 2a10 10 0 1 0 10 10H12V2z"/><path d="M12 2a10 10 0 0 1 10 10"/><path d="M12 12l4-4"/>
+      </svg>
+    ),
+  },
+  {
     href: "/anggaran",
     label: "Anggaran",
     icon: (
