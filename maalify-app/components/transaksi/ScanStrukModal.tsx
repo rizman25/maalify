@@ -123,6 +123,23 @@ export default function ScanStrukModal({ wallets, categories, householdId, userI
       const { createClient } = await import("@/lib/supabase/client");
       const supabase = createClient();
 
+      // Upload foto struk ke storage
+      let attachmentUrl: string | null = null;
+      if (file) {
+        const ext = file.name.split(".").pop() ?? "jpg";
+        const path = `${householdId}/${userId}/${Date.now()}.${ext}`;
+        const { error: uploadErr } = await supabase.storage
+          .from("transaction-attachments")
+          .upload(path, file, { upsert: false });
+
+        if (!uploadErr) {
+          const { data: urlData } = supabase.storage
+            .from("transaction-attachments")
+            .getPublicUrl(path);
+          attachmentUrl = urlData.publicUrl;
+        }
+      }
+
       const { error: err } = await supabase.from("transactions").insert({
         household_id: householdId,
         user_id: userId,
@@ -133,7 +150,7 @@ export default function ScanStrukModal({ wallets, categories, householdId, userI
         description: description.trim(),
         date,
         note: note.trim() || null,
-        attachment_url: null,
+        attachment_url: attachmentUrl,
       });
 
       if (err) throw err;
