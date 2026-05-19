@@ -27,25 +27,41 @@ export default function TransaksiPageClient({
   transactions, wallets, categories, householdId, userId, month, year,
 }: Props) {
   const router = useRouter();
-  const [filter, setFilter] = useState<FilterType>("all");
+  const [filterType, setFilterType] = useState<FilterType>("all");
+  const [filterWallet, setFilterWallet] = useState("all");
+  const [filterCategory, setFilterCategory] = useState("all");
+  const [search, setSearch] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<TransactionWithCategory | null>(null);
 
-  const filtered = useMemo(() =>
-    filter === "all" ? transactions : transactions.filter((t) => t.type === filter),
-    [transactions, filter]
-  );
-
-  const totalIncome = transactions.filter(t => t.type === "income").reduce((s, t) => s + Number(t.amount), 0);
+  const totalIncome  = transactions.filter(t => t.type === "income").reduce((s, t) => s + Number(t.amount), 0);
   const totalExpense = transactions.filter(t => t.type === "expense").reduce((s, t) => s + Number(t.amount), 0);
 
-  // Grup transaksi berdasarkan tanggal
+  const hasActiveFilter = filterType !== "all" || filterWallet !== "all" || filterCategory !== "all" || search !== "";
+
+  function clearFilters() {
+    setFilterType("all");
+    setFilterWallet("all");
+    setFilterCategory("all");
+    setSearch("");
+  }
+
+  const filtered = useMemo(() => {
+    const q = search.toLowerCase().trim();
+    return transactions.filter(t => {
+      if (filterType !== "all" && t.type !== filterType) return false;
+      if (filterWallet !== "all" && t.wallet_id !== filterWallet) return false;
+      if (filterCategory !== "all" && t.category_id !== filterCategory) return false;
+      if (q && !t.description.toLowerCase().includes(q)) return false;
+      return true;
+    });
+  }, [transactions, filterType, filterWallet, filterCategory, search]);
+
   const grouped = useMemo(() => {
     const map = new Map<string, TransactionWithCategory[]>();
     for (const tx of filtered) {
-      const key = tx.date;
-      if (!map.has(key)) map.set(key, []);
-      map.get(key)!.push(tx);
+      if (!map.has(tx.date)) map.set(tx.date, []);
+      map.get(tx.date)!.push(tx);
     }
     return Array.from(map.entries());
   }, [filtered]);
@@ -55,6 +71,7 @@ export default function TransaksiPageClient({
     let y = year;
     if (m < 1) { m = 12; y--; }
     if (m > 12) { m = 1; y++; }
+    clearFilters();
     router.push(`/transaksi?month=${m}&year=${y}`);
   }
 
@@ -64,9 +81,18 @@ export default function TransaksiPageClient({
   function handleSaved() { handleClose(); router.refresh(); }
 
   function formatTanggal(dateStr: string) {
-    const d = new Date(dateStr + "T00:00:00");
-    return d.toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long" });
+    return new Date(dateStr + "T00:00:00").toLocaleDateString("id-ID", {
+      weekday: "long", day: "numeric", month: "long",
+    });
   }
+
+  // Categories that appear in current month's transactions (for relevant filter)
+  const usedCategoryIds = useMemo(() => new Set(transactions.map(t => t.category_id)), [transactions]);
+  const relevantCategories = categories.filter(c => usedCategoryIds.has(c.id));
+
+  // Wallets that appear in current month's transactions
+  const usedWalletIds = useMemo(() => new Set(transactions.map(t => t.wallet_id)), [transactions]);
+  const relevantWallets = wallets.filter(w => usedWalletIds.has(w.id));
 
   return (
     <div className="max-w-3xl mx-auto space-y-5 px-4 py-6">
@@ -86,72 +112,130 @@ export default function TransaksiPageClient({
         </button>
       </div>
 
-      {/* Navigasi Bulan */}
+      {/* Navigasi Bulan + Summary */}
       <div className="bg-[var(--bg-surface)] rounded-xl border border-[var(--border)] p-4">
         <div className="flex items-center justify-between mb-4">
-          <button
-            onClick={() => navigateMonth(-1)}
-            className="p-2 rounded-lg hover:bg-[var(--bg-elevated)] text-[var(--text-secondary)] transition-colors"
-          >
+          <button onClick={() => navigateMonth(-1)}
+            className="p-2 rounded-lg hover:bg-[var(--bg-elevated)] text-[var(--text-secondary)] transition-colors">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="15 18 9 12 15 6" />
             </svg>
           </button>
-          <span className="font-semibold text-[var(--text-primary)]">
-            {BULAN[month - 1]} {year}
-          </span>
-          <button
-            onClick={() => navigateMonth(1)}
-            className="p-2 rounded-lg hover:bg-[var(--bg-elevated)] text-[var(--text-secondary)] transition-colors"
-          >
+          <span className="font-semibold text-[var(--text-primary)]">{BULAN[month - 1]} {year}</span>
+          <button onClick={() => navigateMonth(1)}
+            className="p-2 rounded-lg hover:bg-[var(--bg-elevated)] text-[var(--text-secondary)] transition-colors">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="9 18 15 12 9 6" />
             </svg>
           </button>
         </div>
 
-        {/* Summary */}
         <div className="grid grid-cols-3 gap-3 text-center">
           <div className="bg-[var(--bg-elevated)] rounded-lg px-3 py-2.5">
             <p className="text-xs text-[var(--text-secondary)]">Pemasukan</p>
-            <p className="font-financial text-sm font-semibold text-success mt-0.5">
-              +Rp {formatRupiah(totalIncome)}
-            </p>
+            <p className="font-financial text-sm font-semibold text-success mt-0.5">+Rp {formatRupiah(totalIncome)}</p>
           </div>
           <div className="bg-[var(--bg-elevated)] rounded-lg px-3 py-2.5">
             <p className="text-xs text-[var(--text-secondary)]">Pengeluaran</p>
-            <p className="font-financial text-sm font-semibold text-danger mt-0.5">
-              -Rp {formatRupiah(totalExpense)}
-            </p>
+            <p className="font-financial text-sm font-semibold text-danger mt-0.5">-Rp {formatRupiah(totalExpense)}</p>
           </div>
           <div className="bg-[var(--bg-elevated)] rounded-lg px-3 py-2.5">
             <p className="text-xs text-[var(--text-secondary)]">Selisih</p>
-            <p className={[
-              "font-financial text-sm font-semibold mt-0.5",
-              totalIncome - totalExpense >= 0 ? "text-success" : "text-danger",
-            ].join(" ")}>
+            <p className={["font-financial text-sm font-semibold mt-0.5", totalIncome - totalExpense >= 0 ? "text-success" : "text-danger"].join(" ")}>
               {totalIncome - totalExpense >= 0 ? "+" : ""}Rp {formatRupiah(Math.abs(totalIncome - totalExpense))}
             </p>
           </div>
         </div>
       </div>
 
-      {/* Filter Tabs */}
-      <div className="flex gap-1 bg-[var(--bg-elevated)] p-1 rounded-lg w-fit">
-        {(["all", "income", "expense"] as FilterType[]).map((f) => (
-          <button
-            key={f}
-            onClick={() => setFilter(f)}
-            className={[
-              "px-4 py-1.5 rounded-md text-sm font-medium transition-colors",
-              filter === f
-                ? "bg-[var(--bg-surface)] text-[var(--text-primary)] shadow-sm"
-                : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]",
-            ].join(" ")}
-          >
-            {f === "all" ? "Semua" : f === "income" ? "Pemasukan" : "Pengeluaran"}
-          </button>
-        ))}
+      {/* Search + Filter */}
+      <div className="space-y-2.5">
+        {/* Search bar */}
+        <div className="relative">
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input
+            type="text"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Cari deskripsi transaksi..."
+            className="w-full pl-9 pr-9 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-brand-primary"
+          />
+          {search && (
+            <button onClick={() => setSearch("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          )}
+        </div>
+
+        {/* Filter row */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Type filter */}
+          <div className="flex gap-1 bg-[var(--bg-elevated)] p-1 rounded-lg">
+            {(["all", "income", "expense"] as FilterType[]).map((f) => (
+              <button key={f} onClick={() => setFilterType(f)}
+                className={["px-3 py-1.5 rounded-md text-xs font-medium transition-colors",
+                  filterType === f ? "bg-[var(--bg-surface)] text-[var(--text-primary)] shadow-sm" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                ].join(" ")}>
+                {f === "all" ? "Semua" : f === "income" ? "Pemasukan" : "Pengeluaran"}
+              </button>
+            ))}
+          </div>
+
+          {/* Wallet filter */}
+          {relevantWallets.length > 1 && (
+            <select
+              value={filterWallet}
+              onChange={e => setFilterWallet(e.target.value)}
+              className={["px-3 py-2 rounded-lg border text-xs font-medium bg-[var(--bg-surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-brand-primary transition-colors cursor-pointer",
+                filterWallet !== "all" ? "border-brand-primary text-brand-primary" : "border-[var(--border)]"
+              ].join(" ")}
+            >
+              <option value="all">Semua Dompet</option>
+              {relevantWallets.map(w => (
+                <option key={w.id} value={w.id}>{w.name}</option>
+              ))}
+            </select>
+          )}
+
+          {/* Category filter */}
+          {relevantCategories.length > 1 && (
+            <select
+              value={filterCategory}
+              onChange={e => setFilterCategory(e.target.value)}
+              className={["px-3 py-2 rounded-lg border text-xs font-medium bg-[var(--bg-surface)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-brand-primary transition-colors cursor-pointer",
+                filterCategory !== "all" ? "border-brand-primary text-brand-primary" : "border-[var(--border)]"
+              ].join(" ")}
+            >
+              <option value="all">Semua Kategori</option>
+              {relevantCategories.map(c => (
+                <option key={c.id} value={c.id}>{c.icon ?? ""} {c.name}</option>
+              ))}
+            </select>
+          )}
+
+          {/* Clear filters */}
+          {hasActiveFilter && (
+            <button onClick={clearFilters}
+              className="flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-medium text-danger border border-red-200 hover:bg-red-50 transition-colors">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+              Reset
+            </button>
+          )}
+
+          {/* Result count */}
+          {hasActiveFilter && (
+            <span className="text-xs text-[var(--text-secondary)] ml-auto">
+              {filtered.length} dari {transactions.length} transaksi
+            </span>
+          )}
+        </div>
       </div>
 
       {/* No wallet warning */}
@@ -166,12 +250,22 @@ export default function TransaksiPageClient({
       {filtered.length === 0 ? (
         <div className="bg-[var(--bg-surface)] rounded-xl border border-[var(--border)] p-14 text-center">
           <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-[var(--bg-elevated)] flex items-center justify-center text-xl">
-            📋
+            {hasActiveFilter ? "🔍" : "📋"}
           </div>
-          <p className="font-medium text-[var(--text-primary)]">Belum ada transaksi</p>
-          <p className="text-sm text-[var(--text-secondary)] mt-1">
-            {filter === "all" ? `Belum ada transaksi di ${BULAN[month - 1]} ${year}` : `Tidak ada ${filter === "income" ? "pemasukan" : "pengeluaran"} di bulan ini`}
+          <p className="font-medium text-[var(--text-primary)]">
+            {hasActiveFilter ? "Tidak ada transaksi yang cocok" : "Belum ada transaksi"}
           </p>
+          <p className="text-sm text-[var(--text-secondary)] mt-1">
+            {hasActiveFilter
+              ? "Coba ubah filter atau kata kunci pencarian"
+              : `Belum ada transaksi di ${BULAN[month - 1]} ${year}`}
+          </p>
+          {hasActiveFilter && (
+            <button onClick={clearFilters}
+              className="mt-3 text-xs text-brand-primary hover:underline">
+              Reset filter
+            </button>
+          )}
         </div>
       ) : (
         <div className="space-y-4">
@@ -182,18 +276,11 @@ export default function TransaksiPageClient({
               </p>
               <div className="bg-[var(--bg-surface)] rounded-xl border border-[var(--border)] overflow-hidden">
                 {txList.map((tx, i) => (
-                  <button
-                    key={tx.id}
-                    onClick={() => openEdit(tx)}
-                    className={[
-                      "w-full flex items-center gap-4 px-4 py-3.5 hover:bg-[var(--bg-elevated)] transition-colors text-left",
-                      i > 0 ? "border-t border-[var(--border)]" : "",
-                    ].join(" ")}
-                  >
-                    <div
-                      className="w-9 h-9 rounded-full flex items-center justify-center text-base flex-shrink-0"
-                      style={{ backgroundColor: (tx.categories?.color ?? "#94A3B8") + "20" }}
-                    >
+                  <button key={tx.id} onClick={() => openEdit(tx)}
+                    className={["w-full flex items-center gap-4 px-4 py-3.5 hover:bg-[var(--bg-elevated)] transition-colors text-left",
+                      i > 0 ? "border-t border-[var(--border)]" : ""].join(" ")}>
+                    <div className="w-9 h-9 rounded-full flex items-center justify-center text-base flex-shrink-0"
+                      style={{ backgroundColor: (tx.categories?.color ?? "#94A3B8") + "20" }}>
                       {tx.categories?.icon ?? "💸"}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -204,10 +291,8 @@ export default function TransaksiPageClient({
                         {tx.categories?.name} · {tx.wallets?.name}
                       </p>
                     </div>
-                    <p className={[
-                      "font-financial text-sm font-semibold flex-shrink-0",
-                      tx.type === "income" ? "text-success" : "text-danger",
-                    ].join(" ")}>
+                    <p className={["font-financial text-sm font-semibold flex-shrink-0",
+                      tx.type === "income" ? "text-success" : "text-danger"].join(" ")}>
                       {tx.type === "income" ? "+" : "-"}Rp {formatRupiah(Number(tx.amount))}
                     </p>
                   </button>
