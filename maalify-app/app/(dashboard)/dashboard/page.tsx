@@ -6,6 +6,7 @@ import TrendChart from "@/components/dashboard/TrendChart";
 import CategoryChart from "@/components/dashboard/CategoryChart";
 import QuickAddTransaksi from "@/components/dashboard/QuickAddTransaksi";
 import ScanStrukButton from "@/components/dashboard/ScanStrukButton";
+import RecentTransaksiList from "@/components/dashboard/RecentTransaksiList";
 import Link from "next/link";
 
 const BULAN_SHORT = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
@@ -442,54 +443,7 @@ export default async function DashboardPage() {
           <Link href="/transaksi" className="text-xs text-brand-primary hover:underline font-medium">Lihat semua →</Link>
         </div>
 
-        {recentTx.length === 0 ? (
-          <div className="py-12 text-center text-sm text-[var(--text-secondary)]">Belum ada transaksi bulan ini</div>
-        ) : (
-          <div>
-            {recentTx.map((tx, i) => {
-              const cat = Array.isArray(tx.categories) ? tx.categories[0] : tx.categories;
-              const wallet = Array.isArray(tx.wallets) ? tx.wallets[0] : tx.wallets;
-              const txUser = Array.isArray(tx.users) ? tx.users[0] : tx.users;
-              const dateStr = new Date(tx.date + "T00:00:00").toLocaleDateString("id-ID", { day: "numeric", month: "short" });
-              const isIncome = tx.type === "income";
-
-              return (
-                <div
-                  key={tx.id}
-                  className={["flex items-center gap-3 px-5 py-3.5 hover:bg-[var(--bg-elevated)] transition-colors", i > 0 ? "border-t border-[var(--border)]" : ""].join(" ")}
-                >
-                  {/* Icon */}
-                  <div
-                    className="w-9 h-9 rounded-full flex items-center justify-center text-base flex-shrink-0"
-                    style={{ backgroundColor: (cat?.color ?? "#94A3B8") + "20" }}
-                  >
-                    {cat?.icon ?? "💸"}
-                  </div>
-
-                  {/* Deskripsi + meta */}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-[var(--text-primary)] truncate">{tx.description}</p>
-                    <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                      <span
-                        className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full"
-                        style={{ backgroundColor: (cat?.color ?? "#94A3B8") + "20", color: cat?.color ?? "#94A3B8" }}
-                      >
-                        {cat?.name ?? "-"}
-                      </span>
-                      <span className="text-[10px] text-[var(--text-secondary)]">{dateStr}</span>
-                      {wallet?.name && <span className="text-[10px] text-[var(--text-secondary)] hidden sm:inline">{wallet.name}</span>}
-                    </div>
-                  </div>
-
-                  {/* Jumlah */}
-                  <p className={["font-financial text-sm font-semibold flex-shrink-0", isIncome ? "text-success" : "text-danger"].join(" ")}>
-                    {isIncome ? "+" : "-"}Rp {formatRupiah(Number(tx.amount))}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-        )}
+        <RecentTransaksiList transactions={recentTx as Parameters<typeof RecentTransaksiList>[0]["transactions"]} />
       </div>
     </div>
   );
