@@ -30,8 +30,8 @@ export default function TrendChart({ data }: { data: DataPoint[] }) {
             <stop offset="95%" stopColor="#27AE60" stopOpacity={0} />
           </linearGradient>
           <linearGradient id="colorExpense" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#1E3A5F" stopOpacity={0.15} />
-            <stop offset="95%" stopColor="#1E3A5F" stopOpacity={0} />
+            <stop offset="5%" stopColor="#E74C3C" stopOpacity={0.15} />
+            <stop offset="95%" stopColor="#E74C3C" stopOpacity={0} />
           </linearGradient>
         </defs>
         <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
@@ -40,7 +40,15 @@ export default function TrendChart({ data }: { data: DataPoint[] }) {
         <Tooltip
           formatter={(value, name) => [formatTooltip(Number(value)), name === "income" ? "Pemasukan" : "Pengeluaran"]}
           labelStyle={{ color: "var(--text-primary)", fontWeight: 600 }}
-          contentStyle={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }}
+          contentStyle={{
+            background: "var(--bg-elevated)",
+            border: "1px solid var(--border)",
+            borderRadius: 8,
+            fontSize: 12,
+            color: "var(--text-primary)",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+          }}
+          itemStyle={{ color: "var(--text-secondary)" }}
         />
         <Legend
           formatter={(value) => value === "income" ? "Pemasukan" : "Pengeluaran"}
@@ -49,7 +57,7 @@ export default function TrendChart({ data }: { data: DataPoint[] }) {
           wrapperStyle={{ fontSize: 12, paddingTop: 8 }}
         />
         <Area type="monotone" dataKey="income" stroke="#27AE60" strokeWidth={2} fill="url(#colorIncome)" dot={{ r: 3, fill: "#27AE60" }} activeDot={{ r: 5 }} />
-        <Area type="monotone" dataKey="expense" stroke="#1E3A5F" strokeWidth={2} fill="url(#colorExpense)" dot={{ r: 3, fill: "#1E3A5F" }} activeDot={{ r: 5 }} />
+        <Area type="monotone" dataKey="expense" stroke="#E74C3C" strokeWidth={2} fill="url(#colorExpense)" dot={{ r: 3, fill: "#E74C3C" }} activeDot={{ r: 5 }} />
       </AreaChart>
     </ResponsiveContainer>
   );

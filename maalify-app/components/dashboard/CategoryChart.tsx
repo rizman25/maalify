@@ -40,7 +40,16 @@ export default function CategoryChart({ data, total }: { data: CategoryItem[]; t
             </Pie>
             <Tooltip
               formatter={(value) => [`Rp ${formatRupiah(Number(value))}`, ""]}
-              contentStyle={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }}
+              contentStyle={{
+                background: "var(--bg-elevated)",
+                border: "1px solid var(--border)",
+                borderRadius: 8,
+                fontSize: 12,
+                color: "var(--text-primary)",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+              }}
+              itemStyle={{ color: "var(--text-secondary)" }}
+              labelStyle={{ color: "var(--text-primary)", fontWeight: 600 }}
             />
           </PieChart>
         </ResponsiveContainer>

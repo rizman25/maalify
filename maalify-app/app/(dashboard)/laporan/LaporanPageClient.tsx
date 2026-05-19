@@ -214,11 +214,12 @@ export default function LaporanPageClient({
               <Tooltip
                 formatter={(value, name) => [formatTooltip(Number(value)), name === "income" ? "Pemasukan" : "Pengeluaran"]}
                 labelStyle={{ color: "var(--text-primary)", fontWeight: 600 }}
-                contentStyle={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }}
+                contentStyle={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12, color: "var(--text-primary)", boxShadow: "0 4px 12px rgba(0,0,0,0.15)" }}
+                itemStyle={{ color: "var(--text-secondary)" }}
               />
               <Legend formatter={(v) => v === "income" ? "Pemasukan" : "Pengeluaran"} iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12, paddingTop: 8 }} />
               <Bar dataKey="income" fill="#27AE60" radius={[4, 4, 0, 0]} maxBarSize={32} />
-              <Bar dataKey="expense" fill="#1E3A5F" radius={[4, 4, 0, 0]} maxBarSize={32} />
+              <Bar dataKey="expense" fill="#E74C3C" radius={[4, 4, 0, 0]} maxBarSize={32} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -345,7 +346,8 @@ export default function LaporanPageClient({
                       {topExpense.map((e, i) => <Cell key={i} fill={e.color} />)}
                     </Pie>
                     <Tooltip formatter={(v) => [`Rp ${formatRupiah(Number(v))}`, ""]}
-                      contentStyle={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }} />
+                      contentStyle={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12, color: "var(--text-primary)", boxShadow: "0 4px 12px rgba(0,0,0,0.15)" }}
+                      itemStyle={{ color: "var(--text-secondary)" }} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
@@ -360,7 +362,8 @@ export default function LaporanPageClient({
                       {topIncome.map((e, i) => <Cell key={i} fill={e.color} />)}
                     </Pie>
                     <Tooltip formatter={(v) => [`Rp ${formatRupiah(Number(v))}`, ""]}
-                      contentStyle={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12 }} />
+                      contentStyle={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12, color: "var(--text-primary)", boxShadow: "0 4px 12px rgba(0,0,0,0.15)" }}
+                      itemStyle={{ color: "var(--text-secondary)" }} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
