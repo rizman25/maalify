@@ -5,6 +5,7 @@ import { generateRecurringTransactions } from "@/lib/generateRecurring";
 import TrendChart from "@/components/dashboard/TrendChart";
 import CategoryChart from "@/components/dashboard/CategoryChart";
 import QuickAddTransaksi from "@/components/dashboard/QuickAddTransaksi";
+import ScanStrukButton from "@/components/dashboard/ScanStrukButton";
 import Link from "next/link";
 
 const BULAN_SHORT = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
@@ -184,12 +185,20 @@ export default async function DashboardPage() {
               : `Berikut ringkasan keuangan keluarga ${bulanNama}`}
           </p>
         </div>
-        <QuickAddTransaksi
-          wallets={(activeWalletsRes.data ?? []) as import("@/types").Wallet[]}
-          categories={(catsRes.data ?? []) as import("@/types").Category[]}
-          householdId={householdId}
-          userId={user.id}
-        />
+        <div className="flex items-center gap-2">
+          <ScanStrukButton
+            wallets={(activeWalletsRes.data ?? []) as import("@/types").Wallet[]}
+            categories={(catsRes.data ?? []) as import("@/types").Category[]}
+            householdId={householdId}
+            userId={user.id}
+          />
+          <QuickAddTransaksi
+            wallets={(activeWalletsRes.data ?? []) as import("@/types").Wallet[]}
+            categories={(catsRes.data ?? []) as import("@/types").Category[]}
+            householdId={householdId}
+            userId={user.id}
+          />
+        </div>
       </div>
 
       {/* Summary Cards */}
