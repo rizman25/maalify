@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { formatRupiah } from "@/lib/utils";
 import TrendChart from "@/components/dashboard/TrendChart";
 import CategoryChart from "@/components/dashboard/CategoryChart";
+import QuickAddTransaksi from "@/components/dashboard/QuickAddTransaksi";
 import Link from "next/link";
 
 const BULAN_SHORT = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
@@ -35,7 +36,7 @@ export default async function DashboardPage() {
   sixMonthsAgo.setDate(1);
   const trendStart = `${sixMonthsAgo.getFullYear()}-${pad(sixMonthsAgo.getMonth() + 1)}-01`;
 
-  const [curMonthRes, prevMonthRes, walletsRes, trendRes, catRes, budgetsRes, debtsRes, recentTxRes] = await Promise.all([
+  const [curMonthRes, prevMonthRes, walletsRes, trendRes, catRes, budgetsRes, debtsRes, recentTxRes, activeWalletsRes, catsRes] = await Promise.all([
     supabase.from("transactions").select("type, amount")
       .eq("household_id", householdId).gte("date", monthStart).lt("date", monthEnd),
 
@@ -68,6 +69,13 @@ export default async function DashboardPage() {
       .order("date", { ascending: false })
       .order("created_at", { ascending: false })
       .limit(5),
+
+    supabase.from("wallets").select("id, name, type, current_balance, color, is_active")
+      .eq("household_id", householdId).eq("is_active", true).order("name"),
+
+    supabase.from("categories").select("id, name, icon, color, type")
+      .or(`household_id.eq.${householdId},household_id.is.null`)
+      .order("is_default", { ascending: false }).order("name"),
   ]);
 
   const curIncome  = (curMonthRes.data ?? []).filter(t => t.type === "income").reduce((s,t) => s + Number(t.amount), 0);
@@ -143,7 +151,7 @@ export default async function DashboardPage() {
   const bulanNama = BULAN_PANJANG[month - 1] + " " + year;
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
+    <div className="max-w-5xl mx-auto space-y-6 px-4 py-6">
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
@@ -154,15 +162,12 @@ export default async function DashboardPage() {
             Berikut ringkasan keuangan keluarga {bulanNama}
           </p>
         </div>
-        <Link
-          href="/transaksi"
-          className="flex items-center gap-2 px-4 py-2.5 bg-brand-primary text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity flex-shrink-0"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-          </svg>
-          Catat Transaksi
-        </Link>
+        <QuickAddTransaksi
+          wallets={(activeWalletsRes.data ?? []) as import("@/types").Wallet[]}
+          categories={(catsRes.data ?? []) as import("@/types").Category[]}
+          householdId={householdId}
+          userId={user.id}
+        />
       </div>
 
       {/* Summary Cards */}
@@ -330,58 +335,44 @@ export default async function DashboardPage() {
           <div className="py-12 text-center text-sm text-[var(--text-secondary)]">Belum ada transaksi bulan ini</div>
         ) : (
           <div>
-            {/* Table header */}
-            <div className="grid grid-cols-[1fr_140px_110px_120px] gap-4 px-5 py-2.5 bg-[var(--bg-elevated)]">
-              {["TRANSAKSI","KATEGORI","TANGGAL","JUMLAH"].map(h => (
-                <p key={h} className={["text-[10px] font-bold text-[var(--text-secondary)] tracking-wider", h === "JUMLAH" ? "text-right" : ""].join(" ")}>{h}</p>
-              ))}
-            </div>
-
             {recentTx.map((tx, i) => {
               const cat = Array.isArray(tx.categories) ? tx.categories[0] : tx.categories;
               const wallet = Array.isArray(tx.wallets) ? tx.wallets[0] : tx.wallets;
               const txUser = Array.isArray(tx.users) ? tx.users[0] : tx.users;
-              const dateStr = new Date(tx.date + "T00:00:00").toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
+              const dateStr = new Date(tx.date + "T00:00:00").toLocaleDateString("id-ID", { day: "numeric", month: "short" });
               const isIncome = tx.type === "income";
 
               return (
                 <div
                   key={tx.id}
-                  className={["grid grid-cols-[1fr_140px_110px_120px] gap-4 px-5 py-3.5 items-center hover:bg-[var(--bg-elevated)] transition-colors", i > 0 ? "border-t border-[var(--border)]" : ""].join(" ")}
+                  className={["flex items-center gap-3 px-5 py-3.5 hover:bg-[var(--bg-elevated)] transition-colors", i > 0 ? "border-t border-[var(--border)]" : ""].join(" ")}
                 >
-                  {/* Transaksi */}
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div
-                      className="w-9 h-9 rounded-full flex items-center justify-center text-base flex-shrink-0"
-                      style={{ backgroundColor: (cat?.color ?? "#94A3B8") + "20" }}
-                    >
-                      {cat?.icon ?? "💸"}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-[var(--text-primary)] truncate">{tx.description}</p>
-                      <p className="text-xs text-[var(--text-secondary)]">
-                        {wallet?.name ?? "-"}{txUser?.name ? ` · oleh ${txUser.name}` : ""}
-                      </p>
-                    </div>
+                  {/* Icon */}
+                  <div
+                    className="w-9 h-9 rounded-full flex items-center justify-center text-base flex-shrink-0"
+                    style={{ backgroundColor: (cat?.color ?? "#94A3B8") + "20" }}
+                  >
+                    {cat?.icon ?? "💸"}
                   </div>
 
-                  {/* Kategori badge */}
-                  <div>
-                    <span
-                      className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full"
-                      style={{ backgroundColor: (cat?.color ?? "#94A3B8") + "20", color: cat?.color ?? "#94A3B8" }}
-                    >
-                      <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ backgroundColor: cat?.color ?? "#94A3B8" }} />
-                      {cat?.name ?? "-"}
-                    </span>
+                  {/* Deskripsi + meta */}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-[var(--text-primary)] truncate">{tx.description}</p>
+                    <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                      <span
+                        className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full"
+                        style={{ backgroundColor: (cat?.color ?? "#94A3B8") + "20", color: cat?.color ?? "#94A3B8" }}
+                      >
+                        {cat?.name ?? "-"}
+                      </span>
+                      <span className="text-[10px] text-[var(--text-secondary)]">{dateStr}</span>
+                      {wallet?.name && <span className="text-[10px] text-[var(--text-secondary)] hidden sm:inline">{wallet.name}</span>}
+                    </div>
                   </div>
-
-                  {/* Tanggal */}
-                  <p className="text-sm text-[var(--text-secondary)]">{dateStr}</p>
 
                   {/* Jumlah */}
-                  <p className={["font-financial text-sm font-semibold text-right", isIncome ? "text-success" : "text-danger"].join(" ")}>
-                    {isIncome ? "+" : "-"} Rp {formatRupiah(Number(tx.amount))}
+                  <p className={["font-financial text-sm font-semibold flex-shrink-0", isIncome ? "text-success" : "text-danger"].join(" ")}>
+                    {isIncome ? "+" : "-"}Rp {formatRupiah(Number(tx.amount))}
                   </p>
                 </div>
               );

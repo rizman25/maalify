@@ -1,4 +1,6 @@
-export type UserRole = "admin" | "member";
+export type UserRole = "super_admin" | "admin" | "member";
+export type ProjectType = "trip" | "wedding" | "property" | "purchase" | "education" | "vehicle" | "health" | "other";
+export type ProjectStatus = "planning" | "active" | "completed" | "cancelled";
 export type TransactionType = "income" | "expense";
 export type WalletType = "cash" | "bank" | "savings" | "ewallet";
 export type DebtType = "payable" | "receivable";
@@ -44,6 +46,7 @@ export interface Wallet {
   currency: string;
   color: string | null;
   is_active: boolean;
+  is_shared: boolean;
   created_by: string;
   created_at: string;
 }
@@ -88,6 +91,38 @@ export interface Budget {
   period: BudgetPeriod;
   month: number;
   year: number;
+  created_at: string;
+}
+
+export interface Project {
+  id: string;
+  household_id: string;
+  wallet_id: string | null;
+  name: string;
+  type: ProjectType;
+  description: string | null;
+  cover_emoji: string | null;
+  target_amount: number;
+  current_amount: number;
+  target_date: string;
+  status: ProjectStatus;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+  wallets?: { current_balance: number; name: string }[] | { current_balance: number; name: string } | null;
+}
+
+export interface ProjectItem {
+  id: string;
+  project_id: string;
+  name: string;
+  planned_amount: number;
+  actual_amount: number | null;
+  is_paid: boolean;
+  paid_at: string | null;
+  transaction_id: string | null;
+  sort_order: number;
+  created_by: string;
   created_at: string;
 }
 

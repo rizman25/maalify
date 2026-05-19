@@ -3,7 +3,7 @@
 **Versi:** v1.0.0
 **Tanggal:** 15 Mei 2026
 **Status:** Draft
-**Penulis:** Rizaluqman
+**Penulis:** Rizman
 **Platform:** Web Application (SaaS)
 
 ---
@@ -117,7 +117,19 @@ Maalify dirancang untuk keluarga yang ingin mengelola keuangan bersama secara di
 | F-19 | Catat Pembayaran Cicilan | Setiap pembayaran cicilan tercatat dan mengurangi sisa hutang/piutang secara otomatis. | P0 |
 | F-20 | Reminder Jatuh Tempo | Notifikasi otomatis H-7 dan H-1 sebelum tanggal jatuh tempo hutang. | P1 |
 
-### 5.6 Laporan & Dashboard
+### 5.6 Projects & Financial Goals
+
+| ID | Fitur | Deskripsi | Prioritas |
+|---|---|---|---|
+| F-26 | Buat Project | User dapat membuat project keuangan baru (Trip, Pernikahan, Beli Rumah, dll) dengan nama, tipe, target tanggal, dan total anggaran. Setiap project otomatis membuat dompet dedicated baru. | P0 |
+| F-27 | Rincian Anggaran Project | Admin/Member dapat menambah item rincian anggaran per project (contoh: Tiket, Hotel, Makan) beserta nominal yang direncanakan. Setiap item bisa di-mark sebagai sudah dibayar. | P0 |
+| F-28 | Kontribusi ke Project | Semua anggota household dapat melakukan top-up / kontribusi ke dompet project. Setiap kontribusi tercatat sebagai transfer dari dompet sumber ke dompet project. | P0 |
+| F-29 | Tag Transaksi ke Project | Saat mencatat pengeluaran dari dompet project, transaksi otomatis ter-link ke project tersebut. User juga bisa manual tag transaksi dari dompet lain ke project. | P0 |
+| F-30 | Progress Tracker | Halaman detail project menampilkan: progress bar (terkumpul vs target), countdown hari menuju target tanggal, checklist rincian anggaran, dan riwayat kontribusi anggota. | P0 |
+| F-31 | Notifikasi Project | Sistem mengirim notifikasi: (1) H-30 dan H-7 sebelum target tanggal jika dana belum cukup, (2) saat project mencapai 100% target dana, (3) saat anggota melakukan kontribusi. | P1 |
+| F-32 | Selesaikan / Arsip Project | Admin dapat menandai project sebagai Completed atau Cancelled. Dana sisa di dompet project bisa ditransfer balik ke dompet utama. | P0 |
+
+### 5.7 Laporan & Dashboard
 
 | ID | Fitur | Deskripsi | Prioritas |
 |---|---|---|---|
@@ -175,6 +187,10 @@ Maalify dirancang untuk keluarga yang ingin mengelola keuangan bersama secara di
 | US-08 | Admin | mencatat hutang dan cicilan | saya tidak lupa membayar kewajiban |
 | US-09 | Member | melihat dashboard ringkasan keuangan | saya tahu kondisi keuangan keluarga hari ini |
 | US-10 | Admin | melihat laporan bulanan dengan grafik | saya bisa evaluasi pola pengeluaran keluarga |
+| US-11 | Admin | membuat project "Trip ke Malang" dengan rincian anggaran | semua kebutuhan trip sudah terencana dengan jelas |
+| US-12 | Member | berkontribusi ke project pernikahan keluarga | saya ikut membantu mengumpulkan dana bersama |
+| US-13 | Member | melihat progress project dan berapa yang masih kurang | saya tahu harus menabung berapa lagi |
+| US-14 | Admin | men-check item anggaran yang sudah dibayar | saya tahu mana yang sudah dan belum dibayarkan |
 
 ---
 
@@ -198,7 +214,7 @@ Fitur berikut tidak termasuk dalam scope versi pertama dan akan dievaluasi untuk
 |---|---|---|
 | **Fase 1 — Fondasi** | Minggu 1–3 | Setup project, arsitektur, auth, manajemen household & dompet, CRUD transaksi dasar |
 | **Fase 2 — Core Features** | Minggu 4–6 | Kategori kustom, budget & notifikasi, manajemen hutang/piutang |
-| **Fase 3 — Dashboard** | Minggu 7–9 | Dashboard interaktif, grafik laporan bulanan, tren keuangan |
+| **Fase 3 — Dashboard & Projects** | Minggu 7–9 | Dashboard interaktif, grafik laporan bulanan, tren keuangan, Projects & Financial Goals |
 | **Fase 4 — Polish & Launch** | Minggu 10–12 | QA & testing, optimasi performa, onboarding flow, soft launch |
 
 ---

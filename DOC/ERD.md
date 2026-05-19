@@ -1,10 +1,10 @@
 # Entity Relationship Document — Maalify
 
-**Versi:** v1.0.0
+**Versi:** v1.1.0
 **Tanggal:** 15 Mei 2026
 **Status:** Draft
 **Database:** PostgreSQL via Supabase
-**Total Entiti:** 14 Tabel
+**Total Entiti:** 16 Tabel *(+2: projects, project_items)*
 **Dokumen Terkait:** [PRD.md](./PRD.md) · [SAD.md](./SAD.md)
 
 ---
@@ -224,7 +224,7 @@ Mencatat hutang (payable) dan piutang (receivable) Household. Menyimpan total da
 
 #### `transactions`
 
-Tabel utama pencatatan keuangan. Setiap pemasukan dan pengeluaran tersimpan di sini beserta referensi ke wallet, kategori, dan pengguna.
+Tabel utama pencatatan keuangan. Setiap pemasukan dan pengeluaran tersimpan di sini beserta referensi ke wallet, kategori, dan pengguna. Transaksi dapat di-tag ke project tertentu.
 
 | Kolom | Tipe Data | Constraint | Keterangan |
 |---|---|---|---|
@@ -234,6 +234,7 @@ Tabel utama pencatatan keuangan. Setiap pemasukan dan pengeluaran tersimpan di s
 | `category_id` | `UUID` | FK → categories.id | Kategori transaksi |
 | `user_id` | `UUID` | FK → users.id | Anggota yang mencatat transaksi |
 | `recurring_id` | `UUID` | FK → recurring_transactions.id, NULLABLE | Referensi jika dari transaksi berulang |
+| `project_id` | `UUID` | FK → projects.id, NULLABLE | **[NEW]** Tag ke project tertentu (opsional) |
 | `type` | `ENUM` | NOT NULL | Jenis: `'income'` \| `'expense'` |
 | `amount` | `DECIMAL(15,2)` | NOT NULL | Jumlah transaksi (selalu positif) |
 | `description` | `VARCHAR(200)` | NOT NULL | Deskripsi singkat transaksi |
@@ -318,6 +319,55 @@ Menyimpan metadata file lampiran (foto struk/nota) yang diunggah ke Supabase Sto
 
 ---
 
+### Group D — Projects & Financial Goals
+
+---
+
+#### `projects`
+
+Merepresentasikan sebuah rencana keuangan bertujuan (trip, pernikahan, pembelian besar, dll). Setiap project memiliki dompet dedicated yang otomatis dibuat, target dana, dan target tanggal pencapaian.
+
+| Kolom | Tipe Data | Constraint | Keterangan |
+|---|---|---|---|
+| `id` | `UUID` | PRIMARY KEY | Identiti unik project |
+| `household_id` | `UUID` | FK → households.id | Project milik Household ini |
+| `wallet_id` | `UUID` | FK → wallets.id | Dompet dedicated project (wajib, dibuat otomatis) |
+| `name` | `VARCHAR(100)` | NOT NULL | Nama project (contoh: "Trip ke Malang") |
+| `type` | `ENUM` | NOT NULL | Tipe: `'trip'` \| `'wedding'` \| `'property'` \| `'purchase'` \| `'education'` \| `'vehicle'` \| `'health'` \| `'other'` |
+| `description` | `TEXT` | NULLABLE | Deskripsi atau catatan project |
+| `cover_emoji` | `VARCHAR(10)` | NULLABLE | Emoji cover untuk UI (contoh: 🏖️) |
+| `target_amount` | `DECIMAL(15,2)` | NOT NULL | Total anggaran yang direncanakan |
+| `current_amount` | `DECIMAL(15,2)` | DEFAULT 0 | Dana yang sudah terkumpul (saldo dompet project) |
+| `target_date` | `DATE` | NOT NULL | Tanggal target pencapaian project |
+| `status` | `ENUM` | NOT NULL | Status: `'planning'` \| `'active'` \| `'completed'` \| `'cancelled'` |
+| `created_by` | `UUID` | FK → users.id | Anggota yang membuat project |
+| `created_at` | `TIMESTAMPTZ` | DEFAULT NOW() | Waktu pembuatan |
+| `updated_at` | `TIMESTAMPTZ` | DEFAULT NOW() | Waktu update terakhir |
+
+> **Catatan:** `current_amount` di-sync otomatis dari `wallets.current_balance` via trigger saat ada kontribusi masuk.
+
+---
+
+#### `project_items`
+
+Rincian breakdown anggaran per project. Setiap item mewakili satu pos pengeluaran dalam project (contoh: Tiket, Hotel, Makan). Item bisa di-link ke transaksi nyata saat sudah dibayar.
+
+| Kolom | Tipe Data | Constraint | Keterangan |
+|---|---|---|---|
+| `id` | `UUID` | PRIMARY KEY | Identiti unik item anggaran |
+| `project_id` | `UUID` | FK → projects.id | Project yang memiliki item ini |
+| `name` | `VARCHAR(150)` | NOT NULL | Nama item (contoh: "Tiket bus PP") |
+| `planned_amount` | `DECIMAL(15,2)` | NOT NULL | Nominal yang direncanakan |
+| `actual_amount` | `DECIMAL(15,2)` | NULLABLE | Nominal yang benar-benar dibayarkan |
+| `is_paid` | `BOOLEAN` | DEFAULT FALSE | Status pembayaran item |
+| `paid_at` | `DATE` | NULLABLE | Tanggal item dibayar |
+| `transaction_id` | `UUID` | FK → transactions.id, NULLABLE | Transaksi yang terhubung saat item dibayar |
+| `sort_order` | `SMALLINT` | DEFAULT 0 | Urutan tampil di UI |
+| `created_by` | `UUID` | FK → users.id | Anggota yang menambahkan item |
+| `created_at` | `TIMESTAMPTZ` | DEFAULT NOW() | Waktu pembuatan |
+
+---
+
 ## 4. Relationship Summary
 
 | Dari | Ke | Kardinalitas | Keterangan |
@@ -341,6 +391,11 @@ Menyimpan metadata file lampiran (foto struk/nota) yang diunggah ke Supabase Sto
 | `transactions` | `attachments` | 1 → N | Satu transaksi bisa punya banyak lampiran |
 | `debts` | `debt_payments` | 1 → N | Satu hutang punya banyak riwayat pembayaran |
 | `wallets` | `debt_payments` | 1 → N | Satu Wallet digunakan untuk banyak pembayaran hutang |
+| `households` | `projects` | 1 → N | Satu Household bisa punya banyak project |
+| `wallets` | `projects` | 1 → 1 | Setiap project punya satu dompet dedicated |
+| `projects` | `project_items` | 1 → N | Satu project punya banyak item rincian anggaran |
+| `projects` | `transactions` | 1 → N | Satu project bisa memiliki banyak transaksi yang di-tag |
+| `project_items` | `transactions` | 1 → 1 | Satu item anggaran dapat terhubung ke satu transaksi pembayaran |
 
 ---
 
@@ -396,6 +451,10 @@ Saldo wallet (`current_balance`) diperbarui otomatis via PostgreSQL trigger — 
 | `debts` | `household_id, status` | Filter hutang aktif per Household |
 | `notifications` | `user_id, is_read` | Notifikasi belum dibaca per user |
 | `wallets` | `household_id` | List wallet per Household |
+| `projects` | `household_id, status` | List project aktif per Household |
+| `projects` | `target_date` | Sorting dan filter project berdasarkan tanggal |
+| `project_items` | `project_id, is_paid` | List item belum dibayar per project |
+| `transactions` | `project_id` | Semua transaksi yang ter-tag ke project tertentu |
 
 ---
 

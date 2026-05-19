@@ -40,6 +40,7 @@ export default function WalletModal({ wallet, householdId, userId, onClose, onSa
     isEdit ? String(wallet.initial_balance) : "0"
   );
   const [color, setColor] = useState(wallet?.color ?? TYPE_DEFAULT_COLOR["cash"]);
+  const [isShared, setIsShared] = useState(wallet?.is_shared ?? true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showDeactivate, setShowDeactivate] = useState(false);
@@ -70,7 +71,7 @@ export default function WalletModal({ wallet, householdId, userId, onClose, onSa
     if (isEdit) {
       const { error: err } = await supabase
         .from("wallets")
-        .update({ name: name.trim(), color })
+        .update({ name: name.trim(), color, is_shared: isShared })
         .eq("id", wallet.id);
 
       if (err) {
@@ -87,6 +88,7 @@ export default function WalletModal({ wallet, householdId, userId, onClose, onSa
         current_balance: balance,
         currency: "IDR",
         color,
+        is_shared: isShared,
         created_by: userId,
       });
 
@@ -229,6 +231,29 @@ export default function WalletModal({ wallet, householdId, userId, onClose, onSa
                   )}
                 </button>
               ))}
+            </div>
+          </div>
+
+          {/* Privasi Dompet */}
+          <div>
+            <label className="block text-xs font-medium text-[var(--text-primary)] mb-2">Privasi Dompet</label>
+            <div className="grid grid-cols-2 gap-2">
+              <button type="button" onClick={() => setIsShared(true)}
+                className={["flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl border-2 text-xs font-medium transition-colors",
+                  isShared ? "border-brand-primary bg-brand-primary/5 text-brand-primary" : "border-[var(--border)] text-[var(--text-secondary)] hover:border-brand-primary/40"
+                ].join(" ")}>
+                <span className="text-xl">👨‍👩‍👧‍👦</span>
+                <span>Bersama</span>
+                <span className="text-[10px] font-normal text-center leading-tight opacity-70">Semua anggota bisa lihat</span>
+              </button>
+              <button type="button" onClick={() => setIsShared(false)}
+                className={["flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl border-2 text-xs font-medium transition-colors",
+                  !isShared ? "border-brand-primary bg-brand-primary/5 text-brand-primary" : "border-[var(--border)] text-[var(--text-secondary)] hover:border-brand-primary/40"
+                ].join(" ")}>
+                <span className="text-xl">🔒</span>
+                <span>Pribadi</span>
+                <span className="text-[10px] font-normal text-center leading-tight opacity-70">Hanya kamu & Super Admin</span>
+              </button>
             </div>
           </div>
 

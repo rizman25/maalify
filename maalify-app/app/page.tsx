@@ -1,65 +1,282 @@
-import Image from "next/image";
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
+import Link from "next/link";
 
-export default function Home() {
+export default async function HomePage() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) redirect("/dashboard");
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <div className="min-h-screen bg-white text-neutral-900 font-sans">
+
+      {/* ── Navbar ── */}
+      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-neutral-100">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-[#1E3A5F] flex items-center justify-center">
+              <span className="text-white font-bold text-sm">M</span>
+            </div>
+            <span className="font-bold text-[#1E3A5F] text-lg tracking-tight">Maalify</span>
+          </div>
+
+          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-neutral-600">
+            <a href="#fitur" className="hover:text-[#1E3A5F] transition-colors">Fitur</a>
+            <a href="#cara-kerja" className="hover:text-[#1E3A5F] transition-colors">Cara Kerja</a>
+          </nav>
+
+          <div className="flex items-center gap-3">
+            <Link href="/login" className="text-sm font-medium text-neutral-600 hover:text-[#1E3A5F] transition-colors hidden sm:block">
+              Masuk
+            </Link>
+            <Link
+              href="/register"
+              className="px-4 py-2 rounded-lg bg-[#1E3A5F] text-white text-sm font-medium hover:bg-[#1E3A5F]/90 transition-colors"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+              Daftar Gratis
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      {/* ── Hero ── */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-20 pb-16 text-center">
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-50 border border-green-200 text-green-700 text-xs font-semibold mb-6">
+          <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
+          Gratis untuk keluarga Indonesia
+        </div>
+
+        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-[#1E3A5F] leading-tight tracking-tight max-w-3xl mx-auto">
+          Keuangan Keluarga,{" "}
+          <span className="text-[#27AE60]">Dikelola Bersama</span>
+        </h1>
+
+        <p className="mt-6 text-lg text-neutral-500 max-w-2xl mx-auto leading-relaxed">
+          Maalify membantu keluarga mencatat pemasukan, pengeluaran, hutang, dan target keuangan
+          dalam satu platform — sederhana, aman, dan bisa diakses semua anggota keluarga.
+        </p>
+
+        <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
+          <Link
+            href="/register"
+            className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#1E3A5F] text-white font-semibold hover:bg-[#1E3A5F]/90 transition-colors text-base"
+          >
+            Mulai Gratis Sekarang →
+          </Link>
+          <Link
+            href="/login"
+            className="w-full sm:w-auto px-6 py-3 rounded-xl border border-neutral-200 text-neutral-700 font-semibold hover:bg-neutral-50 transition-colors text-base"
+          >
+            Sudah punya akun? Masuk
+          </Link>
+        </div>
+
+        <p className="mt-4 text-xs text-neutral-400">Tidak perlu kartu kredit · Setup dalam 2 menit</p>
+
+        {/* Hero visual */}
+        <div className="mt-14 relative max-w-4xl mx-auto">
+          <div className="rounded-2xl border border-neutral-200 bg-neutral-50 shadow-xl overflow-hidden">
+            {/* Mock topbar */}
+            <div className="bg-white border-b border-neutral-100 px-5 py-3 flex items-center gap-3">
+              <div className="w-3 h-3 rounded-full bg-red-300" />
+              <div className="w-3 h-3 rounded-full bg-yellow-300" />
+              <div className="w-3 h-3 rounded-full bg-green-300" />
+              <div className="flex-1 mx-4 h-6 rounded-md bg-neutral-100 max-w-xs" />
+            </div>
+            {/* Mock dashboard */}
+            <div className="flex">
+              {/* Mock sidebar */}
+              <div className="hidden sm:block w-44 bg-white border-r border-neutral-100 p-3 space-y-1">
+                {["Dashboard","Transaksi","Dompet","Anggaran","Hutang","Project","Laporan"].map((item, i) => (
+                  <div key={item} className={`h-8 rounded-lg flex items-center px-3 gap-2 ${i === 0 ? "bg-[#1E3A5F]" : "bg-transparent"}`}>
+                    <div className={`w-3 h-3 rounded-sm flex-shrink-0 ${i === 0 ? "bg-white/40" : "bg-neutral-200"}`} />
+                    <div className={`h-2.5 rounded flex-1 ${i === 0 ? "bg-white/40" : "bg-neutral-100"}`} style={{ maxWidth: `${55 + (i * 7) % 30}%` }} />
+                  </div>
+                ))}
+              </div>
+              {/* Mock content */}
+              <div className="flex-1 p-4 space-y-3">
+                <div className="grid grid-cols-3 gap-3">
+                  {[
+                    { label: "Total Saldo", value: "Rp 24.500.000", color: "#1E3A5F" },
+                    { label: "Pemasukan", value: "Rp 8.200.000", color: "#27AE60" },
+                    { label: "Pengeluaran", value: "Rp 3.750.000", color: "#E74C3C" },
+                  ].map(card => (
+                    <div key={card.label} className="bg-white rounded-xl border border-neutral-100 p-3">
+                      <p className="text-[9px] text-neutral-400 font-medium uppercase tracking-wide">{card.label}</p>
+                      <p className="text-sm font-bold mt-1" style={{ color: card.color }}>{card.value}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-white rounded-xl border border-neutral-100 p-3">
+                    <p className="text-[9px] text-neutral-400 font-medium mb-2">Tren 6 Bulan</p>
+                    <div className="flex items-end gap-1 h-14">
+                      {[40, 65, 50, 80, 60, 90].map((h, i) => (
+                        <div key={i} className="flex-1 rounded-t-sm" style={{ height: `${h}%`, backgroundColor: i === 5 ? "#1E3A5F" : "#E2E8F0" }} />
+                      ))}
+                    </div>
+                  </div>
+                  <div className="bg-white rounded-xl border border-neutral-100 p-3 space-y-1.5">
+                    <p className="text-[9px] text-neutral-400 font-medium">Transaksi Terbaru</p>
+                    {["Gaji Mei","Makan siang","Listrik"].map((tx, i) => (
+                      <div key={tx} className="flex items-center gap-2">
+                        <div className="w-5 h-5 rounded-full bg-neutral-100 flex-shrink-0" />
+                        <div className="flex-1 h-2 bg-neutral-100 rounded" />
+                        <div className="w-12 h-2 rounded" style={{ backgroundColor: i === 0 ? "#27AE60" + "40" : "#E74C3C" + "40" }} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          {/* Glow */}
+          <div className="absolute -inset-4 bg-gradient-to-r from-blue-100 via-transparent to-green-100 rounded-3xl -z-10 blur-2xl opacity-60" />
+        </div>
+      </section>
+
+      {/* ── Features ── */}
+      <section id="fitur" className="bg-neutral-50 py-20">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-14">
+            <p className="text-sm font-semibold text-[#27AE60] uppercase tracking-widest mb-3">Fitur Lengkap</p>
+            <h2 className="text-3xl sm:text-4xl font-bold text-[#1E3A5F]">Semua yang keluarga butuhkan</h2>
+            <p className="mt-4 text-neutral-500 max-w-xl mx-auto">Dari pencatatan harian sampai perencanaan jangka panjang, semua tersedia dalam satu aplikasi.</p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[
+              { emoji: "🏦", title: "Multi Dompet", desc: "Kelola tunai, rekening bank, tabungan, dan e-wallet dalam satu dashboard. Transfer antar dompet dengan mudah." },
+              { emoji: "📊", title: "Anggaran Bulanan", desc: "Tetapkan batas pengeluaran per kategori. Notifikasi otomatis saat mendekati batas anggaran." },
+              { emoji: "💸", title: "Hutang & Piutang", desc: "Catat hutang dengan sistem cicilan. Pantau sisa, jatuh tempo, dan progres pembayaran." },
+              { emoji: "🎯", title: "Project Keluarga", desc: "Rencanakan trip, beli rumah, atau pernikahan. Tabung bersama dengan target dana dan timeline." },
+              { emoji: "🔄", title: "Transaksi Berulang", desc: "Set gaji, tagihan, atau cicilan sekali. Otomatis tercatat sesuai jadwal bulanan atau mingguan." },
+              { emoji: "📈", title: "Laporan & Analisis", desc: "Laporan visual bulanan dan tahunan. Lihat tren, kategori terbesar, dan perbandingan bulan sebelumnya." },
+            ].map(f => (
+              <div key={f.title} className="bg-white rounded-2xl border border-neutral-100 p-6 hover:shadow-md transition-shadow">
+                <div className="w-12 h-12 rounded-xl bg-[#1E3A5F]/5 flex items-center justify-center text-2xl mb-4">{f.emoji}</div>
+                <h3 className="font-bold text-[#1E3A5F] text-lg mb-2">{f.title}</h3>
+                <p className="text-neutral-500 text-sm leading-relaxed">{f.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── How it works ── */}
+      <section id="cara-kerja" className="py-20">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-14">
+            <p className="text-sm font-semibold text-[#27AE60] uppercase tracking-widest mb-3">Mudah Dimulai</p>
+            <h2 className="text-3xl sm:text-4xl font-bold text-[#1E3A5F]">Mulai dalam 3 langkah</h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              { step: "01", title: "Daftar & Buat Household", desc: "Buat akun dan siapkan 'rumah digital' keluarga kamu. Beri nama keluarga dan undang anggota lewat kode unik." },
+              { step: "02", title: "Tambahkan Dompet", desc: "Daftarkan semua sumber dana — rekening bank, dompet tunai, e-wallet. Masukkan saldo awal masing-masing." },
+              { step: "03", title: "Mulai Catat", desc: "Catat setiap transaksi, set anggaran bulanan, dan pantau keuangan keluarga bersama-sama secara real-time." },
+            ].map((s, i) => (
+              <div key={s.step} className="relative">
+                {i < 2 && (
+                  <div className="hidden md:block absolute top-8 left-full w-full h-0.5 bg-gradient-to-r from-neutral-200 to-transparent -translate-x-6 z-0" />
+                )}
+                <div className="relative">
+                  <div className="w-16 h-16 rounded-2xl bg-[#1E3A5F] flex items-center justify-center mb-5">
+                    <span className="text-white font-bold text-xl">{s.step}</span>
+                  </div>
+                  <h3 className="font-bold text-[#1E3A5F] text-xl mb-3">{s.title}</h3>
+                  <p className="text-neutral-500 leading-relaxed">{s.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Collaboration callout ── */}
+      <section className="bg-[#1E3A5F] py-16">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+            <div>
+              <p className="text-[#27AE60] text-sm font-semibold uppercase tracking-widest mb-3">Untuk Seluruh Keluarga</p>
+              <h2 className="text-3xl font-bold text-white mb-4">Satu akun, semua anggota keluarga</h2>
+              <p className="text-blue-200 leading-relaxed mb-6">
+                Suami, istri, atau anak bisa mengakses dan mencatat transaksi dari perangkat masing-masing.
+                Admin mengontrol siapa yang bisa mengelola data keuangan keluarga.
+              </p>
+              <div className="space-y-3">
+                {[
+                  "Undang anggota keluarga dengan kode unik",
+                  "Role Admin dan Member dengan hak akses berbeda",
+                  "Semua transaksi tercatat siapa yang melakukan",
+                  "Data terlindungi dengan Row Level Security",
+                ].map(item => (
+                  <div key={item} className="flex items-start gap-3">
+                    <div className="w-5 h-5 rounded-full bg-[#27AE60] flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12"/>
+                      </svg>
+                    </div>
+                    <p className="text-blue-100 text-sm">{item}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              {[
+                { icon: "👨‍👩‍👧‍👦", label: "Multi Member", desc: "Kelola bersama" },
+                { icon: "🔐", label: "Aman & Private", desc: "Data terenkripsi" },
+                { icon: "📱", label: "Multi Device", desc: "Akses di mana saja" },
+                { icon: "☁️", label: "Cloud Sync", desc: "Selalu up-to-date" },
+              ].map(c => (
+                <div key={c.label} className="bg-white/10 rounded-xl p-4 text-center">
+                  <div className="text-3xl mb-2">{c.icon}</div>
+                  <p className="text-white font-semibold text-sm">{c.label}</p>
+                  <p className="text-blue-300 text-xs mt-0.5">{c.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── CTA ── */}
+      <section className="py-20">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
+          <h2 className="text-3xl sm:text-4xl font-bold text-[#1E3A5F] mb-4">
+            Mulai kelola keuangan keluarga hari ini
+          </h2>
+          <p className="text-neutral-500 text-lg mb-8">
+            Gratis selamanya untuk 1 household. Tidak perlu kartu kredit.
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            href="/register"
+            className="inline-block px-8 py-4 rounded-xl bg-[#27AE60] text-white font-bold text-lg hover:bg-[#27AE60]/90 transition-colors"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            Daftar Sekarang — Gratis →
+          </Link>
+          <p className="mt-4 text-sm text-neutral-400">Sudah punya akun? <Link href="/login" className="text-[#1E3A5F] font-medium hover:underline">Masuk di sini</Link></p>
         </div>
-      </main>
+      </section>
+
+      {/* ── Footer ── */}
+      <footer className="border-t border-neutral-100 py-10">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-lg bg-[#1E3A5F] flex items-center justify-center">
+              <span className="text-white font-bold text-xs">M</span>
+            </div>
+            <span className="font-bold text-[#1E3A5F]">Maalify</span>
+          </div>
+          <p className="text-sm text-neutral-400">© {new Date().getFullYear()} Maalify. Platform pencatatan keuangan keluarga.</p>
+          <div className="flex items-center gap-4 text-sm text-neutral-400">
+            <Link href="/login" className="hover:text-neutral-700 transition-colors">Masuk</Link>
+            <Link href="/register" className="hover:text-neutral-700 transition-colors">Daftar</Link>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

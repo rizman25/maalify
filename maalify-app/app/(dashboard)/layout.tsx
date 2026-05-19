@@ -1,7 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import Sidebar from "@/components/layout/Sidebar";
-import Topbar from "@/components/layout/Topbar";
+import DashboardShell from "@/components/layout/DashboardShell";
 
 export default async function DashboardLayout({
   children,
@@ -24,7 +23,7 @@ export default async function DashboardLayout({
 
   const { data: membership } = await supabase
     .from("household_members")
-    .select("household_id")
+    .select("household_id, role")
     .eq("user_id", user.id)
     .limit(1)
     .single();
@@ -39,14 +38,11 @@ export default async function DashboardLayout({
 
   const householdName = household?.name ?? "Keluarga Saya";
   const userName = profile?.name ?? user.email ?? "Pengguna";
+  const userRole = (membership?.role ?? "member") as "super_admin" | "admin" | "member";
 
   return (
-    <div className="flex h-screen bg-[var(--bg-base)] overflow-hidden">
-      <Sidebar />
-      <div className="flex flex-col flex-1 min-w-0">
-        <Topbar householdName={householdName} userName={userName} />
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
-      </div>
-    </div>
+    <DashboardShell householdName={householdName} userName={userName} userRole={userRole}>
+      {children}
+    </DashboardShell>
   );
 }

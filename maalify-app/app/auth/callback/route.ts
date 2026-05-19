@@ -13,7 +13,7 @@ export async function GET(request: Request) {
       const userId = data.user.id;
       const meta = data.user.user_metadata as Record<string, string> | null;
 
-      // Cek apakah user sudah punya household
+      // Check if user already has a household
       const { data: existing } = await supabase
         .from("household_members")
         .select("id")
@@ -21,33 +21,60 @@ export async function GET(request: Request) {
         .limit(1)
         .single();
 
-      // Buat household hanya jika belum ada (user baru dari register)
       if (!existing) {
-        const householdName = meta?.household_name ?? "Keluarga Saya";
-        const inviteCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+        const inviteCode = meta?.invite_code;
 
-        const { data: household } = await supabase
-          .from("households")
-          .insert({ name: householdName, invite_code: inviteCode, created_by: userId })
-          .select()
-          .single();
+        if (inviteCode) {
+          // Use SECURITY DEFINER RPC to bypass RLS on households table
+          const { data: householdId } = await supabase
+            .rpc("find_household_by_invite_code", { p_invite_code: inviteCode });
 
-        if (household) {
-          await supabase.from("household_members").insert({
-            household_id: household.id,
-            user_id: userId,
-            role: "admin",
-          });
-
-          await supabase.from("subscriptions").insert({
-            household_id: household.id,
-            plan: "free",
-            status: "active",
-          });
+          if (householdId) {
+            await supabase.from("household_members").insert({
+              household_id: householdId,
+              user_id: userId,
+              role: "member",
+            });
+          } else {
+            // Invalid invite code — create a default household as fallback
+            await createDefaultHousehold(supabase, userId, "Keluarga Saya");
+          }
+        } else {
+          // Create new household
+          const householdName = meta?.household_name ?? "Keluarga Saya";
+          await createDefaultHousehold(supabase, userId, householdName);
         }
       }
     }
   }
 
   return NextResponse.redirect(`${origin}/dashboard`);
+}
+
+async function createDefaultHousehold(
+  supabase: Awaited<ReturnType<typeof import("@/lib/supabase/server").createClient>>,
+  userId: string,
+  name: string
+) {
+  const inviteCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+
+  const { data: household } = await supabase
+    .from("households")
+    .insert({ name, invite_code: inviteCode, created_by: userId })
+    .select()
+    .single();
+
+  if (household) {
+    await supabase.from("household_members").insert({
+      household_id: household.id,
+      user_id: userId,
+      role: "admin",
+    });
+
+    await supabase.from("subscriptions").insert({
+      household_id: household.id,
+      plan: "free",
+      status: "active",
+    });
+  }
 }
