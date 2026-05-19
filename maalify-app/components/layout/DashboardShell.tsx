@@ -7,6 +7,7 @@ import Topbar from "./Topbar";
 import BottomNav from "./BottomNav";
 import OnboardingWizard from "@/components/onboarding/OnboardingWizard";
 import GlobalSearch from "@/components/search/GlobalSearch";
+import AiChatWidget from "@/components/chat/AiChatWidget";
 import type { AppNotification } from "@/types";
 
 interface Props {
@@ -111,6 +112,9 @@ export default function DashboardShell({ householdName, userName, avatarUrl, use
           userName={userName}
         />
       )}
+
+      {/* AI Chat Widget */}
+      <AiChatWidget />
     </div>
   );
 }
