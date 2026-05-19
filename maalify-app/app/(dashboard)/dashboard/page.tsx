@@ -194,7 +194,7 @@ export default async function DashboardPage() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <SummaryCard label={isMember ? "SALDO DOMPET SAYA" : "TOTAL SALDO"} value={totalAset} pctChange={null} color="#1E3A5F"
+        <SummaryCard label={isMember ? "SALDO DOMPET SAYA" : "TOTAL SALDO"} value={totalAset} pctChange={null} color="#3B82F6"
           icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>}
         />
         <SummaryCard label="PEMASUKAN BULAN INI" value={curIncome} pctChange={pct(curIncome, prevIncome)}
@@ -500,7 +500,12 @@ function SummaryCard({ label, value, pctChange, prevLabel, color, positive, surp
       </div>
       <p className="font-financial text-2xl font-bold" style={{ color }}>{surplus === false ? "-" : ""}Rp {formatRupiah(value)}</p>
       {surplus !== undefined && (
-        <span className={["text-[10px] font-semibold px-2 py-0.5 rounded-full mt-1 inline-block", surplus ? "bg-purple-100 text-purple-700" : "bg-red-100 text-danger"].join(" ")}>
+        <span
+          className="text-[10px] font-semibold px-2 py-0.5 rounded-full mt-1 inline-block"
+          style={surplus
+            ? { backgroundColor: "rgba(139,92,246,0.15)", color: "#A78BFA" }
+            : { backgroundColor: "rgba(239,68,68,0.15)", color: "#F87171" }}
+        >
           {surplus ? "Surplus" : "Defisit"}
         </span>
       )}
