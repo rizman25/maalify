@@ -40,31 +40,6 @@ export default function RegisterPage() {
       return;
     }
 
-    if (data.user) {
-      // Buat household setelah register
-      const inviteCode = Math.random().toString(36).substring(2, 10).toUpperCase();
-
-      const { data: household, error: householdError } = await supabase
-        .from("households")
-        .insert({ name: householdName, invite_code: inviteCode, created_by: data.user.id })
-        .select()
-        .single();
-
-      if (!householdError && household) {
-        await supabase.from("household_members").insert({
-          household_id: household.id,
-          user_id: data.user.id,
-          role: "admin",
-        });
-
-        await supabase.from("subscriptions").insert({
-          household_id: household.id,
-          plan: "free",
-          status: "active",
-        });
-      }
-    }
-
     setSuccess(true);
     setLoading(false);
   }
