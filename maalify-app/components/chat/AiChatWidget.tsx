@@ -27,7 +27,7 @@ export default function AiChatWidget() {
     if (open && messages.length === 0) {
       setMessages([{
         role: "assistant",
-        content: "Halo! 👋 Saya **Maal**, asisten keuangan keluarga kamu.\n\nSaya bisa bantu kamu menganalisis laporan keuangan, kasih saran penghematan, atau jawab pertanyaan seputar kondisi keuangan keluarga.\n\nAda yang ingin kamu tanyakan? 😊",
+        content: "Halo! 👋 Saya **Maali**, asisten keuangan keluarga kamu.\n\nSaya bisa bantu kamu menganalisis laporan keuangan, kasih saran penghematan, atau jawab pertanyaan seputar kondisi keuangan keluarga.\n\nAda yang ingin kamu tanyakan? 😊",
       }]);
     }
   }, [open, messages.length]);
@@ -87,7 +87,7 @@ export default function AiChatWidget() {
               M
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-white">Maal</p>
+              <p className="text-sm font-semibold text-white">Maali</p>
               <p className="text-[10px] text-white/70">Asisten Keuangan AI</p>
             </div>
             <button

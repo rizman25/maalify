@@ -142,7 +142,7 @@ export async function POST(req: NextRequest) {
   const bulanIni = BULAN[month - 1] + " " + year;
   const bulanLalu = BULAN[(month === 1 ? 12 : month - 1) - 1];
 
-  const systemPrompt = `Kamu adalah Maal, asisten keuangan keluarga yang cerdas dan ramah dalam aplikasi Maalify.
+  const systemPrompt = `Kamu adalah Maali, asisten keuangan keluarga yang cerdas dan ramah dalam aplikasi Maalify.
 Kamu membantu user memahami kondisi keuangan mereka, memberikan saran praktis, dan menjawab pertanyaan seputar keuangan keluarga.
 
 Gunakan bahasa Indonesia yang santai tapi profesional. Jawaban singkat dan to the point.
@@ -197,7 +197,7 @@ Berikan saran keuangan yang relevan dan praktis.`;
       "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
       "Content-Type": "application/json",
       "HTTP-Referer": process.env.NEXT_PUBLIC_APP_URL ?? "https://maalify.app",
-      "X-Title": "Maalify - AI Asisten Keuangan",
+      "X-Title": "Maalify - Maali Asisten Keuangan",
     },
     body: JSON.stringify(body),
   });
