@@ -1,6 +1,7 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import PwaRegister from "./pwa-register";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta-sans",
@@ -21,6 +22,24 @@ export const metadata: Metadata = {
   title: "Maalify — Pencatatan Keuangan Keluarga",
   description:
     "Platform SaaS pencatatan keuangan keluarga yang sederhana, aman, dan dapat diakses dari mana saja.",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Maalify",
+  },
+  icons: {
+    icon: "/icons/icon-192.svg",
+    apple: "/icons/icon-512.svg",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#1E3A5F",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({
@@ -34,7 +53,10 @@ export default function RootLayout({
       className={`${plusJakartaSans.variable} ${jetbrainsMono.variable} h-full`}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        {children}
+        <PwaRegister />
+      </body>
     </html>
   );
 }
