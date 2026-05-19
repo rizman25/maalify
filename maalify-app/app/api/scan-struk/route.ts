@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { GoogleGenAI } from "@google/genai";
 import { createClient } from "@/lib/supabase/server";
 
 const PROMPT = `Kamu adalah asisten OCR untuk aplikasi keuangan keluarga Indonesia. Analisis struk/kuitansi/invoice/nota ini dan ekstrak informasi transaksi.
@@ -23,13 +22,16 @@ Aturan penting:
 - Jika nominal tidak terbaca jelas → confidence = "low", total = 0
 - Jika tanggal tidak ada → date = null`;
 
+// Free vision models on OpenRouter
+const MODEL = "google/gemini-2.0-flash-exp:free";
+
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  if (!process.env.GEMINI_API_KEY) {
-    return NextResponse.json({ error: "GEMINI_API_KEY belum dikonfigurasi" }, { status: 500 });
+  if (!process.env.OPENROUTER_API_KEY) {
+    return NextResponse.json({ error: "OPENROUTER_API_KEY belum dikonfigurasi" }, { status: 500 });
   }
 
   let file: File | null = null;
@@ -44,7 +46,7 @@ export async function POST(req: NextRequest) {
 
   const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/heic", "application/pdf"];
   if (!allowedTypes.includes(file.type)) {
-    return NextResponse.json({ error: "Format tidak didukung. Gunakan JPG, PNG, WEBP, HEIC, atau PDF" }, { status: 400 });
+    return NextResponse.json({ error: "Format tidak didukung. Gunakan JPG, PNG, WEBP, atau PDF" }, { status: 400 });
   }
 
   if (file.size > 10 * 1024 * 1024) {
@@ -54,25 +56,43 @@ export async function POST(req: NextRequest) {
   try {
     const bytes = await file.arrayBuffer();
     const base64 = Buffer.from(bytes).toString("base64");
+    const dataUrl = `data:${file.type};base64,${base64}`;
 
-    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
-
-    const result = await ai.models.generateContent({
-      model: "gemini-1.5-flash",
-      contents: [
+    const body = {
+      model: MODEL,
+      messages: [
         {
           role: "user",
-          parts: [
-            { text: PROMPT },
-            { inlineData: { data: base64, mimeType: file.type } },
+          content: [
+            { type: "text", text: PROMPT },
+            { type: "image_url", image_url: { url: dataUrl } },
           ],
         },
       ],
+      max_tokens: 1024,
+      temperature: 0.1,
+    };
+
+    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        "Content-Type": "application/json",
+        "HTTP-Referer": process.env.NEXT_PUBLIC_APP_URL ?? "https://maalify.app",
+        "X-Title": "Maalify - Scan Struk",
+      },
+      body: JSON.stringify(body),
     });
 
-    const raw = (result.text ?? "").trim();
+    if (!res.ok) {
+      const errText = await res.text();
+      return NextResponse.json({ error: `OpenRouter error: ${errText}` }, { status: 500 });
+    }
 
-    // Strip markdown code blocks if present
+    const json = await res.json();
+    const raw = (json.choices?.[0]?.message?.content ?? "").trim();
+
+    // Strip markdown code blocks jika ada
     const cleaned = raw.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "").trim();
 
     let parsed: {
@@ -91,7 +111,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Gagal membaca hasil analisis. Coba foto yang lebih jelas." }, { status: 422 });
     }
 
-    // Sanitize
     const today = new Date().toISOString().split("T")[0];
     return NextResponse.json({
       merchant: String(parsed.merchant ?? "").slice(0, 100),
