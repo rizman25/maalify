@@ -18,9 +18,11 @@ export default async function DashboardPage() {
     .from("users").select("name").eq("id", user.id).single();
 
   const { data: membership } = await supabase
-    .from("household_members").select("household_id").eq("user_id", user.id).limit(1).single();
+    .from("household_members").select("household_id, role").eq("user_id", user.id).limit(1).single();
 
   const householdId = membership?.household_id ?? "";
+  const userRole = (membership?.role ?? "member") as "super_admin" | "admin" | "member";
+  const isMember = userRole === "member";
 
   const now = new Date();
   const year = now.getFullYear();
@@ -58,10 +60,12 @@ export default async function DashboardPage() {
       .select("id, amount, category_id, categories(name, color)")
       .eq("household_id", householdId).eq("month", month).eq("year", year),
 
-    supabase.from("debts")
-      .select("id, type, party_name, remaining_amount, due_date, status")
-      .eq("household_id", householdId).eq("status", "active")
-      .order("due_date").limit(5),
+    isMember
+      ? Promise.resolve({ data: [] })
+      : supabase.from("debts")
+          .select("id, type, party_name, remaining_amount, due_date, status")
+          .eq("household_id", householdId).eq("status", "active")
+          .order("due_date").limit(5),
 
     supabase.from("transactions")
       .select("id, type, amount, description, date, categories(name, icon, color), wallets(name), users(name)")
@@ -159,7 +163,9 @@ export default async function DashboardPage() {
             Selamat datang kembali, {firstName} 👋
           </h1>
           <p className="text-sm text-[var(--text-secondary)] mt-1">
-            Berikut ringkasan keuangan keluarga {bulanNama}
+            {isMember
+              ? `Berikut ringkasan keuangan kamu — ${bulanNama}`
+              : `Berikut ringkasan keuangan keluarga ${bulanNama}`}
           </p>
         </div>
         <QuickAddTransaksi
@@ -172,7 +178,7 @@ export default async function DashboardPage() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <SummaryCard label="TOTAL SALDO" value={totalAset} pctChange={null} color="#1E3A5F"
+        <SummaryCard label={isMember ? "SALDO DOMPET SAYA" : "TOTAL SALDO"} value={totalAset} pctChange={null} color="#1E3A5F"
           icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>}
         />
         <SummaryCard label="PEMASUKAN BULAN INI" value={curIncome} pctChange={pct(curIncome, prevIncome)}
@@ -205,7 +211,7 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* Anggaran + Hutang */}
+      {/* Anggaran + Hutang / Dompet */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Anggaran Bulan Ini */}
         <div className="bg-[var(--bg-surface)] rounded-xl border border-[var(--border)] p-5">
@@ -259,66 +265,92 @@ export default async function DashboardPage() {
           )}
         </div>
 
-        {/* Hutang Jatuh Tempo */}
-        <div className="bg-[var(--bg-surface)] rounded-xl border border-[var(--border)] p-5">
-          <div className="flex items-center justify-between mb-1">
-            <p className="font-semibold text-[var(--text-primary)]">Hutang Jatuh Tempo</p>
-            <Link href="/hutang" className="text-xs text-brand-primary hover:underline font-medium">Lihat semua →</Link>
-          </div>
-          <p className="text-xs text-[var(--text-secondary)] mb-4">Bayar tepat waktu untuk hindari denda</p>
-
-          {debts.length === 0 ? (
-            <div className="py-8 text-center">
-              <p className="text-sm text-[var(--text-secondary)]">Tidak ada hutang aktif</p>
+        {/* Hutang Jatuh Tempo (admin/super_admin) — Dompet Saya (member) */}
+        {isMember ? (
+          <div className="bg-[var(--bg-surface)] rounded-xl border border-[var(--border)] p-5">
+            <div className="flex items-center justify-between mb-1">
+              <p className="font-semibold text-[var(--text-primary)]">Dompet Saya</p>
+              <Link href="/dompet" className="text-xs text-brand-primary hover:underline font-medium">Lihat semua →</Link>
             </div>
-          ) : (
-            <div className="space-y-3">
-              {debts.map(d => {
-                const dueFmt = d.due_date
-                  ? new Date(d.due_date + "T00:00:00").toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })
-                  : "Tanpa jatuh tempo";
-                const isNearDue = d.due_date && d.due_date <= in5DaysStr;
-                return (
-                  <div key={d.id} className="flex items-center gap-3">
-                    <div className={[
-                      "w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0",
-                      d.type === "payable" ? "bg-red-50" : "bg-blue-50",
-                    ].join(" ")}>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={d.type === "payable" ? "#E74C3C" : "#2471A3"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/>
+            <p className="text-xs text-[var(--text-secondary)] mb-4">Saldo dompet yang dapat kamu akses</p>
+            {(activeWalletsRes.data ?? []).length === 0 ? (
+              <div className="py-8 text-center">
+                <p className="text-sm text-[var(--text-secondary)]">Belum ada dompet aktif</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {(activeWalletsRes.data ?? []).slice(0, 5).map(w => (
+                  <div key={w.id} className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+                      style={{ backgroundColor: (w.color ?? "#94A3B8") + "20" }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={w.color ?? "#94A3B8"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/>
                       </svg>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-[var(--text-primary)] truncate">{d.party_name}</p>
-                      <p className="text-xs text-[var(--text-secondary)]">
-                        Jatuh tempo · {dueFmt}
-                      </p>
+                      <p className="text-sm font-medium text-[var(--text-primary)] truncate">{w.name}</p>
                     </div>
-                    <div className="text-right flex-shrink-0">
-                      <p className="font-financial text-sm font-semibold text-[var(--text-primary)]">
-                        Rp {formatRupiah(Number(d.remaining_amount))}
-                      </p>
-                      <p className="text-[10px] text-[var(--text-secondary)]">
-                        {d.type === "payable" ? "hutang" : "piutang"}
-                      </p>
-                    </div>
+                    <p className="font-financial text-sm font-semibold text-[var(--text-primary)] flex-shrink-0">
+                      Rp {formatRupiah(Number(w.current_balance))}
+                    </p>
                   </div>
-                );
-              })}
-
-              {nearlyDueCount > 0 && (
-                <div className="mt-3 flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
-                  </svg>
-                  <p className="text-xs text-amber-800">
-                    <strong>{nearlyDueCount} hutang</strong> akan jatuh tempo dalam 5 hari ke depan
-                  </p>
-                </div>
-              )}
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="bg-[var(--bg-surface)] rounded-xl border border-[var(--border)] p-5">
+            <div className="flex items-center justify-between mb-1">
+              <p className="font-semibold text-[var(--text-primary)]">Hutang Jatuh Tempo</p>
+              <Link href="/hutang" className="text-xs text-brand-primary hover:underline font-medium">Lihat semua →</Link>
             </div>
-          )}
-        </div>
+            <p className="text-xs text-[var(--text-secondary)] mb-4">Bayar tepat waktu untuk hindari denda</p>
+
+            {debts.length === 0 ? (
+              <div className="py-8 text-center">
+                <p className="text-sm text-[var(--text-secondary)]">Tidak ada hutang aktif</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {debts.map(d => {
+                  const dueFmt = d.due_date
+                    ? new Date(d.due_date + "T00:00:00").toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })
+                    : "Tanpa jatuh tempo";
+                  return (
+                    <div key={d.id} className="flex items-center gap-3">
+                      <div className={["w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0", d.type === "payable" ? "bg-red-50" : "bg-blue-50"].join(" ")}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={d.type === "payable" ? "#E74C3C" : "#2471A3"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/>
+                        </svg>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-[var(--text-primary)] truncate">{d.party_name}</p>
+                        <p className="text-xs text-[var(--text-secondary)]">Jatuh tempo · {dueFmt}</p>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <p className="font-financial text-sm font-semibold text-[var(--text-primary)]">
+                          Rp {formatRupiah(Number(d.remaining_amount))}
+                        </p>
+                        <p className="text-[10px] text-[var(--text-secondary)]">{d.type === "payable" ? "hutang" : "piutang"}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {nearlyDueCount > 0 && (
+                  <div className="mt-3 flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                    <p className="text-xs text-amber-800">
+                      <strong>{nearlyDueCount} hutang</strong> akan jatuh tempo dalam 5 hari ke depan
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Transaksi Terbaru */}
