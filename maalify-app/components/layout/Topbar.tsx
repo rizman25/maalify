@@ -12,10 +12,11 @@ interface TopbarProps {
   darkMode: boolean;
   onToggleDark: () => void;
   onMenuClick: () => void;
+  onSearchClick: () => void;
   notifications: AppNotification[];
 }
 
-export default function Topbar({ householdName, userName, avatarUrl, darkMode, onToggleDark, onMenuClick, notifications }: TopbarProps) {
+export default function Topbar({ householdName, userName, avatarUrl, darkMode, onToggleDark, onMenuClick, onSearchClick, notifications }: TopbarProps) {
   const [panelOpen, setPanelOpen] = useState(false);
 
   const initials = userName
@@ -70,6 +71,29 @@ export default function Topbar({ householdName, userName, avatarUrl, darkMode, o
               <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
             </svg>
           )}
+        </button>
+
+        {/* Search button */}
+        <button
+          onClick={onSearchClick}
+          className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--bg-elevated)] text-[var(--text-secondary)] text-xs hover:text-[var(--text-primary)] hover:border-[var(--text-secondary)] transition-colors"
+          title="Cari (Ctrl+K)"
+        >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <span>Cari</span>
+          <kbd className="px-1 py-0.5 text-[10px] bg-[var(--bg-surface)] rounded border border-[var(--border)]">Ctrl K</kbd>
+        </button>
+        {/* Search icon only — mobile */}
+        <button
+          onClick={onSearchClick}
+          className="sm:hidden p-2 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] transition-colors"
+          aria-label="Cari"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
         </button>
 
         {/* Notification bell */}

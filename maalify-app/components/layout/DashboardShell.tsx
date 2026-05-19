@@ -6,6 +6,7 @@ import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 import BottomNav from "./BottomNav";
 import OnboardingWizard from "@/components/onboarding/OnboardingWizard";
+import GlobalSearch from "@/components/search/GlobalSearch";
 import type { AppNotification } from "@/types";
 
 interface Props {
@@ -23,12 +24,25 @@ interface Props {
 export default function DashboardShell({ householdName, userName, avatarUrl, userRole, notifications, hasWallets, householdId, userId, children }: Props) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const pathname = usePathname();
 
   // Close mobile sidebar on navigation
   useEffect(() => {
     setSidebarOpen(false);
   }, [pathname]);
+
+  // Ctrl+K / Cmd+K to open search
+  useEffect(() => {
+    function handler(e: KeyboardEvent) {
+      if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+        e.preventDefault();
+        setSearchOpen(v => !v);
+      }
+    }
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, []);
 
   // Init dark mode from localStorage
   useEffect(() => {
@@ -78,12 +92,16 @@ export default function DashboardShell({ householdName, userName, avatarUrl, use
           onToggleDark={toggleDark}
           onMenuClick={() => setSidebarOpen(true)}
           notifications={notifications}
+          onSearchClick={() => setSearchOpen(true)}
         />
         <main className="flex-1 overflow-y-auto pb-16 lg:pb-0">{children}</main>
       </div>
 
       {/* Mobile bottom nav */}
       <BottomNav userRole={userRole} onMenuClick={() => setSidebarOpen(true)} />
+
+      {/* Global search modal */}
+      <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
 
       {/* Onboarding wizard — shown once for new users with no wallet */}
       {!hasWallets && (
