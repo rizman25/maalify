@@ -26,22 +26,44 @@ export async function proxy(request: NextRequest) {
   );
 
   const { data: { user } } = await supabase.auth.getUser();
+  const { pathname } = request.nextUrl;
 
-  const isAuthRoute = request.nextUrl.pathname.startsWith("/login") ||
-    request.nextUrl.pathname.startsWith("/register") ||
-    request.nextUrl.pathname.startsWith("/forgot-password");
+  // ── Route categories ──────────────────────────────────────────────────
+  const isPublicRoute =
+    pathname === "/" ||
+    pathname.startsWith("/auth") ||
+    pathname.startsWith("/join") ||
+    pathname.startsWith("/offline");
 
-  const isPublicRoute = request.nextUrl.pathname === "/";
+  const isUserAuthRoute =
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/register") ||
+    pathname.startsWith("/forgot-password");
 
-  // Redirect ke login jika belum login dan bukan di auth route
-  if (!user && !isAuthRoute && !isPublicRoute) {
+  // Admin login — siapa saja boleh akses tanpa login
+  const isAdminLoginRoute = pathname === "/admin/login";
+
+  // Halaman admin lainnya
+  const isAdminRoute = pathname.startsWith("/admin") && !isAdminLoginRoute;
+
+  // ── Redirect logic ────────────────────────────────────────────────────
+
+  // 1. Unauthenticated + akses admin route → /admin/login
+  if (!user && isAdminRoute) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/admin/login";
+    return NextResponse.redirect(url);
+  }
+
+  // 2. Unauthenticated + akses protected app route → /login
+  if (!user && !isUserAuthRoute && !isPublicRoute && !isAdminLoginRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
   }
 
-  // Redirect ke dashboard jika sudah login tapi buka auth route
-  if (user && isAuthRoute) {
+  // 3. Already logged in + akses user auth route → /dashboard
+  if (user && isUserAuthRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
     return NextResponse.redirect(url);
