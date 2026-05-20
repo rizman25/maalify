@@ -147,7 +147,7 @@ export interface Debt {
 
 export interface AppNotification {
   id: string;
-  type: "debt_overdue" | "debt_due_soon" | "budget_over" | "budget_near";
+  type: "debt_overdue" | "debt_due_soon" | "budget_over" | "budget_near" | "savings_goal_due" | "recurring_due";
   title: string;
   message: string;
   href: string;
