@@ -9,7 +9,7 @@ export default async function AdminPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user || !ADMIN_EMAILS.includes(user.email ?? "")) redirect("/dashboard");
+  if (!user || !ADMIN_EMAILS.includes(user.email ?? "")) redirect("/admin/login");
 
   // Service role client untuk bypass RLS
   const svc = createServiceClient(

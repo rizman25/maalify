@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 
 interface Stats {
@@ -32,6 +34,7 @@ function fmtDate(iso: string) {
 }
 
 export default function AdminDashboardClient({ stats, dailyTxData, topHouseholds, recentUsers, generatedAt }: Props) {
+  const router = useRouter();
   const [tab, setTab] = useState<"overview" | "ai" | "users" | "households">("overview");
   const [darkMode, setDarkMode] = useState(() =>
     typeof document !== "undefined"
@@ -44,6 +47,12 @@ export default function AdminDashboardClient({ stats, dailyTxData, topHouseholds
     setDarkMode(next);
     document.documentElement.classList.toggle("dark", next);
     localStorage.setItem("maalify-theme", next ? "dark" : "light");
+  }
+
+  async function handleLogout() {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/admin/login");
   }
 
   const txGrowth = stats.txPrevMonth > 0
@@ -89,6 +98,19 @@ export default function AdminDashboardClient({ stats, dailyTxData, topHouseholds
           >
             ← App
           </Link>
+
+          <button
+            onClick={handleLogout}
+            className="px-3 py-1.5 rounded-lg border border-red-500/30 text-xs text-red-500 hover:bg-red-500/10 transition-colors flex items-center gap-1.5"
+            title="Keluar dari admin"
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            Logout
+          </button>
         </div>
       </div>
 
