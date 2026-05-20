@@ -7,6 +7,8 @@ import CategoryChart from "@/components/dashboard/CategoryChart";
 import QuickAddTransaksi from "@/components/dashboard/QuickAddTransaksi";
 import ScanStrukButton from "@/components/dashboard/ScanStrukButton";
 import RecentTransaksiList from "@/components/dashboard/RecentTransaksiList";
+import MemberSpendingSummary from "@/components/dashboard/MemberSpendingSummary";
+import type { MemberSpending } from "@/components/dashboard/MemberSpendingSummary";
 import Link from "next/link";
 
 const BULAN_SHORT = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
@@ -46,7 +48,7 @@ export default async function DashboardPage() {
   sixMonthsAgo.setDate(1);
   const trendStart = `${sixMonthsAgo.getFullYear()}-${pad(sixMonthsAgo.getMonth() + 1)}-01`;
 
-  const [curMonthRes, prevMonthRes, walletsRes, trendRes, catRes, budgetsRes, debtsRes, recentTxRes, activeWalletsRes, catsRes, goalsRes] = await Promise.all([
+  const [curMonthRes, prevMonthRes, walletsRes, trendRes, catRes, budgetsRes, debtsRes, recentTxRes, activeWalletsRes, catsRes, goalsRes, memberSpendingRes] = await Promise.all([
     supabase.from("transactions").select("type, amount")
       .eq("household_id", householdId).gte("date", monthStart).lt("date", monthEnd),
 
@@ -95,6 +97,11 @@ export default async function DashboardPage() {
       .eq("is_completed", false)
       .order("created_at", { ascending: false })
       .limit(4),
+
+    // Member spending summary — owners/admins only via SECURITY DEFINER RPC
+    !isMember && householdId
+      ? supabase.rpc("get_member_spending_summary", { p_household_id: householdId })
+      : Promise.resolve({ data: null, error: null }),
   ]);
 
   const curIncome  = (curMonthRes.data ?? []).filter(t => t.type === "income").reduce((s,t) => s + Number(t.amount), 0);
@@ -105,6 +112,13 @@ export default async function DashboardPage() {
   const netSavings = curIncome - curExpense;
   const prevNetSavings = prevIncome - prevExpense;
   const activeGoals = (goalsRes.data ?? []) as { id: string; name: string; target_amount: number; current_amount: number; color: string; icon: string; is_completed: boolean }[];
+
+  const memberSpending: MemberSpending[] = ((memberSpendingRes.data ?? []) as MemberSpending[]).map(m => ({
+    user_id: m.user_id,
+    user_name: m.user_name,
+    total_expense: Number(m.total_expense),
+    tx_count: Number(m.tx_count),
+  }));
 
   function pct(cur: number, prev: number) {
     if (prev === 0) return null;
@@ -389,6 +403,15 @@ export default async function DashboardPage() {
           </div>
         )}
       </div>
+
+      {/* Member Spending Summary — owner/admin only */}
+      {!isMember && memberSpending.length > 0 && (
+        <MemberSpendingSummary
+          members={memberSpending}
+          currentUserId={user.id}
+          bulanNama={bulanNama}
+        />
+      )}
 
       {/* Savings Goals Widget */}
       <div className="bg-[var(--bg-surface)] rounded-xl border border-[var(--border)] p-5">
