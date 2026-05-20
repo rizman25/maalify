@@ -21,6 +21,10 @@ export default async function LaporanPage({ searchParams }: Props) {
 
   const householdId = membership?.household_id ?? "";
 
+  const { data: household } = householdId
+    ? await supabase.from("households").select("name").eq("id", householdId).single()
+    : { data: null };
+
   const yearStart = `${year}-01-01`;
   const yearEnd   = `${year + 1}-01-01`;
 
@@ -109,6 +113,7 @@ export default async function LaporanPage({ searchParams }: Props) {
       categoryExpense={categoryExpense}
       categoryIncome={categoryIncome}
       householdId={householdId}
+      householdName={household?.name ?? "Keluarga"}
     />
   );
 }

@@ -33,6 +33,7 @@ interface Props {
   categoryExpense: CatItem[];
   categoryIncome: CatItem[];
   householdId: string;
+  householdName: string;
 }
 
 const MONTHS_PANJANG = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
@@ -65,10 +66,11 @@ function downloadCSV(rows: string[][], filename: string) {
 
 export default function LaporanPageClient({
   year, monthlyData, totalIncome, totalExpense, totalAset,
-  categoryExpense, categoryIncome, householdId,
+  categoryExpense, categoryIncome, householdId, householdName,
 }: Props) {
   const router = useRouter();
   const [exportOpen, setExportOpen] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
   const net = totalIncome - totalExpense;
   const now = new Date();
   const currentYear = now.getFullYear();
@@ -87,6 +89,203 @@ export default function LaporanPageClient({
 
   function navigate(dir: -1 | 1) {
     router.push(`/laporan?year=${year + dir}`);
+  }
+
+  async function downloadPDF() {
+    setPdfLoading(true);
+    try {
+      const { jsPDF } = await import("jspdf");
+      const { default: autoTable } = await import("jspdf-autotable");
+
+      const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+      const pageW = doc.internal.pageSize.getWidth();
+      const pageH = doc.internal.pageSize.getHeight();
+      const margin = 14;
+      const contentW = pageW - margin * 2;
+
+      const navy: [number, number, number]   = [30, 58, 95];
+      const green: [number, number, number]  = [39, 174, 96];
+      const red: [number, number, number]    = [231, 76, 60];
+      const gray: [number, number, number]   = [100, 116, 139];
+      const light: [number, number, number]  = [241, 245, 249];
+
+      const fmt = (n: number) => `Rp ${new Intl.NumberFormat("id-ID").format(n)}`;
+
+      // ── Header bar ─────────────────────────────────────────────────────
+      doc.setFillColor(...navy);
+      doc.rect(0, 0, pageW, 26, "F");
+
+      // Logo box
+      doc.setFillColor(255, 255, 255);
+      doc.roundedRect(margin, 6, 13, 13, 2, 2, "F");
+      doc.setTextColor(...navy);
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "bold");
+      doc.text("M", margin + 6.5, 14.5, { align: "center" });
+
+      // Title
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(13);
+      doc.setFont("helvetica", "bold");
+      doc.text("Maalify", margin + 17, 12);
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(180, 210, 235);
+      doc.text(`Laporan Keuangan ${householdName} · Tahun ${year}`, margin + 17, 18.5);
+
+      // Date
+      const genDate = new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+      doc.setFontSize(7);
+      doc.text(`Dibuat: ${genDate}`, pageW - margin, 20, { align: "right" });
+
+      let y = 34;
+
+      // ── Summary cards ──────────────────────────────────────────────────
+      const cardW = (contentW - 9) / 4;
+      const cards = [
+        { label: "TOTAL PEMASUKAN",  value: totalIncome,         color: green },
+        { label: "TOTAL PENGELUARAN",value: totalExpense,         color: red   },
+        { label: "SELISIH BERSIH",   value: Math.abs(net),        color: net >= 0 ? green : red },
+        { label: "TOTAL ASET",       value: totalAset,            color: navy  },
+      ];
+      cards.forEach((c, i) => {
+        const x = margin + i * (cardW + 3);
+        doc.setFillColor(...light);
+        doc.roundedRect(x, y, cardW, 18, 2, 2, "F");
+        doc.setFontSize(6.5);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(...gray);
+        doc.text(c.label, x + cardW / 2, y + 5.5, { align: "center" });
+        doc.setFontSize(8.5);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(...c.color);
+        // Truncate long numbers if needed
+        const valStr = c.value >= 1_000_000_000
+          ? `Rp ${(c.value / 1_000_000_000).toFixed(1)}M`
+          : c.value >= 1_000_000
+          ? `Rp ${(c.value / 1_000_000).toFixed(1)}jt`
+          : fmt(c.value);
+        doc.text(valStr, x + cardW / 2, y + 13, { align: "center" });
+      });
+      y += 25;
+
+      // ── Monthly table ──────────────────────────────────────────────────
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(...navy);
+      doc.text("Ringkasan Per Bulan", margin, y);
+      y += 3;
+
+      const bodyRows = monthlyData.map((m) => {
+        const hasData = m.income > 0 || m.expense > 0;
+        return [
+          MONTHS_PANJANG[m.month - 1],
+          m.income  > 0 ? fmt(m.income)  : "-",
+          m.expense > 0 ? fmt(m.expense) : "-",
+          hasData ? `${m.net >= 0 ? "+" : ""}${fmt(Math.abs(m.net))}` : "-",
+        ];
+      });
+      bodyRows.push(["TOTAL", fmt(totalIncome), fmt(totalExpense), `${net >= 0 ? "+" : ""}${fmt(Math.abs(net))}`]);
+
+      autoTable(doc, {
+        startY: y,
+        head: [["BULAN", "PEMASUKAN", "PENGELUARAN", "SELISIH"]],
+        body: bodyRows,
+        margin: { left: margin, right: margin },
+        styles: { fontSize: 8.5, cellPadding: 2.8 },
+        headStyles: { fillColor: navy, textColor: [255, 255, 255], fontStyle: "bold", fontSize: 7.5 },
+        columnStyles: {
+          0: { halign: "left" },
+          1: { halign: "right", textColor: green },
+          2: { halign: "right", textColor: red },
+          3: { halign: "right", fontStyle: "bold" },
+        },
+        didParseCell: (data) => {
+          if (data.row.index === bodyRows.length - 1) {
+            data.cell.styles.fillColor = [226, 232, 240];
+            data.cell.styles.fontStyle = "bold";
+          }
+          if (data.column.index === 3 && data.row.index < bodyRows.length - 1) {
+            const m = monthlyData[data.row.index];
+            if (m && (m.income > 0 || m.expense > 0)) {
+              data.cell.styles.textColor = m.net >= 0 ? green : red;
+            }
+          }
+        },
+      });
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      y = (doc as any).lastAutoTable.finalY + 10;
+
+      // ── Category tables ────────────────────────────────────────────────
+      if (categoryExpense.length > 0 || categoryIncome.length > 0) {
+        if (y > 210) { doc.addPage(); y = 20; }
+
+        const halfW = (contentW - 6) / 2;
+
+        // Expense categories
+        if (categoryExpense.length > 0) {
+          doc.setFontSize(10);
+          doc.setFont("helvetica", "bold");
+          doc.setTextColor(...navy);
+          doc.text("Pengeluaran per Kategori", margin, y);
+
+          autoTable(doc, {
+            startY: y + 3,
+            head: [["KATEGORI", "JUMLAH", "%"]],
+            body: categoryExpense.slice(0, 10).map((c) => [
+              c.name,
+              fmt(c.amount),
+              `${totalExpense > 0 ? ((c.amount / totalExpense) * 100).toFixed(1) : "0"}%`,
+            ]),
+            margin: { left: margin, right: margin + halfW + 6 },
+            styles: { fontSize: 8, cellPadding: 2.5 },
+            headStyles: { fillColor: red, textColor: [255, 255, 255], fontStyle: "bold", fontSize: 7 },
+            columnStyles: { 1: { halign: "right" }, 2: { halign: "right" } },
+          });
+        }
+
+        // Income categories
+        if (categoryIncome.length > 0) {
+          doc.setFontSize(10);
+          doc.setFont("helvetica", "bold");
+          doc.setTextColor(...navy);
+          doc.text("Pemasukan per Kategori", margin + halfW + 6, y);
+
+          autoTable(doc, {
+            startY: y + 3,
+            head: [["KATEGORI", "JUMLAH", "%"]],
+            body: categoryIncome.slice(0, 10).map((c) => [
+              c.name,
+              fmt(c.amount),
+              `${totalIncome > 0 ? ((c.amount / totalIncome) * 100).toFixed(1) : "0"}%`,
+            ]),
+            margin: { left: margin + halfW + 6, right: margin },
+            styles: { fontSize: 8, cellPadding: 2.5 },
+            headStyles: { fillColor: green, textColor: [255, 255, 255], fontStyle: "bold", fontSize: 7 },
+            columnStyles: { 1: { halign: "right" }, 2: { halign: "right" } },
+          });
+        }
+      }
+
+      // ── Footer on every page ───────────────────────────────────────────
+      const totalPages = doc.getNumberOfPages();
+      for (let p = 1; p <= totalPages; p++) {
+        doc.setPage(p);
+        doc.setFillColor(...navy);
+        doc.rect(0, pageH - 9, pageW, 9, "F");
+        doc.setFontSize(7);
+        doc.setTextColor(180, 210, 235);
+        doc.text("Maalify — Pencatatan Keuangan Keluarga", margin, pageH - 3);
+        doc.text(`Halaman ${p} dari ${totalPages}`, pageW - margin, pageH - 3, { align: "right" });
+      }
+
+      doc.save(`laporan_${householdName.replace(/\s+/g, "_")}_${year}.pdf`);
+    } catch (e) {
+      console.error("PDF error:", e);
+    } finally {
+      setPdfLoading(false);
+    }
   }
 
   const topExpense = categoryExpense.slice(0, 8).map((c, i) => ({
@@ -130,7 +329,24 @@ export default function LaporanPageClient({
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
               </svg>
-              Laporan {year}
+              CSV {year}
+            </button>
+            <button
+              onClick={downloadPDF}
+              disabled={pdfLoading}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-red-200 text-xs font-medium text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
+            >
+              {pdfLoading ? (
+                <svg className="animate-spin" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                </svg>
+              ) : (
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+                  <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
+                </svg>
+              )}
+              PDF {year}
             </button>
             <button
               onClick={() => setExportOpen(true)}
