@@ -3,7 +3,7 @@
 import { useState, useMemo, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { formatRupiah } from "@/lib/utils";
-import type { Wallet, Category, TransactionWithCategory, TransactionType } from "@/types";
+import type { Wallet, Category, TransactionWithCategory, TransactionType, TransactionVisibility } from "@/types";
 
 interface Props {
   transaction: TransactionWithCategory | null;
@@ -28,6 +28,7 @@ export default function TransaksiModal({
   const [walletId, setWalletId] = useState(transaction?.wallet_id ?? (wallets[0]?.id ?? ""));
   const [date, setDate] = useState(transaction?.date ?? today);
   const [note, setNote] = useState(transaction?.note ?? "");
+  const [visibility, setVisibility] = useState<TransactionVisibility>(transaction?.visibility ?? "private");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showDelete, setShowDelete] = useState(false);
@@ -114,6 +115,7 @@ export default function TransaksiModal({
       const updates: Record<string, unknown> = {
         type, amount: parsedAmount, description: description.trim(),
         category_id: categoryId, wallet_id: walletId, date, note: note.trim() || null,
+        visibility,
       };
       if (newUrl !== undefined) updates.attachment_url = newUrl;
 
@@ -130,6 +132,7 @@ export default function TransaksiModal({
         wallet_id: walletId,
         date,
         note: note.trim() || null,
+        visibility,
       }).select("id").single();
 
       if (err || !newTx) { setError(err?.message ?? "Gagal menyimpan"); setLoading(false); return; }
@@ -349,6 +352,42 @@ export default function TransaksiModal({
               rows={2}
               className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] text-sm text-[var(--text-primary)] bg-[var(--bg-surface)] placeholder:text-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-brand-primary resize-none"
             />
+          </div>
+
+          {/* Visibilitas */}
+          <div>
+            <label className="block text-xs font-medium text-[var(--text-primary)] mb-2">Visibilitas</label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setVisibility("private")}
+                className={[
+                  "py-2.5 rounded-xl text-sm font-medium border-2 transition-colors flex items-center justify-center gap-2",
+                  visibility === "private"
+                    ? "border-slate-400 bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-200 dark:border-slate-500"
+                    : "border-[var(--border)] text-[var(--text-secondary)] hover:border-slate-400",
+                ].join(" ")}
+              >
+                🔒 Pribadi
+              </button>
+              <button
+                type="button"
+                onClick={() => setVisibility("shared")}
+                className={[
+                  "py-2.5 rounded-xl text-sm font-medium border-2 transition-colors flex items-center justify-center gap-2",
+                  visibility === "shared"
+                    ? "border-brand-primary bg-brand-primary/5 text-brand-primary"
+                    : "border-[var(--border)] text-[var(--text-secondary)] hover:border-brand-primary/40",
+                ].join(" ")}
+              >
+                🏠 Bersama
+              </button>
+            </div>
+            <p className="text-[10px] text-[var(--text-secondary)] mt-1.5 leading-relaxed">
+              {visibility === "private"
+                ? "🔒 Hanya kamu yang bisa melihat transaksi ini"
+                : "🏠 Semua anggota keluarga bisa melihat transaksi ini"}
+            </p>
           </div>
 
           {error && (

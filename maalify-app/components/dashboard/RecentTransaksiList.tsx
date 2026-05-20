@@ -12,6 +12,8 @@ interface RecentTx {
   amount: number;
   description: string;
   date: string;
+  visibility: string;
+  user_id: string;
   categories: { name: string; icon: string; color: string } | null;
   wallets: { name: string } | null;
   users: { name: string } | null;
@@ -19,9 +21,10 @@ interface RecentTx {
 
 interface Props {
   transactions: RecentTx[];
+  currentUserId: string;
 }
 
-export default function RecentTransaksiList({ transactions }: Props) {
+export default function RecentTransaksiList({ transactions, currentUserId }: Props) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   if (transactions.length === 0) {
@@ -38,10 +41,13 @@ export default function RecentTransaksiList({ transactions }: Props) {
         {transactions.map((tx, i) => {
           const cat = Array.isArray(tx.categories) ? tx.categories[0] : tx.categories;
           const wallet = Array.isArray(tx.wallets) ? tx.wallets[0] : tx.wallets;
+          const memberName = Array.isArray(tx.users) ? tx.users[0]?.name : tx.users?.name;
           const dateStr = new Date(tx.date + "T00:00:00").toLocaleDateString("id-ID", {
             day: "numeric", month: "short",
           });
           const isIncome = tx.type === "income";
+          const isOwn = tx.user_id === currentUserId;
+          const isPrivate = tx.visibility === "private";
 
           return (
             <button
@@ -62,7 +68,15 @@ export default function RecentTransaksiList({ transactions }: Props) {
 
               {/* Info */}
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-[var(--text-primary)] truncate">{tx.description}</p>
+                <div className="flex items-center gap-1.5">
+                  <p className="text-sm font-medium text-[var(--text-primary)] truncate">{tx.description}</p>
+                  {isOwn && isPrivate && (
+                    <span className="flex-shrink-0 text-[10px] text-slate-400 bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded-full leading-none">🔒</span>
+                  )}
+                  {!isPrivate && (
+                    <span className="flex-shrink-0 text-[10px] text-brand-primary bg-brand-primary/10 px-1.5 py-0.5 rounded-full leading-none">🏠</span>
+                  )}
+                </div>
                 <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                   <span
                     className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full"
@@ -73,6 +87,9 @@ export default function RecentTransaksiList({ transactions }: Props) {
                   <span className="text-[10px] text-[var(--text-secondary)]">{dateStr}</span>
                   {wallet?.name && (
                     <span className="text-[10px] text-[var(--text-secondary)] hidden sm:inline">{wallet.name}</span>
+                  )}
+                  {!isOwn && memberName && (
+                    <span className="text-[10px] text-brand-primary font-medium">{memberName}</span>
                   )}
                 </div>
               </div>

@@ -76,7 +76,7 @@ export default async function DashboardPage() {
           .order("due_date").limit(5),
 
     supabase.from("transactions")
-      .select("id, type, amount, description, date, categories(name, icon, color), wallets(name), users(name)")
+      .select("id, type, amount, description, date, visibility, user_id, categories(name, icon, color), wallets(name), users(name)")
       .eq("household_id", householdId)
       .order("date", { ascending: false })
       .order("created_at", { ascending: false })
@@ -161,6 +161,7 @@ export default async function DashboardPage() {
   // Recent transactions
   type RecentTx = {
     id: string; type: string; amount: number; description: string; date: string;
+    visibility: string; user_id: string;
     categories: { name: string; icon: string; color: string } | null;
     wallets: { name: string } | null;
     users: { name: string } | null;
@@ -443,7 +444,10 @@ export default async function DashboardPage() {
           <Link href="/transaksi" className="text-xs text-brand-primary hover:underline font-medium">Lihat semua →</Link>
         </div>
 
-        <RecentTransaksiList transactions={recentTx as Parameters<typeof RecentTransaksiList>[0]["transactions"]} />
+        <RecentTransaksiList
+          transactions={recentTx as Parameters<typeof RecentTransaksiList>[0]["transactions"]}
+          currentUserId={user.id}
+        />
       </div>
     </div>
   );

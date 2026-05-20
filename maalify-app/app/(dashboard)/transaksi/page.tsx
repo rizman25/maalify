@@ -34,7 +34,7 @@ export default async function TransaksiPage({ searchParams }: Props) {
   const [txRes, walletsRes, catsRes] = await Promise.all([
     supabase
       .from("transactions")
-      .select("*, categories(name, icon, color), wallets(name)")
+      .select("*, categories(name, icon, color), wallets(name), users(name)")
       .eq("household_id", householdId)
       .gte("date", monthStart)
       .lt("date", monthEnd)

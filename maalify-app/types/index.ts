@@ -62,6 +62,8 @@ export interface Category {
   created_at: string;
 }
 
+export type TransactionVisibility = "private" | "shared";
+
 export interface Transaction {
   id: string;
   household_id: string;
@@ -75,6 +77,7 @@ export interface Transaction {
   date: string;
   note: string | null;
   attachment_url: string | null;
+  visibility: TransactionVisibility;
   created_at: string;
   updated_at: string;
 }
@@ -82,6 +85,7 @@ export interface Transaction {
 export interface TransactionWithCategory extends Transaction {
   categories: Pick<Category, "name" | "icon" | "color">;
   wallets: Pick<Wallet, "name">;
+  users?: { name: string } | null;
 }
 
 export interface Budget {
