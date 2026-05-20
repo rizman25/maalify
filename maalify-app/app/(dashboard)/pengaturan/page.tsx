@@ -71,7 +71,7 @@ export default async function PengaturanPage() {
 
   return (
     <PengaturanPageClient
-      profile={profileRes.data ?? { id: user.id, name: "", email: user.email ?? "", avatar_url: null }}
+      profile={profileRes.data ?? { id: user.id, name: "", email: user.email ?? "", avatar_url: null, phone: null }}
       household={householdRes.data ?? { id: householdId, name: "", description: null, invite_code: "" }}
       members={members}
       categories={catsRes.data ?? []}

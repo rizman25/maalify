@@ -114,11 +114,11 @@ export default async function DashboardLayout({
       // Savings goals near deadline (within 30 days, not yet completed)
       supabase
         .from("savings_goals")
-        .select("id, name, icon, target_amount, current_amount, target_date")
+        .select("id, name, icon, target_amount, current_amount, deadline")
         .eq("household_id", membership.household_id)
         .eq("is_completed", false)
-        .not("target_date", "is", null)
-        .lte("target_date", thirtyDaysStr),
+        .not("deadline", "is", null)
+        .lte("deadline", thirtyDaysStr),
 
       // Recurring transactions (compute next_date in JS)
       supabase
@@ -182,7 +182,7 @@ export default async function DashboardLayout({
         : 0;
       if (pct >= 95) continue; // nearly done — no need to warn
       const daysLeft = Math.ceil(
-        (new Date(g.target_date).getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+        (new Date(g.deadline).getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
       );
       const isUrgent = daysLeft <= 7;
       allNotifications.push({
