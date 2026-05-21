@@ -1,6 +1,8 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+const ADMIN_EMAILS = ["riza.developer25@gmail.com"];
+
 export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
@@ -28,6 +30,8 @@ export async function proxy(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   const { pathname } = request.nextUrl;
 
+  const isAdminEmail = ADMIN_EMAILS.includes(user?.email ?? "");
+
   // ── Route categories ──────────────────────────────────────────────────
   const isPublicRoute =
     pathname === "/" ||
@@ -47,6 +51,9 @@ export async function proxy(request: NextRequest) {
   // Halaman admin lainnya
   const isAdminRoute = pathname.startsWith("/admin") && !isAdminLoginRoute;
 
+  // App routes (bukan admin, bukan public, bukan auth)
+  const isAppRoute = !isAdminRoute && !isAdminLoginRoute && !isPublicRoute && !isUserAuthRoute;
+
   // ── Redirect logic ────────────────────────────────────────────────────
 
   // 1. Unauthenticated + akses admin route → /admin/login
@@ -56,15 +63,29 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // 2. Unauthenticated + akses protected app route → /login
+  // 2. Admin email + akses app routes → /admin (admin tidak boleh pakai app biasa)
+  if (user && isAdminEmail && isAppRoute) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/admin";
+    return NextResponse.redirect(url);
+  }
+
+  // 3. Admin email + akses user auth routes → /admin
+  if (user && isAdminEmail && isUserAuthRoute) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/admin";
+    return NextResponse.redirect(url);
+  }
+
+  // 4. Unauthenticated + akses protected app route → /login
   if (!user && !isUserAuthRoute && !isPublicRoute && !isAdminLoginRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
   }
 
-  // 3. Already logged in + akses user auth route → /dashboard
-  if (user && isUserAuthRoute) {
+  // 5. Already logged in (non-admin) + akses user auth route → /dashboard
+  if (user && !isAdminEmail && isUserAuthRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
     return NextResponse.redirect(url);
