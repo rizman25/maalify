@@ -24,6 +24,7 @@ export default async function HomePage() {
             <a href="#fitur" className="hover:text-[#1E3A5F] transition-colors">Fitur</a>
             <a href="#ai" className="hover:text-[#1E3A5F] transition-colors">AI Canggih</a>
             <a href="#cara-kerja" className="hover:text-[#1E3A5F] transition-colors">Cara Kerja</a>
+            <Link href="/panduan" className="hover:text-[#1E3A5F] transition-colors">Panduan</Link>
           </nav>
 
           <div className="flex items-center gap-3">
@@ -236,7 +237,7 @@ export default async function HomePage() {
               { emoji: "📈", title: "Laporan & Analisis", desc: "Laporan visual bulanan dan tahunan. Lihat tren, kategori terbesar, dan perbandingan bulan sebelumnya." },
               { emoji: "🔍", title: "Global Search", desc: "Cari transaksi, dompet, atau hutang dalam hitungan detik dengan shortcut Ctrl+K dari mana saja." },
               { emoji: "📲", title: "Install di HP", desc: "Maalify bisa diinstall di smartphone layaknya aplikasi native — buka cepat, bekerja offline untuk navigasi dasar." },
-              { emoji: "👨‍👩‍👧‍👦", title: "Multi Anggota Keluarga", desc: "Undang anggota lewat link WhatsApp atau kode unik. Role Admin dan Member dengan hak akses berbeda." },
+              { emoji: "👨‍👩‍👧‍👦", title: "Multi Anggota Keluarga", desc: "Undang anggota lewat link WhatsApp atau kode unik. Tiga tingkat role (Super Admin, Admin, Member) dengan hak akses dan privasi masing-masing." },
             ].map(f => (
               <div key={f.title} className="bg-white rounded-2xl border border-neutral-100 p-6 hover:shadow-md transition-shadow">
                 <div className="w-12 h-12 rounded-xl bg-[#1E3A5F]/5 flex items-center justify-center text-2xl mb-4">{f.emoji}</div>
@@ -248,8 +249,134 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* ── Role & Privacy ── */}
+      <section id="peran" className="py-20 bg-white">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-14">
+            <p className="text-sm font-semibold text-[#27AE60] uppercase tracking-widest mb-3">Aman untuk Seluruh Keluarga</p>
+            <h2 className="text-3xl sm:text-4xl font-bold text-[#1E3A5F]">Peran & Privasi yang Fleksibel</h2>
+            <p className="mt-4 text-neutral-500 max-w-xl mx-auto">Setiap anggota keluarga punya peran dan kontrol atas data pribadinya masing-masing.</p>
+          </div>
+
+          {/* Role cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12">
+            {[
+              {
+                icon: "👑",
+                role: "Super Admin",
+                badge: "bg-amber-100 text-amber-700 border-amber-200",
+                border: "border-amber-200",
+                bg: "bg-amber-50",
+                text: "text-amber-800",
+                when: "Otomatis saat mendaftar & membuat household",
+                desc: "Akses penuh ke semua fitur — transaksi, anggaran, laporan, hutang, manajemen anggota, dan melihat ringkasan pengeluaran seluruh keluarga.",
+              },
+              {
+                icon: "🛡️",
+                role: "Admin",
+                badge: "bg-blue-100 text-blue-700 border-blue-200",
+                border: "border-blue-200",
+                bg: "bg-blue-50",
+                text: "text-blue-800",
+                when: "Dipromosikan oleh Super Admin",
+                desc: "Bisa mengelola transaksi, anggaran, hutang, dan laporan. Cocok untuk pasangan atau anggota dewasa yang ikut aktif mengelola keuangan keluarga.",
+              },
+              {
+                icon: "👤",
+                role: "Member",
+                badge: "bg-slate-100 text-slate-600 border-slate-200",
+                border: "border-slate-200",
+                bg: "bg-slate-50",
+                text: "text-slate-700",
+                when: "Default saat bergabung via undangan",
+                desc: "Bisa mencatat transaksi sendiri dan melihat ringkasan keluarga. Tidak bisa akses hutang atau laporan lengkap. Cocok untuk anak atau anggota muda.",
+              },
+            ].map((r) => (
+              <div key={r.role} className={`rounded-2xl border ${r.border} ${r.bg} p-6`}>
+                <div className="text-3xl mb-3">{r.icon}</div>
+                <span className={`inline-block text-[11px] font-semibold px-2.5 py-1 rounded-full border mb-3 ${r.badge}`}>{r.role}</span>
+                <p className={`text-xs font-semibold mb-2 ${r.text}`}>{r.when}</p>
+                <p className={`text-sm leading-relaxed ${r.text}`}>{r.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Privacy callout */}
+          <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+              <div>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-xl bg-[#1E3A5F]/10 flex items-center justify-center text-xl">🔒</div>
+                  <h3 className="text-xl font-bold text-[#1E3A5F]">Privasi yang Dihormati</h3>
+                </div>
+                <p className="text-neutral-600 leading-relaxed mb-4">
+                  Setiap transaksi bisa diatur sebagai <strong>Pribadi</strong> atau <strong>Bersama</strong>. Default-nya adalah Pribadi — jadi anggota seperti anak remaja tidak perlu khawatir pengeluarannya dilihat orang tua.
+                </p>
+                <div className="space-y-2">
+                  {[
+                    "🔒 Pribadi — hanya terlihat oleh yang mencatat",
+                    "🏠 Bersama — terlihat semua anggota keluarga",
+                    "Super Admin hanya melihat total, bukan detail privat",
+                    "Data dilindungi Row Level Security (Supabase)",
+                  ].map((item) => (
+                    <div key={item} className="flex items-start gap-2">
+                      <span className="text-sm text-neutral-600">{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="space-y-3">
+                {/* Mock private transaction */}
+                <div className="bg-white rounded-xl border border-neutral-200 p-4 shadow-sm">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-semibold text-neutral-500">Transaksi Anak</span>
+                    <span className="text-[10px] bg-neutral-100 text-neutral-500 px-2 py-0.5 rounded-full">🔒 Pribadi</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-neutral-700">Jajan kantin</span>
+                    <span className="text-sm font-semibold text-red-500">−Rp 15.000</span>
+                  </div>
+                  <p className="text-[10px] text-neutral-400 mt-1">Hanya terlihat oleh kamu</p>
+                </div>
+                {/* Mock shared transaction */}
+                <div className="bg-white rounded-xl border border-neutral-200 p-4 shadow-sm">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-semibold text-neutral-500">Transaksi Keluarga</span>
+                    <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full border border-blue-200">🏠 Bersama</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-neutral-700">Belanja bulanan</span>
+                    <span className="text-sm font-semibold text-red-500">−Rp 850.000</span>
+                  </div>
+                  <p className="text-[10px] text-neutral-400 mt-1">Terlihat oleh semua anggota</p>
+                </div>
+                {/* Owner summary */}
+                <div className="bg-[#1E3A5F] rounded-xl p-4">
+                  <p className="text-[10px] text-blue-300 font-semibold mb-2">Summary untuk Super Admin</p>
+                  <div className="space-y-1.5">
+                    {[["Ayah", "Rp 1.200.000"],["Ibu", "Rp 980.000"],["Anak", "Rp 250.000"]].map(([name, amt]) => (
+                      <div key={name} className="flex justify-between">
+                        <span className="text-xs text-blue-200">{name}</span>
+                        <span className="text-xs font-semibold text-white">{amt}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[9px] text-blue-400 mt-2">Detail transaksi pribadi tidak ditampilkan</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="text-center mt-8">
+            <Link href="/panduan#role" className="inline-flex items-center gap-2 text-sm font-medium text-[#1E3A5F] hover:underline">
+              Baca panduan lengkap sistem peran →
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* ── How it works ── */}
-      <section id="cara-kerja" className="py-20">
+      <section id="cara-kerja" className="py-20 bg-neutral-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-14">
             <p className="text-sm font-semibold text-[#27AE60] uppercase tracking-widest mb-3">Mudah Dimulai</p>
@@ -379,6 +506,7 @@ export default async function HomePage() {
           </div>
           <p className="text-sm text-neutral-400">© {new Date().getFullYear()} Maalify. Platform keuangan keluarga berbasis AI.</p>
           <div className="flex items-center gap-4 text-sm text-neutral-400">
+            <Link href="/panduan" className="hover:text-neutral-700 transition-colors">Panduan</Link>
             <Link href="/login" className="hover:text-neutral-700 transition-colors">Masuk</Link>
             <Link href="/register" className="hover:text-neutral-700 transition-colors">Daftar</Link>
           </div>

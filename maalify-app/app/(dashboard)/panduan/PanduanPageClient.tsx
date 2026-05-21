@@ -148,15 +148,26 @@ export default function PanduanPageClient() {
       {/* Page title */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 rounded-xl bg-brand-primary flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-brand-primary flex items-center justify-center flex-shrink-0">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
             </svg>
           </div>
-          <div>
+          <div className="flex-1">
             <h1 className="text-2xl font-bold text-[var(--text-primary)]">Panduan Penggunaan Maalify</h1>
             <p className="text-sm text-[var(--text-secondary)]">Manual lengkap untuk semua fitur dan peran pengguna</p>
           </div>
+          <a
+            href="/panduan/print"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg border border-[var(--border)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] hover:text-[var(--text-primary)] transition-colors flex-shrink-0"
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>
+            </svg>
+            Cetak / PDF
+          </a>
         </div>
       </div>
 
@@ -244,6 +255,84 @@ export default function PanduanPageClient() {
               </div>
             </div>
 
+            <SubSection title="Bagaimana Role Ditetapkan?">
+              <div className="space-y-3">
+                {/* Super Admin */}
+                <div className="flex gap-4 p-4 rounded-xl border border-amber-200 bg-amber-50">
+                  <div className="flex-shrink-0 w-9 h-9 rounded-full bg-amber-100 flex items-center justify-center text-lg">👑</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-semibold text-amber-800 text-sm">Super Admin</span>
+                      <Badge color="amber">Otomatis saat daftar</Badge>
+                    </div>
+                    <p className="text-xs text-amber-800 leading-relaxed">
+                      Role ini diberikan secara otomatis kepada orang yang <strong>pertama kali membuat household</strong> saat mendaftar. Satu household hanya punya satu Super Admin. Role ini tidak bisa dialihkan ke anggota lain.
+                    </p>
+                    <div className="mt-2 flex items-start gap-1.5 text-xs text-amber-700">
+                      <span className="flex-shrink-0 mt-0.5">→</span>
+                      <span>Biasanya kepala keluarga atau orang yang pertama mengajak anggota lain bergabung.</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Admin */}
+                <div className="flex gap-4 p-4 rounded-xl border border-blue-200 bg-blue-50">
+                  <div className="flex-shrink-0 w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center text-lg">🛡️</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-semibold text-blue-800 text-sm">Admin</span>
+                      <Badge color="blue">Dipromosikan oleh Super Admin</Badge>
+                    </div>
+                    <p className="text-xs text-blue-800 leading-relaxed">
+                      Awalnya semua anggota baru bergabung sebagai Member. Super Admin bisa <strong>mempromosikan Member menjadi Admin</strong> kapan saja melalui halaman Pengaturan → tab Household → tombol ubah role di sebelah nama anggota.
+                    </p>
+                    <div className="mt-2 flex items-start gap-1.5 text-xs text-blue-700">
+                      <span className="flex-shrink-0 mt-0.5">→</span>
+                      <span>Cocok untuk pasangan atau anggota dewasa yang ikut mengelola keuangan keluarga secara aktif.</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Member */}
+                <div className="flex gap-4 p-4 rounded-xl border border-slate-200 bg-slate-50">
+                  <div className="flex-shrink-0 w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center text-lg">👤</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-semibold text-slate-700 text-sm">Member</span>
+                      <Badge color="slate">Default saat bergabung</Badge>
+                    </div>
+                    <p className="text-xs text-slate-700 leading-relaxed">
+                      Setiap orang yang <strong>bergabung via kode undangan atau link WhatsApp</strong> secara otomatis masuk sebagai Member. Member bisa mencatat transaksi sendiri dan melihat ringkasan keuangan keluarga, namun tidak mengakses data hutang atau laporan penuh.
+                    </p>
+                    <div className="mt-2 flex items-start gap-1.5 text-xs text-slate-600">
+                      <span className="flex-shrink-0 mt-0.5">→</span>
+                      <span>Cocok untuk anak remaja atau anggota keluarga yang hanya perlu mencatat pengeluaran pribadi mereka.</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-4 p-3.5 bg-[var(--bg-elevated)] rounded-xl border border-[var(--border)]">
+                <p className="text-xs font-semibold text-[var(--text-primary)] mb-2 flex items-center gap-1.5">
+                  <span>🔒</span> Privasi Transaksi
+                </p>
+                <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
+                  Setiap transaksi bisa diatur sebagai <strong>Pribadi</strong> (hanya terlihat oleh yang mencatat) atau <strong>Bersama</strong> (terlihat oleh semua anggota). Default-nya adalah Pribadi — jadi anggota keluarga seperti anak tidak perlu khawatir keuangan pribadinya dilihat orang lain.
+                </p>
+              </div>
+            </SubSection>
+
+            <SubSection title="Cara Mengundang Anggota Baru">
+              <StepList steps={[
+                "Buka Pengaturan → tab Household",
+                "Salin Kode Undangan atau klik tombol \"Undang via WhatsApp\"",
+                "Bagikan kode/link ke anggota keluarga",
+                "Anggota mendaftar atau login, lalu masukkan kode undangan",
+                "Anggota langsung bergabung sebagai Member",
+                "Jika perlu, Super Admin bisa ubah role-nya menjadi Admin dari daftar anggota",
+              ]} />
+            </SubSection>
+
             <SubSection title="Tabel Hak Akses Lengkap">
               <div className="overflow-x-auto rounded-xl border border-[var(--border)]">
                 <table className="w-full text-sm">
@@ -302,7 +391,7 @@ export default function PanduanPageClient() {
             </SubSection>
 
             <InfoBox type="warning">
-              Hanya ada satu Super Admin per household. Role Super Admin tidak bisa dipindah melalui aplikasi — hubungi dukungan jika diperlukan.
+              Hanya ada satu <strong>Super Admin</strong> per household. Role ini otomatis diberikan ke pembuat household dan tidak bisa dipindahkan ke anggota lain. Untuk mengangkat asisten pengelola, gunakan role <strong>Admin</strong>.
             </InfoBox>
           </Section>
 
@@ -710,8 +799,8 @@ export default function PanduanPageClient() {
             <SubSection title="Manajemen Household (Super Admin)">
               <BulletList items={[
                 <><strong>Nama Household</strong> — Ubah nama yang mewakili keluarga Anda</>,
-                <><strong>Undang Anggota</strong> — Kirim link undangan atau masukkan email anggota baru</>,
-                <><strong>Ubah Role</strong> — Naikkan Member menjadi Admin atau sebaliknya</>,
+                <><strong>Undang Anggota</strong> — Salin kode undangan atau kirim langsung via WhatsApp. Anggota yang bergabung otomatis mendapat role Member</>,
+                <><strong>Ubah Role</strong> — Promosikan Member menjadi Admin (atau turunkan kembali). Berguna untuk pasangan yang ikut aktif mengelola keuangan</>,
                 <><strong>Keluarkan Anggota</strong> — Hapus anggota dari household (data transaksi mereka tetap tersimpan)</>,
               ]} />
             </SubSection>

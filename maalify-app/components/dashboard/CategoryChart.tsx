@@ -39,7 +39,10 @@ export default function CategoryChart({ data, total }: { data: CategoryItem[]; t
               ))}
             </Pie>
             <Tooltip
-              formatter={(value) => [`Rp ${formatRupiah(Number(value))}`, ""]}
+              formatter={(value, name) => {
+                const pct = total > 0 ? ((Number(value) / total) * 100).toFixed(1) : "0";
+                return [`Rp ${formatRupiah(Number(value))} (${pct}%)`, name];
+              }}
               contentStyle={{
                 background: "var(--bg-elevated)",
                 border: "1px solid var(--border)",
@@ -47,9 +50,10 @@ export default function CategoryChart({ data, total }: { data: CategoryItem[]; t
                 fontSize: 12,
                 color: "var(--text-primary)",
                 boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                padding: "8px 12px",
               }}
-              itemStyle={{ color: "var(--text-secondary)" }}
-              labelStyle={{ color: "var(--text-primary)", fontWeight: 600 }}
+              itemStyle={{ color: "var(--text-secondary)", fontWeight: 500 }}
+              labelStyle={{ display: "none" }}
             />
           </PieChart>
         </ResponsiveContainer>
