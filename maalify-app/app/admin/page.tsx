@@ -3,7 +3,7 @@ import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 import AdminDashboardClient from "./AdminDashboardClient";
 
-const ADMIN_EMAILS = ["rizaluqman25@gmail.com"];
+const ADMIN_EMAILS = ["riza.developer25@gmail.com"];
 
 export default async function AdminPage() {
   const supabase = await createClient();
