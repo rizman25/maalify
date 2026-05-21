@@ -2,22 +2,15 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-
-type Mode = "create" | "join";
 
 const inputCls = "w-full px-3.5 py-2.5 rounded-lg border-[1.5px] border-[#E2E8F0] bg-white text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#1E3A5F] focus:ring-offset-1 focus:border-transparent";
 const labelCls = "block text-xs font-medium text-[#1E293B] mb-1.5";
 
 export default function RegisterPage() {
-  const router = useRouter();
-  const [mode, setMode] = useState<Mode>("create");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [householdName, setHouseholdName] = useState("");
-  const [inviteCode, setInviteCode] = useState("");
   const [phone, setPhone] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -34,24 +27,15 @@ export default function RegisterPage() {
       return;
     }
 
-    if (mode === "join" && inviteCode.trim().length < 6) {
-      setError("Kode undangan tidak valid.");
-      setLoading(false);
-      return;
-    }
-
     const supabase = createClient();
-
     const cleanPhone = phone.replace(/\D/g, "").replace(/^0/, "62");
-    const metadata =
-      mode === "create"
-        ? { name, household_name: householdName, phone: cleanPhone || null }
-        : { name, invite_code: inviteCode.trim().toUpperCase(), phone: cleanPhone || null };
 
     const { error: signUpError } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: metadata },
+      options: {
+        data: { name, phone: cleanPhone || null },
+      },
     });
 
     if (signUpError) {
@@ -74,14 +58,13 @@ export default function RegisterPage() {
         </div>
         <h2 className="text-lg font-semibold text-[#0F172A] mb-2">Cek email kamu!</h2>
         <p className="text-sm text-[#475569]">
-          Kami mengirim link verifikasi ke <strong className="text-[#0F172A]">{email}</strong>.<br />
+          Kami mengirim link verifikasi ke{" "}
+          <strong className="text-[#0F172A]">{email}</strong>.<br />
           Klik link tersebut untuk mengaktifkan akun.
         </p>
-        {mode === "join" && (
-          <p className="text-xs text-[#475569] mt-3 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">
-            Setelah verifikasi, kamu akan otomatis bergabung ke household dengan kode <strong>{inviteCode.toUpperCase()}</strong>.
-          </p>
-        )}
+        <p className="text-xs text-[#94A3B8] mt-3">
+          Setelah verifikasi, kamu bisa mengatur household keluargamu.
+        </p>
         <Link href="/login" className="inline-block mt-6 text-sm text-[#1E3A5F] font-medium hover:underline">
           Kembali ke halaman masuk
         </Link>
@@ -91,28 +74,8 @@ export default function RegisterPage() {
 
   return (
     <div className="bg-white rounded-2xl border border-[#E2E8F0] p-8 shadow-sm">
-      <h2 className="text-xl font-semibold text-[#0F172A] mb-5">Buat akun baru</h2>
-
-      {/* Mode toggle */}
-      <div className="flex bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-1 gap-1 mb-5">
-        {([
-          { id: "create" as Mode, label: "🏠 Buat Household Baru" },
-          { id: "join" as Mode,   label: "🔗 Gabung via Kode" },
-        ]).map(m => (
-          <button
-            key={m.id}
-            type="button"
-            onClick={() => { setMode(m.id); setError(""); }}
-            className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all ${
-              mode === m.id
-                ? "bg-[#1E3A5F] text-white shadow-sm"
-                : "text-[#475569] hover:text-[#0F172A]"
-            }`}
-          >
-            {m.label}
-          </button>
-        ))}
-      </div>
+      <h2 className="text-xl font-semibold text-[#0F172A] mb-1">Buat akun baru</h2>
+      <p className="text-xs text-[#64748B] mb-5">Daftar dulu, atur household setelah verifikasi email.</p>
 
       <form onSubmit={handleRegister} className="space-y-4">
         <div>
@@ -129,11 +92,14 @@ export default function RegisterPage() {
 
         <div>
           <label className={labelCls}>
-            No. WhatsApp <span className="font-normal text-[var(--text-secondary)]">(opsional)</span>
+            No. WhatsApp <span className="font-normal text-[#94A3B8]">(opsional)</span>
           </label>
           <div className="auth-phone-wrap flex items-center border-[1.5px] border-[#E2E8F0] rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-[#1E3A5F] focus-within:ring-offset-1">
             <span className="auth-phone-prefix px-3 py-2.5 text-sm border-r border-[#E2E8F0] flex-shrink-0 flex items-center gap-1.5">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.091.535 4.06 1.476 5.779L.057 23.514a.75.75 0 0 0 .93.93l5.735-1.419A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.898 0-3.68-.499-5.23-1.374l-.374-.22-3.877.96.977-3.877-.22-.374A10 10 0 1 1 12 22z"/></svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="#25D366">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+                <path d="M12 0C5.373 0 0 5.373 0 12c0 2.091.535 4.06 1.476 5.779L.057 23.514a.75.75 0 0 0 .93.93l5.735-1.419A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.898 0-3.68-.499-5.23-1.374l-.374-.22-3.877.96.977-3.877-.22-.374A10 10 0 1 1 12 22z"/>
+              </svg>
               +62
             </span>
             <input
@@ -147,34 +113,6 @@ export default function RegisterPage() {
           </div>
           <p className="text-[10px] text-[#94A3B8] mt-1">Digunakan untuk berbagi laporan via WhatsApp</p>
         </div>
-
-        {mode === "create" ? (
-          <div>
-            <label className={labelCls}>Nama keluarga</label>
-            <input
-              type="text"
-              value={householdName}
-              onChange={(e) => setHouseholdName(e.target.value)}
-              placeholder="contoh: Keluarga Budi"
-              required
-              className={inputCls}
-            />
-          </div>
-        ) : (
-          <div>
-            <label className={labelCls}>Kode Undangan</label>
-            <input
-              type="text"
-              value={inviteCode}
-              onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
-              placeholder="contoh: AB12CD34"
-              maxLength={12}
-              required
-              className={inputCls + " font-mono tracking-widest uppercase"}
-            />
-            <p className="text-[10px] text-[#94A3B8] mt-1">Minta kode dari admin household yang ingin kamu ikuti</p>
-          </div>
-        )}
 
         <div>
           <label className={labelCls}>Email</label>
@@ -209,7 +147,7 @@ export default function RegisterPage() {
           disabled={loading}
           className="w-full bg-[#1E3A5F] hover:bg-[#162D4A] text-white font-medium text-sm py-2.5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {loading ? "Mendaftar..." : mode === "create" ? "Buat Akun & Household" : "Daftar & Gabung"}
+          {loading ? "Mendaftar..." : "Buat Akun"}
         </button>
       </form>
 

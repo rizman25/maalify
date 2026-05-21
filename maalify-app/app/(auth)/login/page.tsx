@@ -26,7 +26,18 @@ export default function LoginPage() {
       return;
     }
 
-    router.push("/dashboard");
+    // Check if user already belongs to a household
+    const { data: membership } = await supabase
+      .from("household_members")
+      .select("id")
+      .limit(1)
+      .single();
+
+    if (!membership) {
+      router.push("/onboarding");
+    } else {
+      router.push("/dashboard");
+    }
     router.refresh();
   }
 
