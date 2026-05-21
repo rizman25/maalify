@@ -45,47 +45,35 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith("/register") ||
     pathname.startsWith("/forgot-password");
 
-  // Admin login — siapa saja boleh akses tanpa login
   const isAdminLoginRoute = pathname === "/admin/login";
-
-  // Halaman admin lainnya
   const isAdminRoute = pathname.startsWith("/admin") && !isAdminLoginRoute;
-
-  // App routes (bukan admin, bukan public, bukan auth)
-  const isAppRoute = !isAdminRoute && !isAdminLoginRoute && !isPublicRoute && !isUserAuthRoute;
 
   // ── Redirect logic ────────────────────────────────────────────────────
 
-  // 1. Unauthenticated + akses admin route → /admin/login
-  if (!user && isAdminRoute) {
+  // 1. /admin/login — hanya untuk admin email
+  //    User lain yang coba akses: sudah login → /dashboard, belum login → /login
+  if (isAdminLoginRoute && !isAdminEmail) {
     const url = request.nextUrl.clone();
-    url.pathname = "/admin/login";
+    url.pathname = user ? "/dashboard" : "/login";
     return NextResponse.redirect(url);
   }
 
-  // 2. Admin email + akses app routes → /admin (admin tidak boleh pakai app biasa)
-  if (user && isAdminEmail && isAppRoute) {
+  // 2. /admin/* — hanya untuk admin email yang sudah login
+  if (isAdminRoute && (!user || !isAdminEmail)) {
     const url = request.nextUrl.clone();
-    url.pathname = "/admin";
+    url.pathname = user ? "/dashboard" : "/login";
     return NextResponse.redirect(url);
   }
 
-  // 3. Admin email + akses user auth routes → /admin
-  if (user && isAdminEmail && isUserAuthRoute) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/admin";
-    return NextResponse.redirect(url);
-  }
-
-  // 4. Unauthenticated + akses protected app route → /login
+  // 3. Unauthenticated + akses protected app route → /login
   if (!user && !isUserAuthRoute && !isPublicRoute && !isAdminLoginRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
   }
 
-  // 5. Already logged in (non-admin) + akses user auth route → /dashboard
-  if (user && !isAdminEmail && isUserAuthRoute) {
+  // 4. Already logged in + akses user auth route → /dashboard
+  if (user && isUserAuthRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
     return NextResponse.redirect(url);
