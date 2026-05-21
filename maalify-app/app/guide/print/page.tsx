@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Metadata } from "next";
+import PrintButton from "./PrintButton";
 
 export const metadata: Metadata = {
   title: "Panduan Maalify — Cetak / PDF",
@@ -416,9 +417,7 @@ export default function PanduanPrintPage() {
           <Link href="/guide" className="toolbar-btn-ghost">
             ← Kembali
           </Link>
-          <button className="toolbar-btn" onClick={() => { if (typeof window !== "undefined") window.print(); }}>
-            🖨️ Cetak / Simpan PDF
-          </button>
+          <PrintButton />
         </div>
       </div>
 
