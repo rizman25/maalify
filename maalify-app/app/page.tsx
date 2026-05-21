@@ -268,7 +268,7 @@ export default async function HomePage() {
                 border: "border-amber-200",
                 bg: "bg-amber-50",
                 text: "text-amber-800",
-                when: "Otomatis saat mendaftar & membuat household",
+                when: "Otomatis saat mendaftar & membuat family",
                 desc: "Akses penuh ke semua fitur — transaksi, anggaran, laporan, hutang, manajemen anggota, dan melihat ringkasan pengeluaran seluruh keluarga.",
               },
               {
@@ -483,7 +483,7 @@ export default async function HomePage() {
             Mulai kelola keuangan keluarga hari ini
           </h2>
           <p className="text-neutral-500 text-lg mb-8">
-            Gratis selamanya untuk 1 household. Tidak perlu kartu kredit.
+            Gratis selamanya untuk 1 family. Tidak perlu kartu kredit.
           </p>
           <Link href="/register" className="inline-block px-8 py-4 rounded-xl bg-[#27AE60] text-white font-bold text-lg hover:bg-[#27AE60]/90 transition-colors">
             Daftar Sekarang — Gratis →

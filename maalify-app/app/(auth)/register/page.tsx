@@ -63,7 +63,7 @@ export default function RegisterPage() {
           Klik link tersebut untuk mengaktifkan akun.
         </p>
         <p className="text-xs text-[#94A3B8] mt-3">
-          Setelah verifikasi, kamu bisa mengatur household keluargamu.
+          Setelah verifikasi, kamu bisa mengatur family keluargamu.
         </p>
         <Link href="/login" className="inline-block mt-6 text-sm text-[#1E3A5F] font-medium hover:underline">
           Kembali ke halaman masuk
@@ -75,7 +75,7 @@ export default function RegisterPage() {
   return (
     <div className="bg-white rounded-2xl border border-[#E2E8F0] p-8 shadow-sm">
       <h2 className="text-xl font-semibold text-[#0F172A] mb-1">Buat akun baru</h2>
-      <p className="text-xs text-[#64748B] mb-5">Daftar dulu, atur household setelah verifikasi email.</p>
+      <p className="text-xs text-[#64748B] mb-5">Daftar dulu, atur family setelah verifikasi email.</p>
 
       <form onSubmit={handleRegister} className="space-y-4">
         <div>

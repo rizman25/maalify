@@ -457,7 +457,7 @@ export default function PanduanPrintPage() {
               <div className="cover-footer-left">
                 <div style={{ fontWeight: 700, color: "#1E3A5F", marginBottom: 3 }}>Maalify</div>
                 <div>© 2026 Maalify. Seluruh hak dilindungi.</div>
-                <div>Dokumen ini boleh dibagikan untuk keperluan internal household.</div>
+                <div>Dokumen ini boleh dibagikan untuk keperluan internal family.</div>
               </div>
               <div className="cover-toc-preview">
                 <strong>Daftar Isi</strong>
@@ -650,14 +650,14 @@ export default function PanduanPrintPage() {
             <div className="role-card role-card-sa">
               <div className="role-card-icon">👑</div>
               <span className="role-card-badge badge-sa">Super Admin</span>
-              <div className="role-when" style={{ color: "#92400E" }}>Otomatis saat membuat household</div>
+              <div className="role-when" style={{ color: "#92400E" }}>Otomatis saat membuat family</div>
               <p>Akses penuh ke seluruh fitur termasuk laporan, hutang, manajemen anggota, dan ringkasan pengeluaran seluruh keluarga.</p>
             </div>
             <div className="role-card role-card-admin">
               <div className="role-card-icon">🛡️</div>
               <span className="role-card-badge badge-admin">Admin</span>
               <div className="role-when" style={{ color: "#1E40AF" }}>Dipromosikan oleh Super Admin</div>
-              <p>Mengelola transaksi, anggaran, hutang, dan laporan. Tidak bisa mengubah keanggotaan atau pengaturan household.</p>
+              <p>Mengelola transaksi, anggaran, hutang, dan laporan. Tidak bisa mengubah keanggotaan atau pengaturan family.</p>
             </div>
             <div className="role-card role-card-member">
               <div className="role-card-icon">👤</div>
@@ -672,8 +672,8 @@ export default function PanduanPrintPage() {
             <div className="role-assign role-assign-sa">
               <span className="role-assign-icon">👑</span>
               <div>
-                <div className="role-assign-title">Super Admin — Otomatis saat mendaftar &amp; membuat household</div>
-                <p>Diberikan kepada orang yang pertama kali membuat household saat registrasi. Satu household hanya punya satu Super Admin — biasanya kepala keluarga atau orang yang pertama mengajak anggota lain. Role ini tidak bisa dipindahkan.</p>
+                <div className="role-assign-title">Super Admin — Otomatis saat mendaftar &amp; membuat family</div>
+                <p>Diberikan kepada orang yang pertama kali membuat family saat registrasi. Satu family hanya punya satu Super Admin — biasanya kepala keluarga atau orang yang pertama mengajak anggota lain. Role ini tidak bisa dipindahkan.</p>
               </div>
             </div>
             <div className="role-assign role-assign-admin">
@@ -705,7 +705,7 @@ export default function PanduanPrintPage() {
               </div>
               <div className="visibility-card">
                 <div className="visibility-card-title">🏠 Bersama</div>
-                <p>Terlihat oleh semua anggota household. Gunakan untuk pengeluaran keluarga bersama seperti belanja bulanan, tagihan rumah, atau pengeluaran yang perlu diketahui semua anggota.</p>
+                <p>Terlihat oleh semua anggota family. Gunakan untuk pengeluaran keluarga bersama seperti belanja bulanan, tagihan rumah, atau pengeluaran yang perlu diketahui semua anggota.</p>
               </div>
             </div>
             <div className="infobox infobox-tip" style={{ marginTop: 8 }}>
@@ -794,15 +794,15 @@ export default function PanduanPrintPage() {
                 <tr><td>Edit profil sendiri</td><td className="center check">✓</td><td className="center check">✓</td><td className="center check">✓</td></tr>
                 <tr><td>Undang anggota baru</td><td className="center check">✓</td><td className="center dash">—</td><td className="center dash">—</td></tr>
                 <tr><td>Ubah role anggota</td><td className="center check">✓</td><td className="center dash">—</td><td className="center dash">—</td></tr>
-                <tr><td>Keluarkan anggota dari household</td><td className="center check">✓</td><td className="center dash">—</td><td className="center dash">—</td></tr>
-                <tr><td>Edit nama household</td><td className="center check">✓</td><td className="center dash">—</td><td className="center dash">—</td></tr>
+                <tr><td>Keluarkan anggota dari family</td><td className="center check">✓</td><td className="center dash">—</td><td className="center dash">—</td></tr>
+                <tr><td>Edit nama family</td><td className="center check">✓</td><td className="center dash">—</td><td className="center dash">—</td></tr>
               </tbody>
             </table>
           </div>
 
           <div className="infobox infobox-warning">
             <span className="infobox-icon">⚠️</span>
-            <p>Hanya ada satu <strong>Super Admin</strong> per household. Role ini otomatis diberikan ke pembuat household dan tidak bisa dipindahkan. Untuk mengangkat asisten pengelola, gunakan role <strong>Admin</strong>.</p>
+            <p>Hanya ada satu <strong>Super Admin</strong> per family. Role ini otomatis diberikan ke pembuat family dan tidak bisa dipindahkan. Untuk mengangkat asisten pengelola, gunakan role <strong>Admin</strong>.</p>
           </div>
         </div>
 
@@ -826,7 +826,7 @@ export default function PanduanPrintPage() {
             <div className="subsection-title"><span className="subsection-bar" /> 4 Kartu Ringkasan</div>
             <ul className="bullet-list">
               {[
-                ["Total Saldo", "Jumlah saldo dari semua dompet aktif household"],
+                ["Total Saldo", "Jumlah saldo dari semua dompet aktif family"],
                 ["Pemasukan Bulan Ini", "Total pemasukan bulan berjalan + persentase perubahan dari bulan lalu"],
                 ["Pengeluaran Bulan Ini", "Total pengeluaran + perbandingan bulan lalu"],
                 ["Tabungan Bersih", "Selisih pemasukan dikurangi pengeluaran. Hijau = surplus, merah = defisit"],

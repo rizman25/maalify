@@ -58,7 +58,7 @@ export default function OnboardingPage() {
       .single();
 
     if (hErr || !household) {
-      setError("Gagal membuat household. Coba lagi.");
+      setError("Gagal membuat family. Coba lagi.");
       setLoading(false);
       return;
     }
@@ -70,7 +70,7 @@ export default function OnboardingPage() {
     });
 
     if (mErr) {
-      setError("Gagal mendaftarkan ke household.");
+      setError("Gagal mendaftarkan ke family.");
       setLoading(false);
       return;
     }
@@ -119,7 +119,7 @@ export default function OnboardingPage() {
     });
 
     if (mErr) {
-      setError("Gagal bergabung ke household. Mungkin kamu sudah terdaftar.");
+      setError("Gagal bergabung ke family. Mungkin kamu sudah terdaftar.");
       setLoading(false);
       return;
     }
@@ -283,7 +283,7 @@ export default function OnboardingPage() {
 
                 <div className="mb-5">
                   <h2 className="text-lg font-semibold text-[#0F172A]">Gabung via Kode Undangan</h2>
-                  <p className="text-xs text-[#64748B] mt-1">Minta kode dari admin household yang ingin kamu ikuti.</p>
+                  <p className="text-xs text-[#64748B] mt-1">Minta kode dari admin family yang ingin kamu ikuti.</p>
                 </div>
 
                 <form onSubmit={handleJoin} className="space-y-4">

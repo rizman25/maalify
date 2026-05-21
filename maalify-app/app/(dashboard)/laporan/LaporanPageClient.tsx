@@ -318,7 +318,7 @@ export default function LaporanPageClient({
         <div className="flex items-start justify-between gap-3 flex-wrap">
           <div>
             <h1 className="text-xl font-bold text-[var(--text-primary)]">Laporan Keuangan</h1>
-            <p className="text-sm text-[var(--text-secondary)]">Ringkasan tahunan household</p>
+            <p className="text-sm text-[var(--text-secondary)]">Ringkasan tahunan family</p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             {/* Export buttons */}

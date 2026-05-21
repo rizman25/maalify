@@ -296,7 +296,7 @@ export default function PanduanPublicClient() {
             <Section id="role" title="Sistem Role & Hak Akses"
               icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>}>
               <p>
-                Maalify menggunakan sistem tiga tingkat peran (<em>role</em>) untuk mengatur siapa yang bisa melihat dan mengubah data keuangan keluarga. Setiap household memiliki minimal satu <Badge color="amber">Super Admin</Badge>.
+                Maalify menggunakan sistem tiga tingkat peran (<em>role</em>) untuk mengatur siapa yang bisa melihat dan mengubah data keuangan keluarga. Setiap family memiliki minimal satu <Badge color="amber">Super Admin</Badge>.
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-2">
@@ -305,14 +305,14 @@ export default function PanduanPublicClient() {
                     <span className="text-xl">👑</span>
                     <Badge color="amber">Super Admin</Badge>
                   </div>
-                  <p className="text-xs text-amber-800">Pemilik household. Memiliki akses penuh ke seluruh fitur termasuk manajemen anggota, laporan, dan data sensitif.</p>
+                  <p className="text-xs text-amber-800">Pemilik family. Memiliki akses penuh ke seluruh fitur termasuk manajemen anggota, laporan, dan data sensitif.</p>
                 </div>
                 <div className="border border-blue-200 bg-blue-50 rounded-xl p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <span className="text-xl">🛡️</span>
                     <Badge color="blue">Admin</Badge>
                   </div>
-                  <p className="text-xs text-blue-800">Dapat mengelola transaksi, anggaran, hutang, dan laporan. Tidak bisa mengubah keanggotaan atau pengaturan household.</p>
+                  <p className="text-xs text-blue-800">Dapat mengelola transaksi, anggaran, hutang, dan laporan. Tidak bisa mengubah keanggotaan atau pengaturan family.</p>
                 </div>
                 <div className="border border-slate-200 bg-slate-50 rounded-xl p-4">
                   <div className="flex items-center gap-2 mb-2">
@@ -333,7 +333,7 @@ export default function PanduanPublicClient() {
                         <Badge color="amber">Otomatis saat daftar</Badge>
                       </div>
                       <p className="text-xs text-amber-800 leading-relaxed">
-                        Diberikan secara otomatis kepada orang yang <strong>pertama kali membuat household</strong> saat mendaftar. Satu household hanya punya satu Super Admin — biasanya kepala keluarga atau orang yang pertama mengajak anggota lain.
+                        Diberikan secara otomatis kepada orang yang <strong>pertama kali membuat family</strong> saat mendaftar. Satu family hanya punya satu Super Admin — biasanya kepala keluarga atau orang yang pertama mengajak anggota lain.
                       </p>
                     </div>
                   </div>
@@ -446,14 +446,14 @@ export default function PanduanPublicClient() {
                       <RoleRow feature="Undang anggota baru" sa={true} admin={false} member={false} />
                       <RoleRow feature="Ubah role anggota" sa={true} admin={false} member={false} />
                       <RoleRow feature="Keluarkan anggota" sa={true} admin={false} member={false} />
-                      <RoleRow feature="Edit nama household" sa={true} admin={false} member={false} />
+                      <RoleRow feature="Edit nama family" sa={true} admin={false} member={false} />
                     </tbody>
                   </table>
                 </div>
               </SubSection>
 
               <InfoBox type="warning">
-                Hanya ada satu <strong>Super Admin</strong> per household. Role ini otomatis diberikan ke pembuat household dan tidak bisa dipindahkan. Untuk mengangkat asisten pengelola, gunakan role <strong>Admin</strong>.
+                Hanya ada satu <strong>Super Admin</strong> per family. Role ini otomatis diberikan ke pembuat family dan tidak bisa dipindahkan. Untuk mengangkat asisten pengelola, gunakan role <strong>Admin</strong>.
               </InfoBox>
             </Section>
 
@@ -464,7 +464,7 @@ export default function PanduanPublicClient() {
 
               <SubSection title="Kartu Ringkasan (4 Kartu Atas)">
                 <BulletList items={[
-                  <><strong>Total Saldo</strong> — Jumlah saldo dari semua dompet aktif household</>,
+                  <><strong>Total Saldo</strong> — Jumlah saldo dari semua dompet aktif family</>,
                   <><strong>Pemasukan Bulan Ini</strong> — Total pemasukan bulan berjalan + persentase perubahan dari bulan lalu</>,
                   <><strong>Pengeluaran Bulan Ini</strong> — Total pengeluaran bulan berjalan + perbandingan bulan lalu</>,
                   <><strong>Tabungan Bersih</strong> — Selisih pemasukan dikurangi pengeluaran. Hijau = surplus, merah = defisit</>,
@@ -527,7 +527,7 @@ export default function PanduanPublicClient() {
                   </div>
                   <div className="p-3.5 rounded-xl border border-neutral-200 bg-neutral-50">
                     <p className="font-semibold text-neutral-800 text-sm mb-1">🏠 Bersama</p>
-                    <p className="text-xs text-neutral-500">Terlihat oleh semua anggota household. Gunakan untuk pengeluaran keluarga bersama seperti belanja bulanan atau tagihan rumah.</p>
+                    <p className="text-xs text-neutral-500">Terlihat oleh semua anggota family. Gunakan untuk pengeluaran keluarga bersama seperti belanja bulanan atau tagihan rumah.</p>
                   </div>
                 </div>
               </SubSection>
@@ -812,7 +812,7 @@ export default function PanduanPublicClient() {
             {/* ── PENGATURAN ── */}
             <Section id="pengaturan" title="Pengaturan"
               icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>}>
-              <p>Halaman Pengaturan memungkinkan setiap pengguna mengelola profil pribadi. Super Admin mendapat akses tambahan untuk mengatur household dan keanggotaan.</p>
+              <p>Halaman Pengaturan memungkinkan setiap pengguna mengelola profil pribadi. Super Admin mendapat akses tambahan untuk mengatur family dan keanggotaan.</p>
 
               <SubSection title="Profil Pengguna">
                 <BulletList items={[
@@ -876,7 +876,7 @@ export default function PanduanPublicClient() {
               {/* CTA */}
               <div className="mt-8 p-6 bg-gradient-to-br from-[#1E3A5F] to-[#0F2640] rounded-2xl text-center">
                 <p className="font-bold text-white text-lg mb-2">Siap mulai mengelola keuangan keluarga?</p>
-                <p className="text-blue-300 text-sm mb-5">Gratis selamanya untuk 1 household. Setup 2 menit.</p>
+                <p className="text-blue-300 text-sm mb-5">Gratis selamanya untuk 1 family. Setup 2 menit.</p>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                   <Link href="/register" className="px-6 py-2.5 rounded-xl bg-[#27AE60] text-white font-semibold text-sm hover:bg-[#27AE60]/90 transition-colors">
                     Daftar Gratis Sekarang →
