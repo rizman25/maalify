@@ -386,7 +386,7 @@ export default async function HomePage() {
           {/* Desktop: flex dengan connector ANTARA item agar garis nyambung */}
           <div className="hidden md:flex items-start">
             {[
-              { step: "01", title: "Daftar & Buat Household", desc: "Buat akun dan siapkan 'rumah digital' keluarga kamu. Beri nama keluarga dan undang anggota lewat kode unik atau link WhatsApp." },
+              { step: "01", title: "Daftar & Buat Family", desc: "Buat akun dan siapkan 'rumah digital' keluarga kamu. Beri nama keluarga dan undang anggota lewat kode unik atau link WhatsApp." },
               { step: "02", title: "Tambahkan Dompet", desc: "Daftarkan semua sumber dana — rekening bank, dompet tunai, e-wallet. Masukkan saldo awal masing-masing." },
               { step: "03", title: "Catat & Biarkan AI Bantu", desc: "Foto struk untuk input otomatis, atau catat manual. Tanya Maali AI kapan saja untuk saran dan analisis keuangan keluarga." },
             ].map((s, i) => (
@@ -410,7 +410,7 @@ export default async function HomePage() {
           {/* Mobile: stack vertikal */}
           <div className="flex flex-col gap-10 md:hidden">
             {[
-              { step: "01", title: "Daftar & Buat Household", desc: "Buat akun dan siapkan 'rumah digital' keluarga kamu. Beri nama keluarga dan undang anggota lewat kode unik atau link WhatsApp." },
+              { step: "01", title: "Daftar & Buat Family", desc: "Buat akun dan siapkan 'rumah digital' keluarga kamu. Beri nama keluarga dan undang anggota lewat kode unik atau link WhatsApp." },
               { step: "02", title: "Tambahkan Dompet", desc: "Daftarkan semua sumber dana — rekening bank, dompet tunai, e-wallet. Masukkan saldo awal masing-masing." },
               { step: "03", title: "Catat & Biarkan AI Bantu", desc: "Foto struk untuk input otomatis, atau catat manual. Tanya Maali AI kapan saja untuk saran dan analisis keuangan keluarga." },
             ].map((s) => (

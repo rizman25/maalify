@@ -346,7 +346,7 @@ export default function PanduanPublicClient() {
                         <Badge color="blue">Dipromosikan oleh Super Admin</Badge>
                       </div>
                       <p className="text-xs text-blue-800 leading-relaxed">
-                        Super Admin bisa <strong>mempromosikan Member menjadi Admin</strong> kapan saja melalui Pengaturan → tab Household → ubah role. Cocok untuk pasangan atau anggota dewasa yang ikut mengelola keuangan secara aktif.
+                        Super Admin bisa <strong>mempromosikan Member menjadi Admin</strong> kapan saja melalui Pengaturan → tab Family → ubah role. Cocok untuk pasangan atau anggota dewasa yang ikut mengelola keuangan secara aktif.
                       </p>
                     </div>
                   </div>
@@ -385,7 +385,7 @@ export default function PanduanPublicClient() {
 
               <SubSection title="Cara Mengundang Anggota Baru">
                 <StepList steps={[
-                  "Buka Pengaturan → tab Household",
+                  "Buka Pengaturan → tab Family",
                   "Salin Kode Undangan atau klik tombol \"Undang via WhatsApp\"",
                   "Bagikan kode/link ke anggota keluarga",
                   "Anggota mendaftar atau login, lalu masukkan kode undangan",
@@ -823,12 +823,12 @@ export default function PanduanPublicClient() {
                 ]} />
               </SubSection>
 
-              <SubSection title="Manajemen Household (Super Admin)">
+              <SubSection title="Manajemen Family (Super Admin)">
                 <BulletList items={[
-                  <><strong>Nama Household</strong> — Ubah nama yang mewakili keluarga Anda</>,
+                  <><strong>Nama Family</strong> — Ubah nama yang mewakili keluarga Anda</>,
                   <><strong>Undang Anggota</strong> — Salin kode undangan atau kirim langsung via WhatsApp. Anggota yang bergabung otomatis mendapat role Member</>,
                   <><strong>Ubah Role</strong> — Promosikan Member menjadi Admin atau turunkan kembali</>,
-                  <><strong>Keluarkan Anggota</strong> — Hapus anggota dari household (data transaksi mereka tetap tersimpan)</>,
+                  <><strong>Keluarkan Anggota</strong> — Hapus anggota dari family (data transaksi mereka tetap tersimpan)</>,
                 ]} />
               </SubSection>
             </Section>

@@ -92,7 +92,7 @@ export default function JoinPageClient({
                   Bergabung...
                 </span>
               ) : (
-                "Bergabung ke Household →"
+                "Bergabung ke Family →"
               )}
             </button>
             <a href="/dashboard" className="block text-center text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">

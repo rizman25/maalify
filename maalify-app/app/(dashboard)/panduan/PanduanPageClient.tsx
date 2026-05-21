@@ -284,7 +284,7 @@ export default function PanduanPageClient() {
                       <Badge color="blue">Dipromosikan oleh Super Admin</Badge>
                     </div>
                     <p className="text-xs text-blue-800 leading-relaxed">
-                      Awalnya semua anggota baru bergabung sebagai Member. Super Admin bisa <strong>mempromosikan Member menjadi Admin</strong> kapan saja melalui halaman Pengaturan → tab Household → tombol ubah role di sebelah nama anggota.
+                      Awalnya semua anggota baru bergabung sebagai Member. Super Admin bisa <strong>mempromosikan Member menjadi Admin</strong> kapan saja melalui halaman Pengaturan → tab Family → tombol ubah role di sebelah nama anggota.
                     </p>
                     <div className="mt-2 flex items-start gap-1.5 text-xs text-blue-700">
                       <span className="flex-shrink-0 mt-0.5">→</span>
@@ -324,7 +324,7 @@ export default function PanduanPageClient() {
 
             <SubSection title="Cara Mengundang Anggota Baru">
               <StepList steps={[
-                "Buka Pengaturan → tab Household",
+                "Buka Pengaturan → tab Family",
                 "Salin Kode Undangan atau klik tombol \"Undang via WhatsApp\"",
                 "Bagikan kode/link ke anggota keluarga",
                 "Anggota mendaftar atau login, lalu masukkan kode undangan",
@@ -796,12 +796,12 @@ export default function PanduanPageClient() {
               ]} />
             </SubSection>
 
-            <SubSection title="Manajemen Household (Super Admin)">
+            <SubSection title="Manajemen Family (Super Admin)">
               <BulletList items={[
-                <><strong>Nama Household</strong> — Ubah nama yang mewakili keluarga Anda</>,
+                <><strong>Nama Family</strong> — Ubah nama yang mewakili keluarga Anda</>,
                 <><strong>Undang Anggota</strong> — Salin kode undangan atau kirim langsung via WhatsApp. Anggota yang bergabung otomatis mendapat role Member</>,
                 <><strong>Ubah Role</strong> — Promosikan Member menjadi Admin (atau turunkan kembali). Berguna untuk pasangan yang ikut aktif mengelola keuangan</>,
-                <><strong>Keluarkan Anggota</strong> — Hapus anggota dari household (data transaksi mereka tetap tersimpan)</>,
+                <><strong>Keluarkan Anggota</strong> — Hapus anggota dari family (data transaksi mereka tetap tersimpan)</>,
               ]} />
             </SubSection>
 

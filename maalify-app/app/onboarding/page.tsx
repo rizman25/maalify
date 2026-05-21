@@ -174,9 +174,9 @@ export default function OnboardingPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
                     </svg>
                   </div>
-                  <h2 className="text-lg font-semibold text-[#0F172A]">Siapkan Household-mu</h2>
+                  <h2 className="text-lg font-semibold text-[#0F172A]">Siapkan Family-mu</h2>
                   <p className="text-xs text-[#64748B] mt-1">
-                    Household adalah ruang keuangan keluargamu.<br />
+                    Family adalah ruang keuangan keluargamu.<br />
                     Buat baru atau bergabung ke yang sudah ada.
                   </p>
                 </div>
@@ -192,8 +192,8 @@ export default function OnboardingPage() {
                       </svg>
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-[#0F172A]">Buat Household Baru</p>
-                      <p className="text-xs text-[#64748B] mt-0.5">Jadilah admin keluargamu sendiri</p>
+                      <p className="text-sm font-semibold text-[#0F172A]">Buat Family Baru</p>
+                      <p className="text-xs text-[#64748B] mt-0.5">Jadilah admin family keluargamu</p>
                     </div>
                     <svg className="w-4 h-4 text-[#94A3B8] ml-auto group-hover:text-[#1E3A5F] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
@@ -234,8 +234,8 @@ export default function OnboardingPage() {
                 </button>
 
                 <div className="mb-5">
-                  <h2 className="text-lg font-semibold text-[#0F172A]">Buat Household Baru</h2>
-                  <p className="text-xs text-[#64748B] mt-1">Kamu akan menjadi Admin household ini.</p>
+                  <h2 className="text-lg font-semibold text-[#0F172A]">Buat Family Baru</h2>
+                  <p className="text-xs text-[#64748B] mt-1">Kamu akan menjadi Admin family ini.</p>
                 </div>
 
                 <form onSubmit={handleCreate} className="space-y-4">

@@ -175,7 +175,7 @@ export default function PengaturanPageClient({ profile, household, members, cate
         .update({ name: hhName.trim(), description: hhDesc.trim() || null })
         .eq("id", householdId);
       if (error) throw error;
-      setHhMsg("Household berhasil disimpan");
+      setHhMsg("Family berhasil disimpan");
       router.refresh();
     } catch { setHhMsg("Gagal menyimpan"); }
     finally { setSavingHh(false); }
@@ -297,7 +297,7 @@ export default function PengaturanPageClient({ profile, household, members, cate
 
   const TABS: { id: Tab; label: string }[] = [
     { id: "profil",    label: "Profil" },
-    { id: "household", label: "Household" },
+    { id: "household", label: "Family" },
     { id: "aktivitas", label: "Aktivitas" },
     { id: "keamanan",  label: "Keamanan" },
   ];
@@ -309,7 +309,7 @@ export default function PengaturanPageClient({ profile, household, members, cate
         <div className="w-full max-w-sm space-y-5">
           <div className="text-center">
             <div className="w-16 h-16 rounded-2xl bg-[var(--bg-elevated)] flex items-center justify-center text-3xl mx-auto mb-4">🏠</div>
-            <h2 className="text-lg font-bold text-[var(--text-primary)]">Belum Bergabung ke Household</h2>
+            <h2 className="text-lg font-bold text-[var(--text-primary)]">Belum Bergabung ke Family</h2>
             <p className="text-sm text-[var(--text-secondary)] mt-1">Masukkan kode undangan dari anggota keluarga kamu</p>
           </div>
 
@@ -324,7 +324,7 @@ export default function PengaturanPageClient({ profile, household, members, cate
                 maxLength={12}
                 className="w-full px-3.5 py-3 rounded-xl border border-[var(--border)] text-base font-mono tracking-widest text-center text-[var(--text-primary)] bg-[var(--bg-surface)] focus:outline-none focus:ring-2 focus:ring-brand-primary uppercase"
               />
-              <p className="text-[10px] text-[var(--text-secondary)] mt-1.5">Minta kode dari admin household di Pengaturan → Household → Kode Undangan</p>
+              <p className="text-[10px] text-[var(--text-secondary)] mt-1.5">Minta kode dari admin family di Pengaturan → Family → Kode Undangan</p>
             </div>
 
             {joinError && <p className="text-xs text-danger bg-red-50 px-3 py-2 rounded-lg">{joinError}</p>}
@@ -334,7 +334,7 @@ export default function PengaturanPageClient({ profile, household, members, cate
               disabled={joinLoading || joinCode.trim().length < 4}
               className="w-full py-3 rounded-xl bg-brand-primary text-white text-sm font-semibold hover:opacity-90 disabled:opacity-50 transition-all"
             >
-              {joinLoading ? "Bergabung..." : "Gabung Household"}
+              {joinLoading ? "Bergabung..." : "Gabung Family"}
             </button>
           </div>
 
@@ -476,9 +476,9 @@ export default function PengaturanPageClient({ profile, household, members, cate
           <div className="space-y-4">
             {/* Info household */}
             <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border)] p-5 space-y-4">
-              <p className="font-semibold text-[var(--text-primary)]">Info Household</p>
+              <p className="font-semibold text-[var(--text-primary)]">Info Family</p>
               <div className="space-y-1.5">
-                <label className="text-xs font-medium text-[var(--text-secondary)]">Nama Household</label>
+                <label className="text-xs font-medium text-[var(--text-secondary)]">Nama Family</label>
                 <input type="text" value={hhName} onChange={(e) => setHhName(e.target.value)}
                   disabled={!isManager}
                   maxLength={100}
@@ -497,7 +497,7 @@ export default function PengaturanPageClient({ profile, household, members, cate
               {isManager && (
                 <button onClick={saveHousehold} disabled={savingHh}
                   className="w-full py-2.5 rounded-xl bg-brand-primary text-white text-sm font-medium hover:bg-brand-primary/90 disabled:opacity-50 transition-colors">
-                  {savingHh ? "Menyimpan..." : "Simpan Household"}
+                  {savingHh ? "Menyimpan..." : "Simpan Family"}
                 </button>
               )}
             </div>
@@ -689,7 +689,7 @@ export default function PengaturanPageClient({ profile, household, members, cate
                       className="text-xs text-danger hover:underline disabled:opacity-40 disabled:cursor-not-allowed disabled:no-underline"
                       title={!canLeave ? "Tidak bisa keluar karena kamu satu-satunya manager" : undefined}
                     >
-                      {!canLeave ? "Tidak bisa keluar (satu-satunya manager)" : "Keluar dari Household"}
+                      {!canLeave ? "Tidak bisa keluar (satu-satunya manager)" : "Keluar dari Family"}
                     </button>
                   )}
                 </div>
@@ -792,7 +792,7 @@ export default function PengaturanPageClient({ profile, household, members, cate
                   <span className="font-medium text-[var(--text-primary)]">{ROLE_LABEL[userRole] ?? userRole}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-[var(--text-secondary)]">Household</span>
+                  <span className="text-[var(--text-secondary)]">Family</span>
                   <span className="font-medium text-[var(--text-primary)]">{household.name}</span>
                 </div>
               </div>
