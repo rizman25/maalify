@@ -164,12 +164,12 @@ export default function PanduanPublicClient() {
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-neutral-600">
             <Link href="/#fitur" className="hover:text-[#1E3A5F] transition-colors">Fitur</Link>
             <Link href="/#cara-kerja" className="hover:text-[#1E3A5F] transition-colors">Cara Kerja</Link>
-            <Link href="/panduan" className="text-[#1E3A5F] font-semibold">Panduan</Link>
+            <Link href="/guide" className="text-[#1E3A5F] font-semibold">Panduan</Link>
           </nav>
 
           <div className="flex items-center gap-3">
             <Link
-              href="/panduan/print"
+              href="/guide/print"
               target="_blank"
               className="hidden sm:flex items-center gap-1.5 text-sm font-medium text-neutral-600 hover:text-[#1E3A5F] border border-neutral-200 px-3 py-1.5 rounded-lg hover:bg-neutral-50 transition-colors"
             >
@@ -904,7 +904,7 @@ export default function PanduanPublicClient() {
           <p className="text-sm text-neutral-400">© {new Date().getFullYear()} Maalify. Platform keuangan keluarga berbasis AI.</p>
           <div className="flex items-center gap-4 text-sm text-neutral-400">
             <Link href="/" className="hover:text-neutral-700 transition-colors">Beranda</Link>
-            <Link href="/panduan" className="hover:text-neutral-700 transition-colors">Panduan</Link>
+            <Link href="/guide" className="hover:text-neutral-700 transition-colors">Panduan</Link>
             <Link href="/login" className="hover:text-neutral-700 transition-colors">Masuk</Link>
             <Link href="/register" className="hover:text-neutral-700 transition-colors">Daftar</Link>
           </div>

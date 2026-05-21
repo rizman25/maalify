@@ -24,7 +24,7 @@ export default async function HomePage() {
             <a href="#fitur" className="hover:text-[#1E3A5F] transition-colors">Fitur</a>
             <a href="#ai" className="hover:text-[#1E3A5F] transition-colors">AI Canggih</a>
             <a href="#cara-kerja" className="hover:text-[#1E3A5F] transition-colors">Cara Kerja</a>
-            <Link href="/panduan" className="hover:text-[#1E3A5F] transition-colors">Panduan</Link>
+            <Link href="/guide" className="hover:text-[#1E3A5F] transition-colors">Panduan</Link>
           </nav>
 
           <div className="flex items-center gap-3">
@@ -368,7 +368,7 @@ export default async function HomePage() {
           </div>
 
           <div className="text-center mt-8">
-            <Link href="/panduan#role" className="inline-flex items-center gap-2 text-sm font-medium text-[#1E3A5F] hover:underline">
+            <Link href="/guide#role" className="inline-flex items-center gap-2 text-sm font-medium text-[#1E3A5F] hover:underline">
               Baca panduan lengkap sistem peran →
             </Link>
           </div>
@@ -506,7 +506,7 @@ export default async function HomePage() {
           </div>
           <p className="text-sm text-neutral-400">© {new Date().getFullYear()} Maalify. Platform keuangan keluarga berbasis AI.</p>
           <div className="flex items-center gap-4 text-sm text-neutral-400">
-            <Link href="/panduan" className="hover:text-neutral-700 transition-colors">Panduan</Link>
+            <Link href="/guide" className="hover:text-neutral-700 transition-colors">Panduan</Link>
             <Link href="/login" className="hover:text-neutral-700 transition-colors">Masuk</Link>
             <Link href="/register" className="hover:text-neutral-700 transition-colors">Daftar</Link>
           </div>

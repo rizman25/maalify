@@ -34,7 +34,7 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith("/auth") ||
     pathname.startsWith("/join") ||
     pathname.startsWith("/offline") ||
-    pathname.startsWith("/panduan");
+    pathname.startsWith("/guide");
 
   const isUserAuthRoute =
     pathname.startsWith("/login") ||

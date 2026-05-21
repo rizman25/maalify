@@ -413,7 +413,7 @@ export default function PanduanPrintPage() {
           <span className="toolbar-hint">Tekan Ctrl+P (Windows) atau ⌘+P (Mac) → Simpan sebagai PDF</span>
         </div>
         <div style={{ display: "flex", gap: "8px" }}>
-          <Link href="/panduan" className="toolbar-btn-ghost">
+          <Link href="/guide" className="toolbar-btn-ghost">
             ← Kembali
           </Link>
           <button className="toolbar-btn" onClick={() => { if (typeof window !== "undefined") window.print(); }}>
