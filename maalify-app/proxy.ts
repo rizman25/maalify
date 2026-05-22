@@ -50,12 +50,17 @@ export async function proxy(request: NextRequest) {
 
   // ── Redirect logic ────────────────────────────────────────────────────
 
-  // 1. /admin/login — hanya untuk admin email
-  //    User lain yang coba akses: sudah login → /dashboard, belum login → /login
-  if (isAdminLoginRoute && !isAdminEmail) {
-    const url = request.nextUrl.clone();
-    url.pathname = user ? "/dashboard" : "/login";
-    return NextResponse.redirect(url);
+  // 1. /admin/login
+  //    - Belum login → boleh akses (halaman login admin)
+  //    - Sudah login sebagai admin → redirect ke /admin (sudah masuk)
+  //    - Sudah login bukan admin → redirect ke /dashboard
+  if (isAdminLoginRoute) {
+    if (user) {
+      const url = request.nextUrl.clone();
+      url.pathname = isAdminEmail ? "/admin" : "/dashboard";
+      return NextResponse.redirect(url);
+    }
+    return supabaseResponse; // belum login → izinkan akses halaman admin login
   }
 
   // 2. /admin/* — hanya untuk admin email yang sudah login
