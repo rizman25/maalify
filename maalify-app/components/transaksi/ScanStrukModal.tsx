@@ -73,8 +73,8 @@ export default function ScanStrukModal({ wallets, categories, householdId, userI
       setError("Format tidak didukung. Gunakan JPG, PNG, WEBP, HEIC, atau PDF.");
       return;
     }
-    if (f.size > 10 * 1024 * 1024) {
-      setError("Ukuran file maksimal 10MB.");
+    if (f.size > 4 * 1024 * 1024) {
+      setError("Ukuran foto terlalu besar (maks 4MB). Coba kompres foto atau pilih kualitas lebih rendah saat memotret.");
       return;
     }
     setError("");
@@ -100,6 +100,26 @@ export default function ScanStrukModal({ wallets, categories, householdId, userI
     if (f) handleFile(f);
   }, []);
 
+  function getFriendlyError(status: number, rawText: string): string {
+    // Vercel / server level errors (non-JSON response)
+    if (rawText.toLowerCase().includes("request entity too large") || rawText.includes("413")) {
+      return "Foto terlalu besar. Coba gunakan foto dengan resolusi lebih kecil (maks 4MB).";
+    }
+    if (rawText.toLowerCase().includes("timeout") || rawText.includes("504") || rawText.includes("524")) {
+      return "Proses analisis terlalu lama. Coba lagi beberapa saat.";
+    }
+    if (rawText.toLowerCase().includes("bad gateway") || rawText.includes("502")) {
+      return "Server sedang bermasalah. Coba lagi beberapa saat.";
+    }
+    // HTTP status codes
+    if (status === 401) return "Sesi habis. Silakan muat ulang halaman.";
+    if (status === 413) return "Foto terlalu besar. Coba gunakan foto dengan resolusi lebih kecil (maks 4MB).";
+    if (status === 422) return "Tulisan pada struk kurang terbaca. Coba foto lebih dekat dengan pencahayaan yang lebih baik.";
+    if (status === 429) return "Terlalu banyak permintaan. Tunggu sebentar lalu coba lagi.";
+    if (status >= 500) return "Server sedang bermasalah. Coba lagi beberapa saat.";
+    return rawText || "Analisis gagal. Coba foto yang lebih jelas.";
+  }
+
   async function analyze() {
     if (!file) return;
     setStep("analyzing");
@@ -108,17 +128,33 @@ export default function ScanStrukModal({ wallets, categories, householdId, userI
       const fd = new FormData();
       fd.append("file", file);
       const res = await fetch("/api/scan-struk", { method: "POST", body: fd });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Analisis gagal");
 
-      setParsed(data);
-      setDescription(data.description);
-      setAmount(String(data.total));
+      // Coba parse JSON, tangkap jika response bukan JSON (misal error 413 dari Vercel)
+      let data: { error?: string } & Partial<ParsedStruk>;
+      try {
+        data = await res.json();
+      } catch {
+        // Response bukan JSON — kemungkinan error dari Vercel/server sebelum kode kita
+        const rawText = await res.text().catch(() => "");
+        setError(getFriendlyError(res.status, rawText));
+        setStep("upload");
+        return;
+      }
+
+      if (!res.ok) {
+        setError(getFriendlyError(res.status, data.error ?? ""));
+        setStep("upload");
+        return;
+      }
+
+      setParsed(data as ParsedStruk);
+      setDescription(data.description ?? "");
+      setAmount(String(data.total ?? 0));
       setDate(data.date ?? new Date().toISOString().split("T")[0]);
-      setTxType(data.transaction_type);
-      setEditableItems(data.items);
-      if (data.items.length > 0) {
-        setNote(data.items.map((i: { name: string; price: number }) =>
+      setTxType(data.transaction_type ?? "expense");
+      setEditableItems(data.items ?? []);
+      if ((data.items ?? []).length > 0) {
+        setNote((data.items ?? []).map((i: { name: string; price: number }) =>
           `${i.name} - Rp ${i.price.toLocaleString("id-ID")}`
         ).join("\n"));
       }
@@ -130,7 +166,12 @@ export default function ScanStrukModal({ wallets, categories, householdId, userI
       setCategoryId(matchCat?.id ?? categories.find(c => c.type === data.transaction_type)?.id ?? "");
       setStep("review");
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Analisis gagal. Coba foto yang lebih jelas.");
+      const msg = e instanceof Error ? e.message : "";
+      if (msg.toLowerCase().includes("network") || msg.toLowerCase().includes("fetch")) {
+        setError("Koneksi bermasalah. Periksa internet lalu coba lagi.");
+      } else {
+        setError("Analisis gagal. Coba foto yang lebih jelas dengan pencahayaan baik.");
+      }
       setStep("upload");
     }
   }
