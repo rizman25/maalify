@@ -202,7 +202,7 @@ export default function RecurringPageClient({
                             disabled={togglingId === item.id}
                             className="text-xs px-3 py-1.5 rounded-lg border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] transition-colors disabled:opacity-50"
                           >
-                            {togglingId === item.id ? "..." : "Nonaktifkan"}
+                            {togglingId === item.id ? "Menonaktifkan..." : "Nonaktifkan"}
                           </button>
                         </div>
                       )}
@@ -248,7 +248,7 @@ export default function RecurringPageClient({
                           disabled={togglingId === item.id}
                           className="text-[10px] text-brand-primary hover:underline mt-0.5 disabled:opacity-50"
                         >
-                          {togglingId === item.id ? "..." : "Aktifkan"}
+                          {togglingId === item.id ? "Mengaktifkan..." : "Aktifkan"}
                         </button>
                       )}
                     </div>
