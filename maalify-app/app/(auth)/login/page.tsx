@@ -21,7 +21,18 @@ export default function LoginPage() {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
-      setError("Email atau password salah.");
+      // Cek apakah email terdaftar atau tidak
+      try {
+        const res = await fetch("/api/check-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        });
+        const { exists } = await res.json();
+        setError(exists ? "Password salah. Coba lagi atau klik Lupa Password." : "Email belum terdaftar. Silakan daftar terlebih dahulu.");
+      } catch {
+        setError("Email atau password salah.");
+      }
       setLoading(false);
       return;
     }
