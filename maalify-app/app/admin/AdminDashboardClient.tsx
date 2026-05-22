@@ -175,7 +175,7 @@ export default function AdminDashboardClient({ stats, dailyTxData, topHouseholds
                   ? "bg-brand-primary text-white shadow-sm"
                   : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)]"
               }`}>
-              {t === "ai" ? "AI Usage" : t === "overview" ? "Overview" : t === "users" ? "Users" : "Households"}
+              {t === "ai" ? "AI Usage" : t === "overview" ? "Overview" : t === "users" ? "Users" : t === "households" ? "Households" : "Feedback"}
             </button>
           ))}
         </div>
