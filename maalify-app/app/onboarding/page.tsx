@@ -58,7 +58,8 @@ export default function OnboardingPage() {
       .single();
 
     if (hErr || !household) {
-      setError("Gagal membuat family. Coba lagi.");
+      console.error("❌ households insert error:", hErr);
+      setError(`Gagal membuat family. ${hErr?.message ?? "Coba lagi."}`);
       setLoading(false);
       return;
     }
