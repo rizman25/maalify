@@ -3,7 +3,6 @@ import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import PwaRegister from "./pwa-register";
 import { Analytics } from "@vercel/analytics/next";
-import NextTopLoader from "nextjs-toploader";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta-sans",
@@ -64,12 +63,6 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col">
-        <NextTopLoader
-          color="#1E3A5F"
-          height={3}
-          showSpinner={false}
-          shadow="0 0 10px #1E3A5F, 0 0 5px #1E3A5F"
-        />
         {children}
         <PwaRegister />
         <Analytics />
