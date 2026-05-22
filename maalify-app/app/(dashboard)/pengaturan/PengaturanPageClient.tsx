@@ -146,7 +146,37 @@ export default function PengaturanPageClient({ profile, household, members, cate
   const [memberLoading, setMemberLoading] = useState(false);
   const [memberMsg, setMemberMsg] = useState("");
 
-  // Kategori state
+  // Feedback state
+  const [feedbackType, setFeedbackType] = useState<"saran" | "kritik" | "bug">("saran");
+  const [feedbackMsg, setFeedbackMsg] = useState("");
+  const [feedbackRating, setFeedbackRating] = useState(0);
+  const [feedbackHover, setFeedbackHover] = useState(0);
+  const [sendingFeedback, setSendingFeedback] = useState(false);
+  const [feedbackStatus, setFeedbackStatus] = useState<"" | "success" | "error">("");
+
+  async function submitFeedback() {
+    if (!feedbackMsg.trim()) return;
+    setSendingFeedback(true);
+    setFeedbackStatus("");
+    try {
+      const { createClient } = await import("@/lib/supabase/client");
+      const supabase = createClient();
+      const { error } = await supabase.from("feedback").insert({
+        user_id: userId,
+        type: feedbackType,
+        message: feedbackMsg.trim(),
+        rating: feedbackRating > 0 ? feedbackRating : null,
+      });
+      if (error) throw error;
+      setFeedbackMsg("");
+      setFeedbackRating(0);
+      setFeedbackStatus("success");
+    } catch {
+      setFeedbackStatus("error");
+    } finally {
+      setSendingFeedback(false);
+    }
+  }
 
   // Switch family state
   const [switchCode, setSwitchCode] = useState("");
@@ -929,6 +959,81 @@ export default function PengaturanPageClient({ profile, household, members, cate
                   <span className="font-medium text-[var(--text-primary)]">{household.name}</span>
                 </div>
               </div>
+            </div>
+
+            {/* Feedback */}
+            <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border)] p-5 space-y-4">
+              <div>
+                <p className="font-semibold text-[var(--text-primary)]">Saran & Kritik</p>
+                <p className="text-xs text-[var(--text-secondary)] mt-0.5">Bantu kami terus berkembang dengan masukan kamu</p>
+              </div>
+
+              {/* Type selector */}
+              <div className="flex gap-2">
+                {(["saran", "kritik", "bug"] as const).map(t => (
+                  <button key={t} onClick={() => setFeedbackType(t)}
+                    className={`flex-1 py-2 rounded-xl text-xs font-semibold capitalize transition-all border ${
+                      feedbackType === t
+                        ? t === "bug" ? "bg-red-500 text-white border-red-500"
+                          : t === "kritik" ? "bg-amber-500 text-white border-amber-500"
+                          : "bg-brand-primary text-white border-brand-primary"
+                        : "border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)]"
+                    }`}>
+                    {t === "saran" ? "💡 Saran" : t === "kritik" ? "💬 Kritik" : "🐛 Bug"}
+                  </button>
+                ))}
+              </div>
+
+              {/* Rating */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-[var(--text-secondary)]">Rating pengalaman <span className="font-normal italic">(opsional)</span></label>
+                <div className="flex gap-1">
+                  {[1, 2, 3, 4, 5].map(star => (
+                    <button key={star}
+                      onClick={() => setFeedbackRating(star === feedbackRating ? 0 : star)}
+                      onMouseEnter={() => setFeedbackHover(star)}
+                      onMouseLeave={() => setFeedbackHover(0)}
+                      className="text-2xl transition-transform hover:scale-110">
+                      {star <= (feedbackHover || feedbackRating) ? "⭐" : "☆"}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Message */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-[var(--text-secondary)]">Pesan</label>
+                <textarea
+                  value={feedbackMsg}
+                  onChange={e => { setFeedbackMsg(e.target.value); setFeedbackStatus(""); }}
+                  rows={4}
+                  maxLength={500}
+                  placeholder={
+                    feedbackType === "saran" ? "Fitur apa yang ingin kamu lihat di Maalify?"
+                    : feedbackType === "kritik" ? "Apa yang perlu diperbaiki?"
+                    : "Ceritakan bug yang kamu temukan..."
+                  }
+                  className="w-full border border-[var(--border)] rounded-xl px-3 py-2.5 text-sm text-[var(--text-primary)] bg-[var(--bg-card)] outline-none focus:border-brand-primary transition-colors resize-none"
+                />
+                <p className="text-[10px] text-[var(--text-secondary)] text-right">{feedbackMsg.length}/500</p>
+              </div>
+
+              {feedbackStatus === "success" && (
+                <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-green-50 border border-green-200 text-green-700 text-sm">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  Terima kasih! Masukan kamu sudah terkirim.
+                </div>
+              )}
+              {feedbackStatus === "error" && (
+                <p className="text-xs text-red-500">Gagal mengirim. Coba lagi.</p>
+              )}
+
+              <button
+                onClick={submitFeedback}
+                disabled={sendingFeedback || !feedbackMsg.trim()}
+                className="w-full py-2.5 rounded-xl bg-brand-primary text-white text-sm font-medium hover:bg-brand-primary/90 disabled:opacity-50 transition-colors">
+                {sendingFeedback ? "Mengirim..." : "Kirim Masukan"}
+              </button>
             </div>
           </div>
         )}

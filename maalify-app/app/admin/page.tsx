@@ -49,6 +49,7 @@ export default async function AdminPage() {
     membersAdoptionRes,
     walletAdoptionRes,
     loginHistoryRes,
+    feedbackRes,
   ] = await Promise.all([
     // Total users
     svc.from("users").select("id", { count: "exact", head: true }),
@@ -122,6 +123,12 @@ export default async function AdminPage() {
       .select("id, created_at, ip_address, user_agent, users(id, name, email)")
       .order("created_at", { ascending: false })
       .limit(50),
+
+    // Feedback
+    svc.from("feedback")
+      .select("id, type, message, rating, created_at, users(id, name, email)")
+      .order("created_at", { ascending: false })
+      .limit(100),
   ]);
 
   // ── Compute stats ──────────────────────────────────────────────────────
@@ -221,6 +228,7 @@ export default async function AdminPage() {
       topHouseholds={topHouseholds}
       recentUsers={(recentUsersRes.data ?? []) as { id: string; name: string; email: string; phone: string | null; created_at: string }[]}
       loginHistory={(loginHistoryRes.data ?? []) as { id: string; created_at: string; ip_address: string; user_agent: string; users: { id: string; name: string; email: string } | null }[]}
+      feedbackList={(feedbackRes.data ?? []) as { id: string; type: string; message: string; rating: number | null; created_at: string; users: { id: string; name: string; email: string } | null }[]}
       generatedAt={new Date().toISOString()}
     />
   );

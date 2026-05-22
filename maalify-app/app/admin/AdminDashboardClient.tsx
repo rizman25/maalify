@@ -28,12 +28,22 @@ interface LoginEntry {
   users: { id: string; name: string; email: string } | null;
 }
 
+interface FeedbackEntry {
+  id: string;
+  type: string;
+  message: string;
+  rating: number | null;
+  created_at: string;
+  users: { id: string; name: string; email: string } | null;
+}
+
 interface Props {
   stats: Stats;
   dailyTxData: DailyTx[];
   topHouseholds: TopHousehold[];
   recentUsers: RecentUser[];
   loginHistory: LoginEntry[];
+  feedbackList: FeedbackEntry[];
   generatedAt: string;
 }
 
@@ -73,9 +83,9 @@ function fmtDate(iso: string) {
   return `${date}, ${time}`;
 }
 
-export default function AdminDashboardClient({ stats, dailyTxData, topHouseholds, recentUsers, loginHistory, generatedAt }: Props) {
+export default function AdminDashboardClient({ stats, dailyTxData, topHouseholds, recentUsers, loginHistory, feedbackList, generatedAt }: Props) {
   const router = useRouter();
-  const [tab, setTab] = useState<"overview" | "ai" | "users" | "households">("overview");
+  const [tab, setTab] = useState<"overview" | "ai" | "users" | "households" | "feedback">("overview");
   const [darkMode, setDarkMode] = useState(() =>
     typeof document !== "undefined"
       ? document.documentElement.classList.contains("dark")
@@ -158,7 +168,7 @@ export default function AdminDashboardClient({ stats, dailyTxData, topHouseholds
 
         {/* ── Tab nav ── */}
         <div className="flex gap-1 bg-[var(--bg-elevated)] rounded-xl p-1 w-fit border border-[var(--border)]">
-          {(["overview","ai","users","households"] as const).map(t => (
+          {(["overview","ai","users","households","feedback"] as const).map(t => (
             <button key={t} onClick={() => setTab(t)}
               className={`px-4 py-2 rounded-lg text-xs font-medium transition-all ${
                 tab === t
@@ -469,6 +479,64 @@ export default function AdminDashboardClient({ stats, dailyTxData, topHouseholds
                   </tbody>
                 </table>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── FEEDBACK ── */}
+        {tab === "feedback" && (
+          <div className="space-y-6">
+            {/* Summary */}
+            <div className="grid grid-cols-3 gap-4">
+              {(["saran","kritik","bug"] as const).map(t => {
+                const count = feedbackList.filter(f => f.type === t).length;
+                const color = t === "bug" ? "#EF4444" : t === "kritik" ? "#F59E0B" : "#3B82F6";
+                const icon  = t === "bug" ? "🐛" : t === "kritik" ? "💬" : "💡";
+                return <KpiCard key={t} label={t.charAt(0).toUpperCase() + t.slice(1)} value={String(count)} color={color} icon={icon} />;
+              })}
+            </div>
+
+            <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border)] overflow-hidden">
+              <div className="px-5 py-4 border-b border-[var(--border)]">
+                <p className="font-semibold text-[var(--text-primary)]">Semua Masukan</p>
+                <p className="text-xs text-[var(--text-secondary)] mt-0.5">{feedbackList.length} masukan diterima</p>
+              </div>
+              {feedbackList.length === 0 ? (
+                <div className="py-16 text-center text-sm text-[var(--text-secondary)] italic">Belum ada masukan</div>
+              ) : (
+                <div className="divide-y divide-[var(--border)]">
+                  {feedbackList.map(f => (
+                    <div key={f.id} className="px-5 py-4 space-y-2">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-7 h-7 rounded-full bg-brand-primary flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
+                            {(f.users?.name ?? "?").slice(0, 2).toUpperCase()}
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-[var(--text-primary)]">{f.users?.name ?? "—"}</p>
+                            <p className="text-[10px] text-[var(--text-secondary)]">{fmtDate(f.created_at)}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          {f.rating && (
+                            <span className="text-xs text-amber-500">{"⭐".repeat(f.rating)}</span>
+                          )}
+                          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                            f.type === "bug" ? "bg-red-50 text-red-500"
+                            : f.type === "kritik" ? "bg-amber-50 text-amber-600"
+                            : "bg-blue-50 text-blue-600"
+                          }`}>
+                            {f.type === "bug" ? "🐛 Bug" : f.type === "kritik" ? "💬 Kritik" : "💡 Saran"}
+                          </span>
+                        </div>
+                      </div>
+                      <p className="text-sm text-[var(--text-primary)] bg-[var(--bg-elevated)] rounded-xl px-4 py-3 leading-relaxed">
+                        {f.message}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}
