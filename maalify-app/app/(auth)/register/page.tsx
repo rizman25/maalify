@@ -2,12 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 const inputCls = "w-full px-3.5 py-2.5 rounded-lg border-[1.5px] border-[#E2E8F0] bg-white text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#1E3A5F] focus:ring-offset-1 focus:border-transparent";
 const labelCls = "block text-xs font-medium text-[#1E293B] mb-1.5";
 
 export default function RegisterPage() {
+  const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -31,7 +33,7 @@ export default function RegisterPage() {
     const supabase = createClient();
     const cleanPhone = phone.replace(/\D/g, "").replace(/^0/, "62");
 
-    const { error: signUpError } = await supabase.auth.signUp({
+    const { data, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -45,6 +47,14 @@ export default function RegisterPage() {
       return;
     }
 
+    // Jika session langsung ada → email confirm dimatikan, langsung ke onboarding
+    if (data.session) {
+      router.push("/onboarding");
+      router.refresh();
+      return;
+    }
+
+    // Jika tidak ada session → perlu verifikasi email dulu
     setSuccess(true);
     setLoading(false);
   }
