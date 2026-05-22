@@ -33,6 +33,7 @@ interface FeedbackEntry {
   type: string;
   message: string;
   rating: number | null;
+  image_url: string | null;
   created_at: string;
   users: { id: string; name: string; email: string } | null;
 }
@@ -533,6 +534,13 @@ export default function AdminDashboardClient({ stats, dailyTxData, topHouseholds
                       <p className="text-sm text-[var(--text-primary)] bg-[var(--bg-elevated)] rounded-xl px-4 py-3 leading-relaxed">
                         {f.message}
                       </p>
+                      {f.image_url && (
+                        <a href={f.image_url} target="_blank" rel="noopener noreferrer"
+                          className="block mt-1 rounded-xl overflow-hidden border border-[var(--border)] hover:opacity-90 transition-opacity">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={f.image_url} alt="screenshot" className="w-full max-h-60 object-cover" />
+                        </a>
+                      )}
                     </div>
                   ))}
                 </div>

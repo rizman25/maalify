@@ -151,8 +151,23 @@ export default function PengaturanPageClient({ profile, household, members, cate
   const [feedbackMsg, setFeedbackMsg] = useState("");
   const [feedbackRating, setFeedbackRating] = useState(0);
   const [feedbackHover, setFeedbackHover] = useState(0);
+  const [feedbackImage, setFeedbackImage] = useState<File | null>(null);
+  const [feedbackImagePreview, setFeedbackImagePreview] = useState<string | null>(null);
   const [sendingFeedback, setSendingFeedback] = useState(false);
   const [feedbackStatus, setFeedbackStatus] = useState<"" | "success" | "error">("");
+
+  function handleFeedbackImage(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { alert("Ukuran gambar maksimal 5MB"); return; }
+    setFeedbackImage(file);
+    setFeedbackImagePreview(URL.createObjectURL(file));
+  }
+
+  function removeFeedbackImage() {
+    setFeedbackImage(null);
+    setFeedbackImagePreview(null);
+  }
 
   async function submitFeedback() {
     if (!feedbackMsg.trim()) return;
@@ -161,15 +176,33 @@ export default function PengaturanPageClient({ profile, household, members, cate
     try {
       const { createClient } = await import("@/lib/supabase/client");
       const supabase = createClient();
+
+      let imageUrl: string | null = null;
+      if (feedbackType === "bug" && feedbackImage) {
+        const ext = feedbackImage.name.split(".").pop();
+        const path = `${userId}/${Date.now()}.${ext}`;
+        const { error: uploadErr } = await supabase.storage
+          .from("feedback-attachments")
+          .upload(path, feedbackImage, { upsert: true });
+        if (uploadErr) throw uploadErr;
+        const { data: urlData } = supabase.storage
+          .from("feedback-attachments")
+          .getPublicUrl(path);
+        imageUrl = urlData.publicUrl;
+      }
+
       const { error } = await supabase.from("feedback").insert({
         user_id: userId,
         type: feedbackType,
         message: feedbackMsg.trim(),
         rating: feedbackRating > 0 ? feedbackRating : null,
+        image_url: imageUrl,
       });
       if (error) throw error;
       setFeedbackMsg("");
       setFeedbackRating(0);
+      setFeedbackImage(null);
+      setFeedbackImagePreview(null);
       setFeedbackStatus("success");
     } catch {
       setFeedbackStatus("error");
@@ -1017,6 +1050,34 @@ export default function PengaturanPageClient({ profile, household, members, cate
                 />
                 <p className="text-[10px] text-[var(--text-secondary)] text-right">{feedbackMsg.length}/500</p>
               </div>
+
+              {/* Image upload — hanya untuk Bug */}
+              {feedbackType === "bug" && (
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-[var(--text-secondary)]">
+                    Screenshot <span className="font-normal italic">(opsional, maks 5MB)</span>
+                  </label>
+                  {feedbackImagePreview ? (
+                    <div className="relative w-full rounded-xl overflow-hidden border border-[var(--border)]">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={feedbackImagePreview} alt="preview" className="w-full max-h-48 object-cover" />
+                      <button
+                        onClick={removeFeedbackImage}
+                        className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80 transition-colors">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                      </button>
+                    </div>
+                  ) : (
+                    <label className="flex flex-col items-center justify-center w-full h-24 rounded-xl border-2 border-dashed border-[var(--border)] cursor-pointer hover:border-brand-primary hover:bg-brand-primary/5 transition-colors">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--text-secondary)] mb-1">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+                      </svg>
+                      <span className="text-xs text-[var(--text-secondary)]">Klik untuk upload gambar</span>
+                      <input type="file" accept="image/*" className="hidden" onChange={handleFeedbackImage} />
+                    </label>
+                  )}
+                </div>
+              )}
 
               {feedbackStatus === "success" && (
                 <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-green-50 border border-green-200 text-green-700 text-sm">
