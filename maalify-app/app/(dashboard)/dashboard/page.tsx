@@ -9,7 +9,6 @@ import ScanStrukButton from "@/components/dashboard/ScanStrukButton";
 import RecentTransaksiList from "@/components/dashboard/RecentTransaksiList";
 import MemberSpendingSummary from "@/components/dashboard/MemberSpendingSummary";
 import type { MemberSpending } from "@/components/dashboard/MemberSpendingSummary";
-import SetupChecklist from "@/components/dashboard/SetupChecklist";
 import Link from "next/link";
 
 const BULAN_SHORT = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
@@ -221,17 +220,6 @@ export default async function DashboardPage() {
           />
         </div>
       </div>
-
-      {/* Setup Checklist */}
-      <SetupChecklist
-        hasWallet={(walletsRes.data ?? []).length > 0}
-        hasTransaction={totalTxCount > 0}
-        hasMultipleMembers={(membersCountRes.count ?? 0) > 1}
-        hasBudget={(budgetsRes.data ?? []).length > 0}
-        hasGoal={activeGoals.length > 0}
-        hasRecurring={(recurringRes.count ?? 0) > 0}
-        hasAvatar={!!(profile as { avatar_url?: string | null } | null)?.avatar_url}
-      />
 
       {/* Summary Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

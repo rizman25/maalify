@@ -8,6 +8,7 @@ import BottomNav from "./BottomNav";
 import OnboardingWizard from "@/components/onboarding/OnboardingWizard";
 import GlobalSearch from "@/components/search/GlobalSearch";
 import AiChatWidget from "@/components/chat/AiChatWidget";
+import SetupChecklistWidget from "@/components/dashboard/SetupChecklistWidget";
 import type { AppNotification } from "@/types";
 
 interface Props {
@@ -109,6 +110,9 @@ export default function DashboardShell({ householdName, userName, avatarUrl, use
           userName={userName}
         />
       )}
+
+      {/* Setup Checklist Widget */}
+      <SetupChecklistWidget />
 
       {/* AI Chat Widget */}
       <AiChatWidget />
