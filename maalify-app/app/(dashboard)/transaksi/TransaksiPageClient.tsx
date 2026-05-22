@@ -99,25 +99,26 @@ export default function TransaksiPageClient({
   return (
     <div className="max-w-3xl mx-auto space-y-5 px-4 py-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-[var(--text-primary)]">Transaksi</h1>
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="text-2xl font-bold text-[var(--text-primary)] shrink-0">Transaksi</h1>
         <div className="flex items-center gap-2">
+          {/* Scan: icon only on mobile, with label on sm+ */}
           <button
             onClick={() => setScanOpen(true)}
             disabled={wallets.length === 0}
-            className="flex items-center gap-1.5 px-3 py-2.5 border border-[var(--border)] bg-[var(--bg-surface)] text-[var(--text-secondary)] text-sm font-medium rounded-lg hover:bg-[var(--bg-elevated)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="flex items-center gap-1.5 px-2.5 py-2.5 sm:px-3 border border-[var(--border)] bg-[var(--bg-surface)] text-[var(--text-secondary)] text-sm font-medium rounded-lg hover:bg-[var(--bg-elevated)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             title={wallets.length === 0 ? "Tambahkan dompet dulu" : "Scan struk/kuitansi"}
           >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
               <circle cx="12" cy="13" r="4"/>
             </svg>
-            <span>Scan Struk</span>
+            <span className="hidden sm:inline whitespace-nowrap">Scan Struk</span>
           </button>
           <button
             onClick={openAdd}
             disabled={wallets.length === 0}
-            className="flex items-center gap-2 px-4 py-2.5 bg-brand-primary text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+            className="flex items-center gap-1.5 px-3 py-2.5 bg-brand-primary text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
             title={wallets.length === 0 ? "Tambahkan dompet dulu" : ""}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
