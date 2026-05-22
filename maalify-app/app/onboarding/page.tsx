@@ -83,7 +83,7 @@ export default function OnboardingPage() {
       status: "active",
     });
 
-    router.push("/setup");
+    router.push("/dashboard");
     router.refresh();
   }
 
@@ -125,7 +125,7 @@ export default function OnboardingPage() {
       return;
     }
 
-    router.push("/setup");
+    router.push("/dashboard");
     router.refresh();
   }
 
