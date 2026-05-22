@@ -11,18 +11,19 @@ export async function POST(request: Request) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    const { data, error } = await supabase
-      .from("users")
-      .select("id")
-      .eq("email", email.toLowerCase().trim())
-      .maybeSingle();
+    // Pakai Auth Admin API — lebih reliable dari query public.users
+    const { data, error } = await supabase.auth.admin.listUsers();
 
     if (error) {
       console.error("check-email error:", error);
-      return NextResponse.json({ exists: null }); // null = unknown
+      return NextResponse.json({ exists: null });
     }
 
-    return NextResponse.json({ exists: !!data });
+    const exists = data.users.some(
+      (u) => u.email?.toLowerCase() === email.toLowerCase().trim()
+    );
+
+    return NextResponse.json({ exists });
   } catch (e) {
     console.error("check-email exception:", e);
     return NextResponse.json({ exists: null });
