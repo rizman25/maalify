@@ -135,6 +135,59 @@ export default function PengaturanPageClient({ profile, household, members, cate
 
   // Kategori state
 
+  // Switch family state
+  const [switchCode, setSwitchCode] = useState("");
+  const [switchLoading, setSwitchLoading] = useState(false);
+  const [switchError, setSwitchError] = useState("");
+  const [switchConfirm, setSwitchConfirm] = useState<{ newHouseholdId: string; newFamilyName: string } | null>(null);
+
+  async function findFamilyToSwitch() {
+    setSwitchError("");
+    const code = switchCode.trim().toUpperCase();
+    if (code.length < 4) { setSwitchError("Kode undangan tidak valid."); return; }
+    setSwitchLoading(true);
+    try {
+      const { createClient } = await import("@/lib/supabase/client");
+      const supabase = createClient();
+      const { data: newHouseholdId, error } = await supabase
+        .rpc("find_household_by_invite_code", { p_invite_code: code });
+      if (error || !newHouseholdId) { setSwitchError("Kode undangan tidak ditemukan."); return; }
+      if (newHouseholdId === householdId) { setSwitchError("Kamu sudah berada di family ini."); return; }
+      // Ambil nama family baru
+      const { data: hh } = await supabase
+        .from("households").select("name").eq("id", newHouseholdId).single();
+      setSwitchConfirm({ newHouseholdId, newFamilyName: hh?.name ?? "Family Baru" });
+    } catch { setSwitchError("Gagal mencari family."); }
+    finally { setSwitchLoading(false); }
+  }
+
+  async function executeSwitchFamily() {
+    if (!switchConfirm || !myMembership) return;
+    setSwitchLoading(true);
+    setSwitchError("");
+    try {
+      const { createClient } = await import("@/lib/supabase/client");
+      const supabase = createClient();
+      // Keluar dari family lama
+      const { error: leaveErr } = await supabase
+        .from("household_members").delete().eq("id", myMembership.id);
+      if (leaveErr) throw leaveErr;
+      // Masuk ke family baru sebagai member
+      const { error: joinErr } = await supabase
+        .from("household_members").insert({
+          household_id: switchConfirm.newHouseholdId,
+          user_id: userId,
+          role: "member",
+        });
+      if (joinErr) throw joinErr;
+      router.push("/dashboard");
+      router.refresh();
+    } catch (e: unknown) {
+      setSwitchError(e instanceof Error ? e.message : "Gagal pindah family.");
+      setSwitchLoading(false);
+    }
+  }
+
   // Keamanan state
   const [newPass, setNewPass] = useState("");
   const [confirmPass, setConfirmPass] = useState("");
@@ -695,6 +748,68 @@ export default function PengaturanPageClient({ profile, household, members, cate
                 </div>
               )}
             </div>
+            {/* Gabung ke Family Lain */}
+            <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border)] p-5 space-y-4">
+              <div>
+                <p className="font-semibold text-[var(--text-primary)]">Pindah ke Family Lain</p>
+                <p className="text-xs text-[var(--text-secondary)] mt-0.5">
+                  Keluar dari <strong>{household.name}</strong> dan bergabung ke family lain. Data lamamu tetap tersimpan.
+                </p>
+              </div>
+
+              {!switchConfirm ? (
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-xs font-medium text-[var(--text-secondary)] mb-1.5 block">Kode Undangan Family Baru</label>
+                    <input
+                      type="text"
+                      value={switchCode}
+                      onChange={e => { setSwitchCode(e.target.value.toUpperCase()); setSwitchError(""); }}
+                      placeholder="Contoh: AB12CD34"
+                      maxLength={12}
+                      className="w-full border border-[var(--border)] rounded-xl px-3 py-2.5 text-sm font-mono tracking-widest text-center text-[var(--text-primary)] bg-[var(--bg-card)] outline-none focus:border-brand-primary uppercase"
+                    />
+                  </div>
+                  {switchError && <p className="text-xs text-danger bg-red-50 px-3 py-2 rounded-lg">{switchError}</p>}
+                  <button
+                    onClick={findFamilyToSwitch}
+                    disabled={switchLoading || switchCode.trim().length < 4}
+                    className="w-full py-2.5 rounded-xl border border-[var(--border)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] disabled:opacity-50 transition-colors"
+                  >
+                    {switchLoading ? "Mencari..." : "Cari Family"}
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                    <p className="text-xs font-semibold text-amber-800 mb-1">Konfirmasi Pindah Family</p>
+                    <p className="text-xs text-amber-700">
+                      Kamu akan keluar dari <strong>{household.name}</strong> dan bergabung ke{" "}
+                      <strong>{switchConfirm.newFamilyName}</strong> sebagai Member.
+                      Data transaksi lamamu tetap tersimpan.
+                    </p>
+                  </div>
+                  {switchError && <p className="text-xs text-danger bg-red-50 px-3 py-2 rounded-lg">{switchError}</p>}
+                  <div className="flex gap-2">
+                    <button
+                      onClick={executeSwitchFamily}
+                      disabled={switchLoading}
+                      className="flex-1 py-2.5 rounded-xl bg-brand-primary text-white text-sm font-semibold hover:opacity-90 disabled:opacity-50 transition-all"
+                    >
+                      {switchLoading ? "Memproses..." : "Ya, Pindah Sekarang"}
+                    </button>
+                    <button
+                      onClick={() => { setSwitchConfirm(null); setSwitchCode(""); setSwitchError(""); }}
+                      disabled={switchLoading}
+                      className="flex-1 py-2.5 rounded-xl border border-[var(--border)] text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] disabled:opacity-50 transition-colors"
+                    >
+                      Batal
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
           </div>
         )}
 
