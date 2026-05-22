@@ -6,6 +6,7 @@ import { formatRupiah } from "@/lib/utils";
 import type { Wallet, WalletType } from "@/types";
 import WalletModal from "@/components/dompet/WalletModal";
 import TransferModal from "@/components/dompet/TransferModal";
+import { Toast, useToast } from "@/components/ui/Toast";
 import type { TransferRecord } from "./page";
 
 const TYPE_LABEL: Record<WalletType, string> = {
@@ -41,6 +42,7 @@ interface Props {
 export default function WalletPageClient({ wallets, inactiveWallets, transfers, householdId, userId, userRole }: Props) {
   const canManage = userRole !== "member";
   const router = useRouter();
+  const { toast, showToast, dismissToast } = useToast();
   const [modalOpen, setModalOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<Wallet | null>(null);
   const [transferOpen, setTransferOpen] = useState(false);
@@ -72,31 +74,49 @@ export default function WalletPageClient({ wallets, inactiveWallets, transfers, 
   }
 
   async function handleDeactivate(walletId: string) {
+    const walletName = wallets.find(w => w.id === walletId)?.name ?? "Dompet";
     setActivating(walletId);
     const { createClient } = await import("@/lib/supabase/client");
     const supabase = createClient();
-    await supabase.from("wallets").update({ is_active: false }).eq("id", walletId);
+    const { error } = await supabase.from("wallets").update({ is_active: false }).eq("id", walletId);
     setActivating(null);
-    router.refresh();
+    if (error) {
+      showToast("Gagal menonaktifkan dompet.", "error");
+    } else {
+      showToast(`"${walletName}" berhasil dinonaktifkan.`, "info");
+      router.refresh();
+    }
   }
 
   async function handleDelete(walletId: string) {
+    const walletName = wallets.find(w => w.id === walletId)?.name ?? "Dompet";
     setDeleting(true);
     const { createClient } = await import("@/lib/supabase/client");
     const supabase = createClient();
-    await supabase.from("wallets").delete().eq("id", walletId);
+    const { error } = await supabase.from("wallets").delete().eq("id", walletId);
     setDeleting(false);
     setConfirmDelete(null);
-    router.refresh();
+    if (error) {
+      showToast("Gagal menghapus dompet.", "error");
+    } else {
+      showToast(`"${walletName}" berhasil dihapus.`, "error");
+      router.refresh();
+    }
   }
 
   async function handleActivate(walletId: string) {
+    const walletName = inactiveWallets.find(w => w.id === walletId)?.name ?? "Dompet";
     setActivating(walletId);
     const { createClient } = await import("@/lib/supabase/client");
     const supabase = createClient();
-    await supabase.from("wallets").update({ is_active: true }).eq("id", walletId);
+    const { error } = await supabase.from("wallets").update({ is_active: true }).eq("id", walletId);
     setActivating(null);
-    router.refresh();
+    if (error) {
+      showToast("Gagal mengaktifkan dompet.", "error");
+    } else {
+      showToast(`"${walletName}" berhasil diaktifkan.`, "success");
+      router.refresh();
+    }
   }
 
   return (
@@ -437,6 +457,15 @@ export default function WalletPageClient({ wallets, inactiveWallets, transfers, 
           userId={userId}
           onClose={() => setTransferOpen(false)}
           onSaved={() => { setTransferOpen(false); router.refresh(); }}
+        />
+      )}
+
+      {/* Toast Notification */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onDismiss={dismissToast}
         />
       )}
     </div>
