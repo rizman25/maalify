@@ -9,6 +9,7 @@ export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -18,9 +19,9 @@ export default function LoginPage() {
     setLoading(true);
 
     const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
 
-    if (error) {
+    if (authError) {
       // Cek apakah email terdaftar atau tidak
       try {
         const res = await fetch("/api/check-email", {
@@ -29,7 +30,14 @@ export default function LoginPage() {
           body: JSON.stringify({ email }),
         });
         const { exists } = await res.json();
-        setError(exists ? "Password salah. Coba lagi atau klik Lupa Password." : "Email belum terdaftar. Silakan daftar terlebih dahulu.");
+
+        if (exists === false) {
+          setError("Email belum terdaftar. Silakan daftar terlebih dahulu.");
+        } else if (exists === true) {
+          setError("Password salah. Coba lagi atau klik Lupa Password.");
+        } else {
+          setError("Email atau password salah.");
+        }
       } catch {
         setError("Email atau password salah.");
       }
@@ -81,14 +89,35 @@ export default function LoginPage() {
 
         <div>
           <label className="block text-xs font-medium text-[#1E293B] mb-1.5">Password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
-            required
-            className={inputCls}
-          />
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              required
+              className={inputCls + " pr-10"}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#475569] transition-colors"
+              tabIndex={-1}
+            >
+              {showPassword ? (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                  <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                  <line x1="1" y1="1" x2="23" y2="23"/>
+                </svg>
+              ) : (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              )}
+            </button>
+          </div>
           <div className="text-right mt-1">
             <Link href="/forgot-password" className="text-xs text-[#1E3A5F] hover:underline">
               Lupa password?
