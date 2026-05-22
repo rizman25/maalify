@@ -9,6 +9,7 @@ import OnboardingWizard from "@/components/onboarding/OnboardingWizard";
 import GlobalSearch from "@/components/search/GlobalSearch";
 import AiChatWidget from "@/components/chat/AiChatWidget";
 import SetupChecklistWidget from "@/components/dashboard/SetupChecklistWidget";
+import PageTransition from "@/components/ui/PageTransition";
 import type { AppNotification } from "@/types";
 
 interface Props {
@@ -93,7 +94,9 @@ export default function DashboardShell({ householdName, userName, avatarUrl, use
           notifications={notifications}
           onSearchClick={() => setSearchOpen(true)}
         />
-        <main className="flex-1 overflow-y-auto pb-16 lg:pb-0">{children}</main>
+        <main className="flex-1 overflow-y-auto pb-16 lg:pb-0">
+          <PageTransition>{children}</PageTransition>
+        </main>
       </div>
 
       {/* Mobile bottom nav */}
