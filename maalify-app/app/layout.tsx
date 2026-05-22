@@ -3,6 +3,7 @@ import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import PwaRegister from "./pwa-register";
 import { Analytics } from "@vercel/analytics/next";
+import NavigationProgress from "@/components/ui/NavigationProgress";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta-sans",
@@ -63,6 +64,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col">
+        <NavigationProgress />
         {children}
         <PwaRegister />
         <Analytics />
