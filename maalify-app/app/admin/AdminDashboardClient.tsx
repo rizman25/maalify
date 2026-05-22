@@ -13,6 +13,7 @@ interface Stats {
   scanTotal: number; chatTotal: number; scanMonth: number; chatMonth: number;
   totalTokens: number; totalCostUsd: number; monthTokens: number; monthCostUsd: number;
   adoptionGoals: number; adoptionBudget: number; adoptionScan: number;
+  adoptionRecurring: number; adoptionTx: number; adoptionMultiMember: number; adoptionWallet: number;
 }
 
 interface DailyTx { date: string; count: number; }
@@ -195,9 +196,13 @@ export default function AdminDashboardClient({ stats, dailyTxData, topHouseholds
               <p className="font-semibold text-[var(--text-primary)] mb-4">Feature Adoption</p>
               <div className="space-y-4">
                 {[
-                  { label: "Scan Struk AI",    pct: stats.adoptionScan,   color: "#10B981", icon: "📸" },
-                  { label: "Anggaran Bulanan", pct: stats.adoptionBudget, color: "#F59E0B", icon: "📊" },
-                  { label: "Tabungan & Goals", pct: stats.adoptionGoals,  color: "#8B5CF6", icon: "🎯" },
+                  { label: "Catat Transaksi",     pct: stats.adoptionTx,          color: "#3B82F6", icon: "💸" },
+                  { label: "Tambah Dompet",        pct: stats.adoptionWallet,      color: "#06B6D4", icon: "🏦" },
+                  { label: "Scan Struk AI",        pct: stats.adoptionScan,        color: "#10B981", icon: "📸" },
+                  { label: "Anggaran Bulanan",     pct: stats.adoptionBudget,      color: "#F59E0B", icon: "📊" },
+                  { label: "Tabungan & Goals",     pct: stats.adoptionGoals,       color: "#8B5CF6", icon: "🎯" },
+                  { label: "Transaksi Berulang",   pct: stats.adoptionRecurring,   color: "#EC4899", icon: "🔄" },
+                  { label: "Multi Member",         pct: stats.adoptionMultiMember, color: "#F97316", icon: "👨‍👩‍👧" },
                 ].map(f => (
                   <div key={f.label}>
                     <div className="flex items-center justify-between mb-1.5">

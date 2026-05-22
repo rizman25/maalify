@@ -44,6 +44,10 @@ export default async function AdminPage() {
     goalsAdoptionRes,
     budgetAdoptionRes,
     scanAdoptionRes,
+    recurringAdoptionRes,
+    txAdoptionRes,
+    membersAdoptionRes,
+    walletAdoptionRes,
   ] = await Promise.all([
     // Total users
     svc.from("users").select("id", { count: "exact", head: true }),
@@ -99,6 +103,18 @@ export default async function AdminPage() {
 
     // Scan struk adoption (households that used it)
     svc.from("ai_usage_logs").select("household_id").eq("feature", "scan_struk"),
+
+    // Transaksi Berulang adoption
+    svc.from("recurring_transactions").select("household_id"),
+
+    // Transaksi adoption (household yang sudah pernah catat)
+    svc.from("transactions").select("household_id"),
+
+    // Multi member adoption (household dengan >1 anggota)
+    svc.from("household_members").select("household_id"),
+
+    // Dompet adoption
+    svc.from("wallets").select("household_id").eq("is_active", true),
   ]);
 
   // ── Compute stats ──────────────────────────────────────────────────────
@@ -147,12 +163,27 @@ export default async function AdminPage() {
   const monthCostUsd  = aiMonth.reduce((s, r) => s + Number(r.estimated_cost_usd ?? 0), 0);
 
   // Feature adoption
-  const householdsWithGoals   = new Set((goalsAdoptionRes.data ?? []).map(r => r.household_id)).size;
-  const householdsWithBudget  = new Set((budgetAdoptionRes.data ?? []).map(r => r.household_id)).size;
-  const householdsWithScan    = new Set((scanAdoptionRes.data ?? []).map(r => r.household_id)).size;
-  const adoptionGoals   = totalHouseholds > 0 ? Math.round((householdsWithGoals / totalHouseholds) * 100) : 0;
-  const adoptionBudget  = totalHouseholds > 0 ? Math.round((householdsWithBudget / totalHouseholds) * 100) : 0;
-  const adoptionScan    = totalHouseholds > 0 ? Math.round((householdsWithScan / totalHouseholds) * 100) : 0;
+  const householdsWithGoals     = new Set((goalsAdoptionRes.data ?? []).map(r => r.household_id)).size;
+  const householdsWithBudget    = new Set((budgetAdoptionRes.data ?? []).map(r => r.household_id)).size;
+  const householdsWithScan      = new Set((scanAdoptionRes.data ?? []).map(r => r.household_id)).size;
+  const householdsWithRecurring = new Set((recurringAdoptionRes.data ?? []).map(r => r.household_id)).size;
+  const householdsWithTx        = new Set((txAdoptionRes.data ?? []).map(r => r.household_id)).size;
+  const householdsWithWallet    = new Set((walletAdoptionRes.data ?? []).map(r => r.household_id)).size;
+
+  // Multi member: household yang punya lebih dari 1 anggota
+  const memberCountMap = new Map<string, number>();
+  for (const r of membersAdoptionRes.data ?? []) {
+    memberCountMap.set(r.household_id, (memberCountMap.get(r.household_id) ?? 0) + 1);
+  }
+  const householdsWithMultiMember = [...memberCountMap.values()].filter(v => v > 1).length;
+
+  const adoptionGoals       = totalHouseholds > 0 ? Math.round((householdsWithGoals / totalHouseholds) * 100) : 0;
+  const adoptionBudget      = totalHouseholds > 0 ? Math.round((householdsWithBudget / totalHouseholds) * 100) : 0;
+  const adoptionScan        = totalHouseholds > 0 ? Math.round((householdsWithScan / totalHouseholds) * 100) : 0;
+  const adoptionRecurring   = totalHouseholds > 0 ? Math.round((householdsWithRecurring / totalHouseholds) * 100) : 0;
+  const adoptionTx          = totalHouseholds > 0 ? Math.round((householdsWithTx / totalHouseholds) * 100) : 0;
+  const adoptionMultiMember = totalHouseholds > 0 ? Math.round((householdsWithMultiMember / totalHouseholds) * 100) : 0;
+  const adoptionWallet      = totalHouseholds > 0 ? Math.round((householdsWithWallet / totalHouseholds) * 100) : 0;
 
   // Top households
   type HouseholdRow = {
@@ -177,6 +208,7 @@ export default async function AdminPage() {
         scanTotal, chatTotal, scanMonth, chatMonth,
         totalTokens, totalCostUsd, monthTokens, monthCostUsd,
         adoptionGoals, adoptionBudget, adoptionScan,
+        adoptionRecurring, adoptionTx, adoptionMultiMember, adoptionWallet,
       }}
       dailyTxData={dailyTxData}
       topHouseholds={topHouseholds}
