@@ -194,8 +194,8 @@ export default async function DashboardPage() {
   return (
     <div className="max-w-5xl mx-auto space-y-6 px-4 py-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-        <div>
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex-1 min-w-0 pr-2">
           <h1 className="text-2xl font-bold text-[var(--text-primary)]">
             Selamat datang kembali, {firstName} 👋
           </h1>
@@ -205,7 +205,7 @@ export default async function DashboardPage() {
               : `Berikut ringkasan keuangan keluarga ${bulanNama}`}
           </p>
         </div>
-        <div className="flex flex-row sm:flex-col items-stretch gap-2 flex-shrink-0">
+        <div className="flex flex-col items-stretch gap-2 flex-shrink-0">
           <QuickAddTransaksi
             wallets={(activeWalletsRes.data ?? []) as import("@/types").Wallet[]}
             categories={(catsRes.data ?? []) as import("@/types").Category[]}
