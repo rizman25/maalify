@@ -9,6 +9,7 @@ import ScanStrukButton from "@/components/dashboard/ScanStrukButton";
 import RecentTransaksiList from "@/components/dashboard/RecentTransaksiList";
 import MemberSpendingSummary from "@/components/dashboard/MemberSpendingSummary";
 import type { MemberSpending } from "@/components/dashboard/MemberSpendingSummary";
+import SetupChecklist from "@/components/dashboard/SetupChecklist";
 import Link from "next/link";
 
 const BULAN_SHORT = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
@@ -20,7 +21,7 @@ export default async function DashboardPage() {
   if (!user) redirect("/login");
 
   const { data: profile } = await supabase
-    .from("users").select("name").eq("id", user.id).single();
+    .from("users").select("name, avatar_url").eq("id", user.id).single();
 
   const { data: membership } = await supabase
     .from("household_members").select("household_id, role").eq("user_id", user.id).limit(1).single();
@@ -48,7 +49,7 @@ export default async function DashboardPage() {
   sixMonthsAgo.setDate(1);
   const trendStart = `${sixMonthsAgo.getFullYear()}-${pad(sixMonthsAgo.getMonth() + 1)}-01`;
 
-  const [curMonthRes, prevMonthRes, walletsRes, trendRes, catRes, budgetsRes, debtsRes, recentTxRes, activeWalletsRes, catsRes, goalsRes, memberSpendingRes] = await Promise.all([
+  const [curMonthRes, prevMonthRes, walletsRes, trendRes, catRes, budgetsRes, debtsRes, recentTxRes, activeWalletsRes, catsRes, goalsRes, memberSpendingRes, membersCountRes, recurringRes] = await Promise.all([
     supabase.from("transactions").select("type, amount")
       .eq("household_id", householdId).gte("date", monthStart).lt("date", monthEnd),
 
@@ -102,6 +103,10 @@ export default async function DashboardPage() {
     !isMember && householdId
       ? supabase.rpc("get_member_spending_summary", { p_household_id: householdId })
       : Promise.resolve({ data: null, error: null }),
+
+    // Setup checklist queries
+    supabase.from("household_members").select("id", { count: "exact", head: true }).eq("household_id", householdId),
+    supabase.from("recurring_transactions").select("id", { count: "exact", head: true }).eq("household_id", householdId).limit(1),
   ]);
 
   const curIncome  = (curMonthRes.data ?? []).filter(t => t.type === "income").reduce((s,t) => s + Number(t.amount), 0);
@@ -216,6 +221,17 @@ export default async function DashboardPage() {
           />
         </div>
       </div>
+
+      {/* Setup Checklist */}
+      <SetupChecklist
+        hasWallet={(walletsRes.data ?? []).length > 0}
+        hasTransaction={totalTxCount > 0}
+        hasMultipleMembers={(membersCountRes.count ?? 0) > 1}
+        hasBudget={(budgetsRes.data ?? []).length > 0}
+        hasGoal={activeGoals.length > 0}
+        hasRecurring={(recurringRes.count ?? 0) > 0}
+        hasAvatar={!!(profile as { avatar_url?: string | null } | null)?.avatar_url}
+      />
 
       {/* Summary Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
