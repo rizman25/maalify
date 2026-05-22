@@ -38,7 +38,10 @@ function formatPhoneDisplay(raw: string) {
 function fmt(n: number) { return n.toLocaleString("id-ID"); }
 function fmtUsd(n: number) { return `$${n.toFixed(4)}`; }
 function fmtDate(iso: string) {
-  return new Date(iso).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
+  const d = new Date(iso);
+  const date = d.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
+  const time = d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
+  return `${date}, ${time}`;
 }
 
 export default function AdminDashboardClient({ stats, dailyTxData, topHouseholds, recentUsers, generatedAt }: Props) {
