@@ -94,7 +94,7 @@ export default function SetupChecklistWidget() {
       {/* Panel */}
       {open && (
         <div
-          className="fixed z-[60] shadow-2xl rounded-2xl overflow-hidden bottom-[12rem] lg:bottom-[5.5rem]"
+          className="fixed z-[60] shadow-2xl rounded-2xl overflow-hidden bottom-[13.5rem] lg:bottom-[5.5rem]"
           style={{
             right: "1rem",
             width: "340px",
@@ -261,7 +261,7 @@ export default function SetupChecklistWidget() {
       <button
         onClick={() => setOpen(v => !v)}
         className="fixed z-[60] flex items-center gap-2 px-4 py-2.5 rounded-full shadow-lg transition-all duration-200 hover:scale-105 active:scale-95
-          bottom-[8.5rem] lg:bottom-[5.5rem]"
+          bottom-[10rem] lg:bottom-[5.5rem]"
         style={{
           right: open ? "calc(340px + 1.5rem)" : "1rem",
           backgroundColor: allDone ? "#27AE60" : "#1E3A5F",
