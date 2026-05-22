@@ -80,7 +80,7 @@ export default function AiChatWidget() {
     <>
       {/* Chat Panel */}
       {open && (
-        <div className="fixed bottom-20 right-4 sm:right-6 z-50 w-[calc(100vw-2rem)] sm:w-[380px] max-h-[70vh] flex flex-col bg-[var(--bg-surface)] border border-[var(--border)] rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom-4 duration-200">
+        <div className="fixed bottom-[9rem] lg:bottom-20 right-4 sm:right-6 z-50 w-[calc(100vw-2rem)] sm:w-[380px] max-h-[70vh] flex flex-col bg-[var(--bg-surface)] border border-[var(--border)] rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom-4 duration-200">
           {/* Header */}
           <div className="flex items-center gap-3 px-4 py-3.5 border-b border-[var(--border)] bg-brand-primary flex-shrink-0">
             <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
@@ -187,7 +187,7 @@ export default function AiChatWidget() {
       <button
         onClick={() => setOpen(v => !v)}
         className={[
-          "fixed bottom-4 right-4 sm:right-6 z-50 w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-200",
+          "fixed bottom-[5rem] lg:bottom-4 right-4 sm:right-6 z-50 w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-200",
           open ? "bg-[var(--bg-elevated)] border border-[var(--border)] text-[var(--text-secondary)] rotate-0" : "bg-brand-primary text-white hover:scale-105"
         ].join(" ")}
         aria-label="Buka asisten AI"
