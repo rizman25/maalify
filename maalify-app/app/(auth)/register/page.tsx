@@ -24,6 +24,19 @@ export default function RegisterPage() {
     setError("");
     setLoading(true);
 
+    if (!phone.trim()) {
+      setError("Nomor WhatsApp wajib diisi.");
+      setLoading(false);
+      return;
+    }
+
+    const rawPhone = phone.replace(/\D/g, "");
+    if (rawPhone.length < 8) {
+      setError("Nomor WhatsApp tidak valid.");
+      setLoading(false);
+      return;
+    }
+
     if (password.length < 8) {
       setError("Password minimal 8 karakter.");
       setLoading(false);
@@ -103,7 +116,7 @@ export default function RegisterPage() {
 
         <div>
           <label className={labelCls}>
-            No. WhatsApp <span className="font-normal text-[#94A3B8]">(opsional)</span>
+            No. WhatsApp
           </label>
           <div className="auth-phone-wrap flex items-center border-[1.5px] border-[#E2E8F0] rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-[#1E3A5F] focus-within:ring-offset-1">
             <span className="auth-phone-prefix px-3 py-2.5 text-sm border-r border-[#E2E8F0] flex-shrink-0 flex items-center gap-1.5">
@@ -119,6 +132,7 @@ export default function RegisterPage() {
               onChange={(e) => setPhone(e.target.value)}
               placeholder="812 3456 7890"
               inputMode="numeric"
+              required
               className="flex-1 px-3.5 py-2.5 text-sm text-[#0F172A] placeholder:text-[#94A3B8] outline-none bg-transparent"
             />
           </div>
