@@ -42,7 +42,7 @@ export default function ResetPasswordPage() {
     }
 
     setSuccess(true);
-    setTimeout(() => router.push("/dashboard"), 2500);
+    setTimeout(() => router.push("/login"), 2500);
   }
 
   if (success) {
@@ -54,7 +54,7 @@ export default function ResetPasswordPage() {
           </svg>
         </div>
         <h2 className="text-lg font-semibold text-[#0F172A] mb-2">Password berhasil diubah!</h2>
-        <p className="text-sm text-[#475569]">Kamu akan diarahkan ke dashboard...</p>
+        <p className="text-sm text-[#475569]">Kamu akan diarahkan ke halaman masuk...</p>
       </div>
     );
   }
