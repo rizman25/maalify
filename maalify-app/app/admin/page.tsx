@@ -48,6 +48,7 @@ export default async function AdminPage() {
     txAdoptionRes,
     membersAdoptionRes,
     walletAdoptionRes,
+    loginHistoryRes,
   ] = await Promise.all([
     // Total users
     svc.from("users").select("id", { count: "exact", head: true }),
@@ -115,6 +116,12 @@ export default async function AdminPage() {
 
     // Dompet adoption
     svc.from("wallets").select("household_id").eq("is_active", true),
+
+    // Login history
+    svc.from("login_history")
+      .select("id, created_at, ip_address, user_agent, users(id, name, email)")
+      .order("created_at", { ascending: false })
+      .limit(50),
   ]);
 
   // ── Compute stats ──────────────────────────────────────────────────────
@@ -213,6 +220,7 @@ export default async function AdminPage() {
       dailyTxData={dailyTxData}
       topHouseholds={topHouseholds}
       recentUsers={(recentUsersRes.data ?? []) as { id: string; name: string; email: string; phone: string | null; created_at: string }[]}
+      loginHistory={(loginHistoryRes.data ?? []) as { id: string; created_at: string; ip_address: string; user_agent: string; users: { id: string; name: string; email: string } | null }[]}
       generatedAt={new Date().toISOString()}
     />
   );

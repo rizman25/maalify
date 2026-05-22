@@ -20,11 +20,20 @@ interface DailyTx { date: string; count: number; }
 interface TopHousehold { id: string; name: string; created_at: string; memberCount: number; txCount: number; }
 interface RecentUser { id: string; name: string; email: string; phone: string | null; created_at: string; }
 
+interface LoginEntry {
+  id: string;
+  created_at: string;
+  ip_address: string;
+  user_agent: string;
+  users: { id: string; name: string; email: string } | null;
+}
+
 interface Props {
   stats: Stats;
   dailyTxData: DailyTx[];
   topHouseholds: TopHousehold[];
   recentUsers: RecentUser[];
+  loginHistory: LoginEntry[];
   generatedAt: string;
 }
 
@@ -33,6 +42,26 @@ function formatPhoneDisplay(raw: string) {
   if (digits.length <= 3) return digits;
   if (digits.length <= 7) return digits.slice(0, 3) + " " + digits.slice(3);
   return digits.slice(0, 3) + " " + digits.slice(3, 7) + " " + digits.slice(7, 11);
+}
+
+function parseUserAgent(ua: string): { browser: string; os: string } {
+  const browser =
+    /Edg\//.test(ua) ? "Edge" :
+    /OPR\//.test(ua) ? "Opera" :
+    /Chrome\//.test(ua) ? "Chrome" :
+    /Firefox\//.test(ua) ? "Firefox" :
+    /Safari\//.test(ua) ? "Safari" :
+    "Browser";
+
+  const os =
+    /Android/.test(ua) ? "Android" :
+    /iPhone|iPad/.test(ua) ? "iOS" :
+    /Windows/.test(ua) ? "Windows" :
+    /Mac OS X/.test(ua) ? "macOS" :
+    /Linux/.test(ua) ? "Linux" :
+    "Unknown";
+
+  return { browser, os };
 }
 
 function fmt(n: number) { return n.toLocaleString("id-ID"); }
@@ -44,7 +73,7 @@ function fmtDate(iso: string) {
   return `${date}, ${time}`;
 }
 
-export default function AdminDashboardClient({ stats, dailyTxData, topHouseholds, recentUsers, generatedAt }: Props) {
+export default function AdminDashboardClient({ stats, dailyTxData, topHouseholds, recentUsers, loginHistory, generatedAt }: Props) {
   const router = useRouter();
   const [tab, setTab] = useState<"overview" | "ai" | "users" | "households">("overview");
   const [darkMode, setDarkMode] = useState(() =>
@@ -344,6 +373,55 @@ export default function AdminDashboardClient({ stats, dailyTxData, topHouseholds
                         <td className="px-5 py-3.5 text-sm text-[var(--text-secondary)]">{fmtDate(u.created_at)}</td>
                       </tr>
                     ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Login History */}
+            <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border)] overflow-hidden">
+              <div className="px-5 py-4 border-b border-[var(--border)]">
+                <p className="font-semibold text-[var(--text-primary)]">Riwayat Login Terbaru</p>
+                <p className="text-xs text-[var(--text-secondary)] mt-0.5">50 login terakhir</p>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-[var(--border)] bg-[var(--bg-elevated)]">
+                      <th className="text-left px-5 py-3 text-[10px] text-[var(--text-secondary)] uppercase tracking-wider">User</th>
+                      <th className="text-left px-5 py-3 text-[10px] text-[var(--text-secondary)] uppercase tracking-wider hidden md:table-cell">IP Address</th>
+                      <th className="text-left px-5 py-3 text-[10px] text-[var(--text-secondary)] uppercase tracking-wider hidden lg:table-cell">Browser · OS</th>
+                      <th className="text-left px-5 py-3 text-[10px] text-[var(--text-secondary)] uppercase tracking-wider">Waktu</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[var(--border)]">
+                    {loginHistory.length === 0 ? (
+                      <tr><td colSpan={4} className="px-5 py-8 text-center text-sm text-[var(--text-secondary)] italic">Belum ada riwayat login</td></tr>
+                    ) : loginHistory.map(l => {
+                      const { browser, os } = parseUserAgent(l.user_agent);
+                      return (
+                        <tr key={l.id} className="hover:bg-[var(--bg-elevated)] transition-colors">
+                          <td className="px-5 py-3.5">
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-7 h-7 rounded-full bg-brand-primary flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
+                                {(l.users?.name ?? "?").slice(0, 2).toUpperCase()}
+                              </div>
+                              <div>
+                                <p className="text-sm text-[var(--text-primary)] font-medium">{l.users?.name ?? "—"}</p>
+                                <p className="text-[10px] text-[var(--text-secondary)] font-mono">{l.users?.email ?? "—"}</p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-5 py-3.5 hidden md:table-cell text-sm text-[var(--text-secondary)] font-mono">{l.ip_address}</td>
+                          <td className="px-5 py-3.5 hidden lg:table-cell">
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-[var(--bg-elevated)] text-[var(--text-secondary)]">
+                              {browser} · {os}
+                            </span>
+                          </td>
+                          <td className="px-5 py-3.5 text-sm text-[var(--text-secondary)]">{fmtDate(l.created_at)}</td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

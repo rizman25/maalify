@@ -38,6 +38,9 @@ export default function LoginPage() {
       return;
     }
 
+    // Log login event (fire and forget)
+    fetch("/api/log-login", { method: "POST" }).catch(() => {});
+
     // Check if user already belongs to a household
     const { data: membership } = await supabase
       .from("household_members")
