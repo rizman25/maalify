@@ -205,14 +205,14 @@ export default async function DashboardPage() {
               : `Berikut ringkasan keuangan keluarga ${bulanNama}`}
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <ScanStrukButton
+        <div className="flex flex-col items-stretch gap-2">
+          <QuickAddTransaksi
             wallets={(activeWalletsRes.data ?? []) as import("@/types").Wallet[]}
             categories={(catsRes.data ?? []) as import("@/types").Category[]}
             householdId={householdId}
             userId={user.id}
           />
-          <QuickAddTransaksi
+          <ScanStrukButton
             wallets={(activeWalletsRes.data ?? []) as import("@/types").Wallet[]}
             categories={(catsRes.data ?? []) as import("@/types").Category[]}
             householdId={householdId}
