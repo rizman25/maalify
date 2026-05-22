@@ -91,6 +91,20 @@ export default function Sidebar({ userRole = "member" }: Props) {
           <p className="text-[10px] font-semibold text-[var(--text-secondary)] tracking-widest uppercase px-3 mb-2">Pengaturan</p>
           {visibleSettings.map((item) => <NavItem key={item.href} {...item} />)}
         </div>
+
+        {/* Get Started — mobile only */}
+        <div className="lg:hidden space-y-0.5">
+          <p className="text-[10px] font-semibold text-[var(--text-secondary)] tracking-widest uppercase px-3 mb-2">Mulai</p>
+          <button
+            onClick={() => {
+              window.dispatchEvent(new CustomEvent("open-setup-checklist"));
+            }}
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] hover:text-[var(--text-primary)]"
+          >
+            <span className="text-base">🚀</span>
+            <span>Get Started!</span>
+          </button>
+        </div>
       </nav>
     </aside>
   );
