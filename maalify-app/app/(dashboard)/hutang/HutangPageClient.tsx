@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { formatRupiah } from "@/lib/utils";
 import HutangModal from "@/components/hutang/HutangModal";
 import BayarModal from "@/components/hutang/BayarModal";
+import { Toast, useToast } from "@/components/ui/Toast";
 
 interface Wallet {
   id: string;
@@ -38,13 +39,17 @@ type ModalState = { kind: "add" } | { kind: "edit"; debt: DebtItem } | { kind: "
 
 export default function HutangPageClient({ debts, wallets, householdId, userId }: Props) {
   const router = useRouter();
+  const { toast, showToast, dismissToast } = useToast();
   const [tab, setTab] = useState<Tab>("payable");
   const [modal, setModal] = useState<ModalState>(null);
 
   const handleSaved = useCallback(() => {
+    if (modal?.kind === "add") showToast("Hutang berhasil ditambahkan");
+    else if (modal?.kind === "edit") showToast("Hutang berhasil diperbarui");
+    else if (modal?.kind === "bayar") showToast("Pembayaran berhasil dicatat");
     setModal(null);
     router.refresh();
-  }, [router]);
+  }, [router, modal]);
 
   const filtered = debts.filter(d => d.type === tab);
   const active = filtered.filter(d => d.status !== "settled");
@@ -303,6 +308,8 @@ export default function HutangPageClient({ debts, wallets, householdId, userId }
         <BayarModal debt={modal.debt} wallets={wallets} userId={userId}
           onClose={() => setModal(null)} onSaved={handleSaved} />
       )}
+
+      {toast && <Toast message={toast.message} type={toast.type} onDismiss={dismissToast} />}
     </div>
   );
 }

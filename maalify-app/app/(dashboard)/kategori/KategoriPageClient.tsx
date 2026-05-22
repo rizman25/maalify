@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import KategoriModal from "@/components/pengaturan/KategoriModal";
+import { Toast, useToast } from "@/components/ui/Toast";
 
 interface Category {
   id: string;
@@ -24,6 +25,7 @@ type Filter = "all" | "expense" | "income";
 
 export default function KategoriPageClient({ categories: initialCategories, householdId, userRole }: Props) {
   const router = useRouter();
+  const { toast, showToast, dismissToast } = useToast();
   const [categories, setCategories] = useState(initialCategories);
   const [filter, setFilter] = useState<Filter>("all");
   const [modal, setModal] = useState<{ mode: "add" | "edit"; cat?: Category } | null>(null);
@@ -31,9 +33,11 @@ export default function KategoriPageClient({ categories: initialCategories, hous
   const canManage = userRole === "admin" || userRole === "super_admin";
 
   const handleSaved = useCallback(() => {
+    if (modal?.mode === "add") showToast("Kategori berhasil ditambahkan");
+    else if (modal?.mode === "edit") showToast("Kategori berhasil diperbarui");
     setModal(null);
     router.refresh();
-  }, [router]);
+  }, [router, modal]);
 
   const filtered = categories.filter(c =>
     filter === "all" ? true : c.type === filter
@@ -206,6 +210,8 @@ export default function KategoriPageClient({ categories: initialCategories, hous
           onSaved={handleSaved}
         />
       )}
+
+      {toast && <Toast message={toast.message} type={toast.type} onDismiss={dismissToast} />}
     </div>
   );
 }

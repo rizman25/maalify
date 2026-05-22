@@ -6,6 +6,7 @@ import { formatRupiah } from "@/lib/utils";
 import type { Wallet, Category, TransactionWithCategory } from "@/types";
 import TransaksiModal from "@/components/transaksi/TransaksiModal";
 import ScanStrukModal from "@/components/transaksi/ScanStrukModal";
+import { Toast, useToast } from "@/components/ui/Toast";
 
 const BULAN = [
   "Januari","Februari","Maret","April","Mei","Juni",
@@ -28,6 +29,7 @@ export default function TransaksiPageClient({
   transactions, wallets, categories, householdId, userId, month, year,
 }: Props) {
   const router = useRouter();
+  const { toast, showToast, dismissToast } = useToast();
   const [filterType, setFilterType] = useState<FilterType>("all");
   const [filterWallet, setFilterWallet] = useState("all");
   const [filterCategory, setFilterCategory] = useState("all");
@@ -80,7 +82,12 @@ export default function TransaksiPageClient({
   function openAdd() { setEditTarget(null); setModalOpen(true); }
   function openEdit(tx: TransactionWithCategory) { setEditTarget(tx); setModalOpen(true); }
   function handleClose() { setModalOpen(false); setEditTarget(null); }
-  function handleSaved() { handleClose(); router.refresh(); }
+  function handleSaved() {
+    const isEdit = editTarget !== null;
+    handleClose();
+    showToast(isEdit ? "Transaksi berhasil diperbarui" : "Transaksi berhasil dicatat");
+    router.refresh();
+  }
 
   function formatTanggal(dateStr: string) {
     return new Date(dateStr + "T00:00:00").toLocaleDateString("id-ID", {
@@ -355,7 +362,7 @@ export default function TransaksiPageClient({
           householdId={householdId}
           userId={userId}
           onClose={() => setScanOpen(false)}
-          onSaved={() => { setScanOpen(false); router.refresh(); }}
+          onSaved={() => { setScanOpen(false); showToast("Transaksi dari struk berhasil disimpan"); router.refresh(); }}
         />
       )}
 
@@ -371,6 +378,7 @@ export default function TransaksiPageClient({
           onSaved={handleSaved}
         />
       )}
+      {toast && <Toast message={toast.message} type={toast.type} onDismiss={dismissToast} />}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { formatRupiah } from "@/lib/utils";
 
@@ -62,11 +62,24 @@ export default function PengaturanPageClient({ profile, household, members, cate
     finally { setJoinLoading(false); }
   }
 
+  function formatPhoneDisplay(raw: string) {
+    // Strip leading 62 or 0, keep only digits, format as XXX XXXX XXXX
+    const digits = raw.replace(/\D/g, "").replace(/^62/, "").replace(/^0/, "");
+    if (digits.length <= 3) return digits;
+    if (digits.length <= 7) return digits.slice(0, 3) + " " + digits.slice(3);
+    return digits.slice(0, 3) + " " + digits.slice(3, 7) + " " + digits.slice(7, 11);
+  }
+
   // Profil state
   const [profileName, setProfileName] = useState(profile.name);
-  const [profilePhone, setProfilePhone] = useState(profile.phone ?? "");
+  const [profilePhone, setProfilePhone] = useState(formatPhoneDisplay(profile.phone ?? ""));
   const [savingProfile, setSavingProfile] = useState(false);
   const [profileMsg, setProfileMsg] = useState("");
+
+  // Sync phone display when profile data refreshes (after save)
+  useEffect(() => {
+    setProfilePhone(formatPhoneDisplay(profile.phone ?? ""));
+  }, [profile.phone]);
 
   // Avatar state
   const [avatarPreview, setAvatarPreview] = useState<string | null>(profile.avatar_url);
@@ -206,7 +219,12 @@ export default function PengaturanPageClient({ profile, household, members, cate
     try {
       const { createClient } = await import("@/lib/supabase/client");
       const supabase = createClient();
-      const cleanPhone = profilePhone.replace(/\D/g, "").replace(/^0/, "62") || null;
+      const digits = profilePhone.replace(/\D/g, "");
+      const cleanPhone = digits
+        ? digits.startsWith("62") ? digits
+          : digits.startsWith("0") ? "62" + digits.slice(1)
+          : "62" + digits
+        : null;
       const { error } = await supabase.from("users")
         .update({ name: profileName.trim(), phone: cleanPhone })
         .eq("id", userId);
@@ -506,7 +524,7 @@ export default function PengaturanPageClient({ profile, household, members, cate
                   <input
                     type="tel"
                     value={profilePhone}
-                    onChange={e => setProfilePhone(e.target.value)}
+                    onChange={e => setProfilePhone(formatPhoneDisplay(e.target.value))}
                     placeholder="812 3456 7890"
                     inputMode="numeric"
                     className="flex-1 px-3 py-2.5 text-sm text-[var(--text-primary)] bg-[var(--bg-card)] outline-none placeholder:text-[var(--text-secondary)]"

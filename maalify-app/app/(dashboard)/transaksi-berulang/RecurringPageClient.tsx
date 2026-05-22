@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { formatRupiah } from "@/lib/utils";
 import type { RecurringItem } from "./page";
 import RecurringModal from "@/components/transaksi/RecurringModal";
+import { Toast, useToast } from "@/components/ui/Toast";
 
 interface Wallet { id: string; name: string; type: string; current_balance: number; }
 interface Category { id: string; name: string; icon: string | null; color: string | null; type: string; }
@@ -54,14 +55,17 @@ export default function RecurringPageClient({
   recurring, wallets, categories, householdId, userId, userRole, justGenerated,
 }: Props) {
   const router = useRouter();
+  const { toast, showToast, dismissToast } = useToast();
   const canManage = userRole !== "member";
   const [modal, setModal] = useState<null | "add" | RecurringItem>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
 
   const handleSaved = useCallback(() => {
+    if (modal === "add") showToast("Transaksi berulang berhasil ditambahkan");
+    else if (modal) showToast("Transaksi berulang berhasil diperbarui");
     setModal(null);
     router.refresh();
-  }, [router]);
+  }, [router, modal]);
 
   async function toggleActive(item: RecurringItem) {
     setTogglingId(item.id);
@@ -72,6 +76,7 @@ export default function RecurringPageClient({
       .update({ is_active: !item.is_active })
       .eq("id", item.id);
     setTogglingId(null);
+    showToast(item.is_active ? "Transaksi berulang dinonaktifkan" : "Transaksi berulang diaktifkan", "info");
     router.refresh();
   }
 
@@ -292,6 +297,8 @@ export default function RecurringPageClient({
           onSaved={handleSaved}
         />
       )}
+
+      {toast && <Toast message={toast.message} type={toast.type} onDismiss={dismissToast} />}
     </div>
   );
 }

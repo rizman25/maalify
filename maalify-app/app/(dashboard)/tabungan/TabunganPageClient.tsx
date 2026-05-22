@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatRupiah } from "@/lib/utils";
+import { Toast, useToast } from "@/components/ui/Toast";
 
 interface Goal {
   id: string;
@@ -45,6 +46,7 @@ type ModalState =
 
 export default function TabunganPageClient({ goals, wallets, householdId, userId, userRole }: Props) {
   const router = useRouter();
+  const { toast, showToast, dismissToast } = useToast();
   const [modal, setModal] = useState<ModalState>(null);
   const [filter, setFilter] = useState<"all" | "active" | "completed">("active");
 
@@ -129,7 +131,7 @@ export default function TabunganPageClient({ goals, wallets, householdId, userId
           householdId={householdId}
           userId={userId}
           onClose={() => setModal(null)}
-          onSaved={() => { setModal(null); router.refresh(); }}
+          onSaved={() => { showToast("Goal berhasil dibuat"); setModal(null); router.refresh(); }}
         />
       )}
       {modal?.type === "edit" && (
@@ -138,7 +140,7 @@ export default function TabunganPageClient({ goals, wallets, householdId, userId
           userId={userId}
           goal={modal.goal}
           onClose={() => setModal(null)}
-          onSaved={() => { setModal(null); router.refresh(); }}
+          onSaved={() => { showToast("Goal berhasil diperbarui"); setModal(null); router.refresh(); }}
           userRole={userRole}
         />
       )}
@@ -149,7 +151,7 @@ export default function TabunganPageClient({ goals, wallets, householdId, userId
           userId={userId}
           mode="topup"
           onClose={() => setModal(null)}
-          onSaved={() => { setModal(null); router.refresh(); }}
+          onSaved={() => { showToast("Dana berhasil ditambahkan"); setModal(null); router.refresh(); }}
         />
       )}
       {modal?.type === "withdraw" && (
@@ -159,7 +161,7 @@ export default function TabunganPageClient({ goals, wallets, householdId, userId
           userId={userId}
           mode="withdraw"
           onClose={() => setModal(null)}
-          onSaved={() => { setModal(null); router.refresh(); }}
+          onSaved={() => { showToast("Dana berhasil ditarik", "info"); setModal(null); router.refresh(); }}
         />
       )}
       {modal?.type === "detail" && (
@@ -171,6 +173,8 @@ export default function TabunganPageClient({ goals, wallets, householdId, userId
           onEdit={() => setModal({ type: "edit", goal: modal.goal })}
         />
       )}
+
+      {toast && <Toast message={toast.message} type={toast.type} onDismiss={dismissToast} />}
     </div>
   );
 }

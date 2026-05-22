@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { formatRupiah } from "@/lib/utils";
 import AnggaranModal from "@/components/anggaran/AnggaranModal";
+import { Toast, useToast } from "@/components/ui/Toast";
 
 interface Category {
   id: string;
@@ -39,6 +40,7 @@ export default function AnggaranPageClient({
   budgets, availableCategories, allCategories, householdId, month, year, userRole,
 }: Props) {
   const router = useRouter();
+  const { toast, showToast, dismissToast } = useToast();
   const canManage = userRole !== "member";
   const [modalMode, setModalMode] = useState<"add" | "edit" | null>(null);
   const [editBudget, setEditBudget] = useState<BudgetItem | undefined>();
@@ -56,10 +58,12 @@ export default function AnggaranPageClient({
   }
 
   const handleSaved = useCallback(() => {
+    if (modalMode === "add") showToast("Anggaran berhasil ditambahkan");
+    else if (modalMode === "edit") showToast("Anggaran berhasil diperbarui");
     setModalMode(null);
     setEditBudget(undefined);
     router.refresh();
-  }, [router]);
+  }, [router, modalMode]);
 
   function openEdit(b: BudgetItem) {
     setEditBudget(b);
@@ -279,6 +283,8 @@ export default function AnggaranPageClient({
           onSaved={handleSaved}
         />
       )}
+
+      {toast && <Toast message={toast.message} type={toast.type} onDismiss={dismissToast} />}
     </div>
   );
 }
