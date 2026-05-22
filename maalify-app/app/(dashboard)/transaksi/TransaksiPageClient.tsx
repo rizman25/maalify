@@ -111,6 +111,7 @@ export default function TransaksiPageClient({
         <div className="flex items-center gap-2">
           {/* Scan: icon only on mobile, with label on sm+ */}
           <button
+            id="tour-scan"
             onClick={() => setScanOpen(true)}
             disabled={wallets.length === 0}
             className="flex items-center gap-1.5 px-2.5 py-2.5 sm:px-3 border border-[var(--border)] bg-[var(--bg-surface)] text-[var(--text-secondary)] text-sm font-medium rounded-lg hover:bg-[var(--bg-elevated)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
@@ -123,6 +124,7 @@ export default function TransaksiPageClient({
             <span className="hidden sm:inline whitespace-nowrap">Scan Struk</span>
           </button>
           <button
+            id="tour-catat"
             onClick={openAdd}
             disabled={wallets.length === 0}
             className="flex items-center gap-1.5 px-3 py-2.5 bg-brand-primary text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"

@@ -6,7 +6,7 @@ import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 import BottomNav from "./BottomNav";
 import OnboardingWizard from "@/components/onboarding/OnboardingWizard";
-import TourModal from "@/components/onboarding/TourModal";
+import TourDriver from "@/components/onboarding/TourDriver";
 import GlobalSearch from "@/components/search/GlobalSearch";
 import AiChatWidget from "@/components/chat/AiChatWidget";
 import SetupChecklistWidget from "@/components/dashboard/SetupChecklistWidget";
@@ -121,8 +121,8 @@ export default function DashboardShell({ householdName, userName, avatarUrl, use
       {/* AI Chat Widget */}
       <AiChatWidget />
 
-      {/* Onboarding Tour — hanya muncul sekali untuk user baru */}
-      <TourModal />
+      {/* Onboarding Tour — spotlight tour untuk user baru */}
+      <TourDriver />
     </div>
   );
 }

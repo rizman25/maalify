@@ -39,10 +39,13 @@ const ROLE_COLOR: Record<Role, string> = {
 function NavItem({ href, icon, label }: { href: string; icon: React.ReactNode; label: string }) {
   const pathname = usePathname();
   const isActive = pathname === href || (href !== "/dashboard" && pathname.startsWith(href + "/"));
+  // derive tour ID: /transaksi → tour-nav-transaksi, /transaksi-berulang → tour-nav-transaksi-berulang
+  const tourId = `tour-nav-${href.replace(/^\//, "").replace(/\//g, "-")}`;
 
   return (
     <Link
       href={href}
+      id={tourId}
       className={cn(
         "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
         isActive

@@ -109,10 +109,12 @@ export default function BottomNav({ userRole, onMenuClick }: Props) {
       <div className="flex items-stretch h-16">
         {mainItems.map((item) => {
           const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href + "/"));
+          const tourId = `tour-bottom-${item.href.replace(/^\//, "").replace(/\//g, "-")}`;
           return (
             <Link
               key={item.href}
               href={item.href}
+              id={tourId}
               className={cn(
                 "flex-1 flex flex-col items-center justify-center gap-1 text-[10px] font-medium transition-colors",
                 isActive
@@ -128,6 +130,7 @@ export default function BottomNav({ userRole, onMenuClick }: Props) {
 
         {/* Menu button */}
         <button
+          id="tour-bottom-menu"
           onClick={onMenuClick}
           className="flex-1 flex flex-col items-center justify-center gap-1 text-[10px] font-medium text-[var(--text-secondary)] transition-colors"
         >

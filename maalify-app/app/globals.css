@@ -180,3 +180,63 @@ body {
 .safe-area-bottom {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
+
+/* ─── Driver.js Tour — custom styling ─────────────────────────────────── */
+.maalify-tour-popover {
+  --dp-bg-color: var(--bg-surface) !important;
+  --dp-title-color: var(--text-primary) !important;
+  --dp-description-color: var(--text-secondary) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.18) !important;
+  padding: 20px !important;
+}
+
+.maalify-tour-popover .driver-popover-title {
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  color: var(--text-primary) !important;
+  margin-bottom: 6px !important;
+}
+
+.maalify-tour-popover .driver-popover-description {
+  font-size: 13px !important;
+  line-height: 1.6 !important;
+  color: var(--text-secondary) !important;
+}
+
+.maalify-tour-popover .driver-popover-progress-text {
+  font-size: 11px !important;
+  color: var(--text-secondary) !important;
+}
+
+.maalify-tour-popover .driver-popover-next-btn,
+.maalify-tour-popover .driver-popover-done-btn {
+  background: #1E3A5F !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 8px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  padding: 6px 14px !important;
+}
+
+.maalify-tour-popover .driver-popover-prev-btn {
+  background: transparent !important;
+  color: var(--text-secondary) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 8px !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  padding: 6px 14px !important;
+}
+
+.maalify-tour-popover .driver-popover-close-btn {
+  color: var(--text-secondary) !important;
+  opacity: 0.6 !important;
+}
+
+/* Dark mode overrides */
+.dark .maalify-tour-popover {
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5) !important;
+}

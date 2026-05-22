@@ -185,6 +185,7 @@ export default function AiChatWidget() {
 
       {/* Floating Button */}
       <button
+        id="tour-ai-chat"
         onClick={() => setOpen(v => !v)}
         className={[
           "fixed bottom-[5rem] lg:bottom-4 right-4 sm:right-6 z-50 w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-200",
