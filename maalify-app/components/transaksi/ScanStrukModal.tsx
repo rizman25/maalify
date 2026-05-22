@@ -47,6 +47,22 @@ export default function ScanStrukModal({ wallets, categories, householdId, userI
   const [walletId, setWalletId] = useState(wallets[0]?.id ?? "");
   const [categoryId, setCategoryId] = useState("");
   const [note, setNote] = useState("");
+  const [editableItems, setEditableItems] = useState<{ name: string; price: number }[]>([]);
+
+  function itemsToNote(items: { name: string; price: number }[]) {
+    return items.map(i => `${i.name} - Rp ${i.price.toLocaleString("id-ID")}`).join("\n");
+  }
+
+  function updateItem(index: number, field: "name" | "price", value: string) {
+    const updated = editableItems.map((item, i) => {
+      if (i !== index) return item;
+      return field === "price"
+        ? { ...item, price: parseInt(value.replace(/\D/g, ""), 10) || 0 }
+        : { ...item, name: value };
+    });
+    setEditableItems(updated);
+    setNote(itemsToNote(updated));
+  }
 
   const relevantCategories = categories.filter(c => c.type === txType);
 
@@ -99,6 +115,12 @@ export default function ScanStrukModal({ wallets, categories, householdId, userI
       setAmount(String(data.total));
       setDate(data.date ?? new Date().toISOString().split("T")[0]);
       setTxType(data.transaction_type);
+      setEditableItems(data.items);
+      if (data.items.length > 0) {
+        setNote(data.items.map((i: { name: string; price: number }) =>
+          `${i.name} - Rp ${i.price.toLocaleString("id-ID")}`
+        ).join("\n"));
+      }
       // Auto-pick category if match found
       const matchCat = categories.find(c =>
         c.type === data.transaction_type &&
@@ -312,16 +334,28 @@ export default function ScanStrukModal({ wallets, categories, householdId, userI
                 {CONFIDENCE_LABEL[parsed.confidence]}
               </div>
 
-              {/* Items preview (if any) */}
-              {parsed.items.length > 0 && (
-                <div className="bg-[var(--bg-elevated)] rounded-xl p-3 space-y-1.5 max-h-28 overflow-y-auto">
-                  <p className="text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider mb-2">Item Terdeteksi</p>
-                  {parsed.items.map((item, i) => (
-                    <div key={i} className="flex items-center justify-between text-xs">
-                      <span className="text-[var(--text-secondary)] truncate flex-1">{item.name}</span>
-                      <span className="font-financial font-medium text-[var(--text-primary)] ml-2 flex-shrink-0">
-                        Rp {formatRupiah(item.price)}
-                      </span>
+              {/* Items preview (editable) */}
+              {editableItems.length > 0 && (
+                <div className="bg-[var(--bg-elevated)] rounded-xl p-3 space-y-2 max-h-40 overflow-y-auto">
+                  <p className="text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">
+                    Item Terdeteksi
+                    <span className="ml-1.5 font-normal normal-case text-[var(--text-secondary)]">— bisa diedit</span>
+                  </p>
+                  {editableItems.map((item, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={item.name}
+                        onChange={e => updateItem(i, "name", e.target.value)}
+                        className="flex-1 min-w-0 text-xs border border-[var(--border)] rounded-lg px-2 py-1.5 bg-[var(--bg-surface)] text-[var(--text-primary)] outline-none focus:border-brand-primary transition-colors"
+                      />
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        value={item.price ? item.price.toLocaleString("id-ID") : ""}
+                        onChange={e => updateItem(i, "price", e.target.value)}
+                        className="w-24 flex-shrink-0 text-xs border border-[var(--border)] rounded-lg px-2 py-1.5 bg-[var(--bg-surface)] text-[var(--text-primary)] font-financial outline-none focus:border-brand-primary transition-colors text-right"
+                      />
                     </div>
                   ))}
                 </div>
@@ -431,7 +465,7 @@ export default function ScanStrukModal({ wallets, categories, householdId, userI
 
           {(step === "review" || step === "saving") && (
             <>
-              <button onClick={() => { setStep("upload"); setParsed(null); }}
+              <button onClick={() => { setStep("upload"); setParsed(null); setEditableItems([]); setNote(""); }}
                 className="px-4 py-2.5 rounded-xl border border-[var(--border)] text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] transition-colors">
                 ← Ulang
               </button>

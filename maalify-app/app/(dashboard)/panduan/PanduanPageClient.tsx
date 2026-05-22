@@ -219,6 +219,14 @@ export default function PanduanPageClient() {
                 <><strong>Laporan & Ekspor</strong> — Laporan PDF dan Excel untuk analisis mendalam</>,
               ]} />
             </SubSection>
+            <SubSection title="Alur Mulai Menggunakan Maalify">
+              <StepList steps={[
+                "Daftar akun — isi nama lengkap, email, No. WhatsApp (wajib), dan password",
+                "Verifikasi email jika diminta (cek kotak masuk dan klik link konfirmasi)",
+                "Halaman Onboarding — pilih Buat Family Baru (jadi Super Admin) atau Bergabung ke Family (masukkan kode undangan)",
+                "Masuk ke Dashboard — gunakan widget 🚀 Get Started untuk panduan langkah awal",
+              ]} />
+            </SubSection>
             <InfoBox type="info">
               Maalify berjalan sepenuhnya di browser — tidak perlu instal aplikasi tambahan. Bisa diakses dari HP, tablet, maupun komputer.
             </InfoBox>
@@ -263,10 +271,10 @@ export default function PanduanPageClient() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="font-semibold text-amber-800 text-sm">Super Admin</span>
-                      <Badge color="amber">Otomatis saat daftar</Badge>
+                      <Badge color="amber">Otomatis saat buat family</Badge>
                     </div>
                     <p className="text-xs text-amber-800 leading-relaxed">
-                      Role ini diberikan secara otomatis kepada orang yang <strong>pertama kali membuat family</strong> saat mendaftar. Satu family hanya punya satu Super Admin. Role ini tidak bisa dialihkan ke anggota lain.
+                      Role ini diberikan secara otomatis kepada orang yang <strong>pertama kali membuat family di halaman onboarding</strong> setelah mendaftar. Satu family hanya punya satu Super Admin. Role ini tidak bisa dialihkan ke anggota lain.
                     </p>
                     <div className="mt-2 flex items-start gap-1.5 text-xs text-amber-700">
                       <span className="flex-shrink-0 mt-0.5">→</span>
@@ -327,10 +335,13 @@ export default function PanduanPageClient() {
                 "Buka Pengaturan → tab Family",
                 "Salin Kode Undangan atau klik tombol \"Undang via WhatsApp\"",
                 "Bagikan kode/link ke anggota keluarga",
-                "Anggota mendaftar atau login, lalu masukkan kode undangan",
-                "Anggota langsung bergabung sebagai Member",
+                "Anggota baru mendaftar (isi nama, email, No. WhatsApp, dan password) → setelah login, pilih \"Bergabung ke Family\" di halaman onboarding → masukkan kode undangan",
+                "Anggota langsung bergabung sebagai Member dan diarahkan ke dashboard",
                 "Jika perlu, Super Admin bisa ubah role-nya menjadi Admin dari daftar anggota",
               ]} />
+              <InfoBox type="info">
+                Nomor WhatsApp <strong>wajib diisi</strong> saat pendaftaran — digunakan untuk keperluan notifikasi dan verifikasi di masa mendatang.
+              </InfoBox>
             </SubSection>
 
             <SubSection title="Tabel Hak Akses Lengkap">
@@ -437,7 +448,21 @@ export default function PanduanPageClient() {
             </SubSection>
 
             <SubSection title="Tambah Transaksi Cepat">
-              <p>Tombol <strong>"+ Transaksi"</strong> di pojok kanan atas memungkinkan pencatatan transaksi tanpa berpindah halaman. Pilih jenis (pemasukan/pengeluaran), nominal, kategori, dan dompet langsung dari dashboard.</p>
+              <p>Tombol <strong>"+ Catat Transaksi"</strong> dan <strong>"Scan Struk"</strong> di pojok kanan atas memungkinkan pencatatan transaksi tanpa berpindah halaman. Pilih jenis (pemasukan/pengeluaran), nominal, kategori, dan dompet langsung dari dashboard.</p>
+            </SubSection>
+
+            <SubSection title="Widget Get Started 🚀">
+              <p>Saat pertama kali menggunakan Maalify, akan muncul tombol <strong>🚀 Get Started!</strong> di sudut kanan bawah layar. Klik tombol tersebut untuk membuka checklist pengaturan awal:</p>
+              <BulletList items={[
+                "Tambah dompet pertama (Wajib)",
+                "Catat transaksi pertama (Wajib)",
+                "Undang anggota keluarga (Direkomendasikan)",
+                "Atur anggaran bulanan",
+                "Buat target tabungan",
+                "Tambah transaksi berulang",
+                "Tambah foto profil",
+              ]} />
+              <p className="mt-2 text-[var(--text-secondary)]">Checklist ini bisa disembunyikan kapan saja dengan klik <em>"Jangan tampilkan lagi"</em>. Di mobile, tombol ini dapat diakses dari menu sidebar.</p>
             </SubSection>
           </Section>
 
@@ -803,6 +828,19 @@ export default function PanduanPageClient() {
                 <><strong>Ubah Role</strong> — Promosikan Member menjadi Admin (atau turunkan kembali). Berguna untuk pasangan yang ikut aktif mengelola keuangan</>,
                 <><strong>Keluarkan Anggota</strong> — Hapus anggota dari family (data transaksi mereka tetap tersimpan)</>,
               ]} />
+            </SubSection>
+
+            <SubSection title="Pindah ke Family Lain">
+              <p>Jika Anda perlu berpindah ke family lain (misalnya bergabung ke family pasangan), fitur ini tersedia di halaman Pengaturan:</p>
+              <StepList steps={[
+                "Buka Pengaturan → cari bagian \"Pindah ke Family Lain\"",
+                "Masukkan kode undangan dari family tujuan",
+                "Konfirmasi perpindahan",
+                "Anda akan otomatis keluar dari family lama dan masuk ke family baru sebagai Member",
+              ]} />
+              <InfoBox type="warning">
+                Riwayat transaksi yang sudah dicatat di family lama <strong>tidak ikut berpindah</strong>. Data tetap tersimpan di family sebelumnya.
+              </InfoBox>
             </SubSection>
 
             <SubSection title="Keluar (Logout)">
