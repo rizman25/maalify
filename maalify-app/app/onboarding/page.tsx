@@ -67,7 +67,7 @@ export default function OnboardingPage() {
     const { error: mErr } = await supabase.from("household_members").insert({
       household_id: household.id,
       user_id: user.id,
-      role: "admin",
+      role: "super_admin",
     });
 
     if (mErr) {
