@@ -29,6 +29,7 @@ type Step = "upload" | "analyzing" | "review" | "saving";
 export default function ScanStrukModal({ wallets, categories, householdId, userId, onClose, onSaved }: Props) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
   const dropRef = useRef<HTMLDivElement>(null);
 
   const [step, setStep] = useState<Step>("upload");
@@ -238,20 +239,62 @@ export default function ScanStrukModal({ wallets, categories, householdId, userI
           {/* ── STEP: UPLOAD ── */}
           {(step === "upload" || step === "analyzing") && (
             <div className="space-y-4">
-              {/* Drop zone */}
-              <div
-                ref={dropRef}
-                onDragOver={e => { e.preventDefault(); setIsDragging(true); }}
-                onDragLeave={() => setIsDragging(false)}
-                onDrop={handleDrop}
-                onClick={() => !file && fileInputRef.current?.click()}
-                className={["border-2 border-dashed rounded-xl transition-colors cursor-pointer",
-                  isDragging ? "border-brand-primary bg-brand-primary/5" :
-                  file ? "border-[var(--border)] bg-[var(--bg-elevated)]" :
-                  "border-[var(--border)] hover:border-brand-primary/50 hover:bg-[var(--bg-elevated)]"
-                ].join(" ")}
-              >
-                {file ? (
+              {/* File inputs (hidden) */}
+              <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleInputChange} />
+              <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/heic,application/pdf" className="hidden" onChange={handleInputChange} />
+
+              {/* Belum ada file: tampilkan 2 tombol pilihan */}
+              {!file && (
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Tombol Kamera */}
+                  <button
+                    onClick={() => cameraInputRef.current?.click()}
+                    className="flex flex-col items-center justify-center gap-3 py-7 rounded-2xl border-2 border-dashed border-[var(--border)] hover:border-brand-primary hover:bg-brand-primary/5 transition-all group"
+                  >
+                    <div className="w-12 h-12 rounded-xl bg-brand-primary/10 group-hover:bg-brand-primary/15 flex items-center justify-center transition-colors">
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="text-brand-primary">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                        <circle cx="12" cy="13" r="4"/>
+                      </svg>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm font-semibold text-[var(--text-primary)]">Ambil Foto</p>
+                      <p className="text-[10px] text-[var(--text-secondary)] mt-0.5">Buka kamera</p>
+                    </div>
+                  </button>
+
+                  {/* Tombol Pilih File */}
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    onDragOver={e => { e.preventDefault(); setIsDragging(true); }}
+                    onDragLeave={() => setIsDragging(false)}
+                    onDrop={handleDrop}
+                    className={["flex flex-col items-center justify-center gap-3 py-7 rounded-2xl border-2 border-dashed transition-all group",
+                      isDragging ? "border-brand-primary bg-brand-primary/5" :
+                      "border-[var(--border)] hover:border-brand-primary hover:bg-brand-primary/5"
+                    ].join(" ")}
+                  >
+                    <div className="w-12 h-12 rounded-xl bg-[var(--bg-elevated)] group-hover:bg-brand-primary/10 flex items-center justify-center transition-colors">
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--text-secondary)] group-hover:text-brand-primary transition-colors">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/>
+                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                        <polyline points="21 15 16 10 5 21"/>
+                      </svg>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm font-semibold text-[var(--text-primary)]">Pilih File</p>
+                      <p className="text-[10px] text-[var(--text-secondary)] mt-0.5">Galeri / PDF</p>
+                    </div>
+                  </button>
+                </div>
+              )}
+
+              {/* Ada file: tampilkan preview */}
+              {file && (
+                <div
+                  ref={dropRef}
+                  className="border-2 border-dashed border-[var(--border)] rounded-xl bg-[var(--bg-elevated)]"
+                >
                   <div className="p-4">
                     {isPdf ? (
                       <div className="flex items-center gap-3">
@@ -261,12 +304,12 @@ export default function ScanStrukModal({ wallets, categories, householdId, userI
                             <polyline points="14 2 14 8 20 8"/>
                           </svg>
                         </div>
-                        <div>
-                          <p className="text-sm font-medium text-[var(--text-primary)] truncate max-w-[200px]">{file.name}</p>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-[var(--text-primary)] truncate">{file.name}</p>
                           <p className="text-xs text-[var(--text-secondary)]">PDF · {(file.size / 1024).toFixed(0)} KB</p>
                         </div>
-                        <button onClick={e => { e.stopPropagation(); setFile(null); setPreview(null); setError(""); }}
-                          className="ml-auto p-1.5 rounded-lg hover:bg-[var(--bg-surface)] text-[var(--text-secondary)]">
+                        <button onClick={() => { setFile(null); setPreview(null); setError(""); }}
+                          className="p-1.5 rounded-lg hover:bg-[var(--bg-surface)] text-[var(--text-secondary)]">
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                             <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
                           </svg>
@@ -275,7 +318,7 @@ export default function ScanStrukModal({ wallets, categories, householdId, userI
                     ) : preview ? (
                       <div className="relative">
                         <img src={preview} alt="Preview struk" className="w-full max-h-52 object-contain rounded-lg" />
-                        <button onClick={e => { e.stopPropagation(); setFile(null); setPreview(null); setError(""); }}
+                        <button onClick={() => { setFile(null); setPreview(null); setError(""); }}
                           className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80">
                           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                             <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
@@ -284,28 +327,28 @@ export default function ScanStrukModal({ wallets, categories, householdId, userI
                       </div>
                     ) : null}
                   </div>
-                ) : (
-                  <div className="py-10 text-center px-4">
-                    <div className="w-12 h-12 rounded-xl bg-[var(--bg-surface)] border border-[var(--border)] flex items-center justify-center mx-auto mb-3">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--text-secondary)]">
-                        <rect x="3" y="3" width="18" height="18" rx="2"/>
-                        <circle cx="8.5" cy="8.5" r="1.5"/>
-                        <polyline points="21 15 16 10 5 21"/>
-                      </svg>
-                    </div>
-                    <p className="text-sm font-medium text-[var(--text-primary)]">Pilih atau seret file ke sini</p>
-                    <p className="text-xs text-[var(--text-secondary)] mt-1">JPG, PNG, WEBP, HEIC, PDF · Maks. 10MB</p>
-                  </div>
-                )}
-              </div>
+                </div>
+              )}
 
-              <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/heic,application/pdf" className="hidden" onChange={handleInputChange} />
-
+              {/* Ganti file */}
               {file && step !== "analyzing" && (
-                <button onClick={() => fileInputRef.current?.click()}
-                  className="w-full py-2 text-xs text-brand-primary hover:underline">
-                  Ganti file
-                </button>
+                <div className="flex gap-3">
+                  <button onClick={() => cameraInputRef.current?.click()}
+                    className="flex-1 py-2 text-xs text-brand-primary hover:underline flex items-center justify-center gap-1">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                      <circle cx="12" cy="13" r="4"/>
+                    </svg>
+                    Ambil ulang
+                  </button>
+                  <button onClick={() => fileInputRef.current?.click()}
+                    className="flex-1 py-2 text-xs text-[var(--text-secondary)] hover:underline flex items-center justify-center gap-1">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                    </svg>
+                    Ganti file
+                  </button>
+                </div>
               )}
 
               {error && (
