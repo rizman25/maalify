@@ -57,7 +57,7 @@ export default function TransaksiDetailModal({ transactionId, onClose }: Props) 
   return (
     <>
       {/* Backdrop */}
-      <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
+      <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-black/50" onClick={onClose}>
         <div
           className="w-full sm:max-w-md bg-[var(--bg-surface)] rounded-t-2xl sm:rounded-2xl border border-[var(--border)] shadow-2xl overflow-hidden max-h-[calc(100vh-0px)] sm:max-h-[calc(100vh-2rem)] flex flex-col"
           onClick={e => e.stopPropagation()}

@@ -119,7 +119,7 @@ export default function WalletModal({ wallet, householdId, userId, onClose, onSa
     <div className="fixed inset-0 z-50 grid place-items-center p-4">
       {/* Overlay */}
       <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/40"
         onClick={onClose}
       />
       {/* Modal */}
