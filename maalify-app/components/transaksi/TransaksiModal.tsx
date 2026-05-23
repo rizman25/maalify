@@ -159,12 +159,13 @@ export default function TransaksiModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
 
-      <div className="relative bg-[var(--bg-surface)] rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] flex flex-col">
+      <div className="flex min-h-full items-center justify-center p-4 py-6">
+      <div className="relative bg-[var(--bg-surface)] rounded-2xl shadow-xl w-full max-w-md">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)] flex-shrink-0">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)]">
           <h2 className="font-semibold text-[var(--text-primary)]">
             {isEdit ? "Edit Transaksi" : "Catat Transaksi"}
           </h2>
@@ -176,7 +177,7 @@ export default function TransaksiModal({
         </div>
 
         {/* Scrollable body */}
-        <form onSubmit={handleSubmit} className="overflow-y-auto flex-1 px-6 py-5 space-y-5">
+        <form onSubmit={handleSubmit} className="px-6 py-5 space-y-5">
           {/* Type toggle */}
           <div className="grid grid-cols-2 gap-2">
             <button
@@ -427,8 +428,9 @@ export default function TransaksiModal({
           )}
         </form>
       </div>
+      </div>{/* centering wrapper */}
 
-      {/* Image viewer lightbox */}
+      {/* Image viewer lightbox — fixed, so DOM position doesn't matter */}
       {viewerOpen && attachmentPreview && (
         <div
           className="fixed inset-0 z-[60] bg-black/90 flex items-center justify-center p-4"
