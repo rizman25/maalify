@@ -116,13 +116,14 @@ export default function WalletModal({ wallet, householdId, userId, onClose, onSa
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 overflow-y-auto">
       {/* Overlay */}
       <div
         className="absolute inset-0 bg-black/40 backdrop-blur-sm"
         onClick={onClose}
       />
 
+      <div className="flex min-h-full items-center justify-center p-4 py-6">
       {/* Modal */}
       <div className="relative bg-[var(--bg-surface)] rounded-2xl shadow-xl w-full max-w-md">
         {/* Header */}
@@ -318,6 +319,7 @@ export default function WalletModal({ wallet, householdId, userId, onClose, onSa
             </div>
           )}
         </form>
+      </div>
       </div>
     </div>
   );

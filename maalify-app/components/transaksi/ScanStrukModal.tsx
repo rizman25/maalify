@@ -229,8 +229,9 @@ export default function ScanStrukModal({ wallets, categories, householdId, userI
   const CONFIDENCE_COLOR = { high: "text-success", medium: "text-warning", low: "text-danger" };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 backdrop-blur-sm">
-      <div className="w-full sm:max-w-lg bg-[var(--bg-surface)] rounded-t-2xl sm:rounded-2xl border border-[var(--border)] shadow-2xl overflow-hidden max-h-[95vh] flex flex-col">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-sm">
+      <div className="flex min-h-full items-end sm:items-center justify-center p-0 sm:p-4 py-0 sm:py-6">
+      <div className="w-full sm:max-w-lg bg-[var(--bg-surface)] rounded-t-2xl sm:rounded-2xl border border-[var(--border)] shadow-2xl overflow-hidden">
 
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border)] flex-shrink-0">
@@ -275,7 +276,7 @@ export default function ScanStrukModal({ wallets, categories, householdId, userI
         </div>
 
         {/* Body */}
-        <div className="overflow-y-auto flex-1 p-5">
+        <div className="p-5">
 
           {/* ── STEP: UPLOAD ── */}
           {(step === "upload" || step === "analyzing") && (
@@ -561,6 +562,7 @@ export default function ScanStrukModal({ wallets, categories, householdId, userI
             </>
           )}
         </div>
+      </div>
       </div>
     </div>
   );

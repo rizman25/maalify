@@ -57,9 +57,10 @@ export default function TransaksiDetailModal({ transactionId, onClose }: Props) 
   return (
     <>
       {/* Backdrop */}
-      <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
+      <div className="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-sm" onClick={onClose}>
+        <div className="flex min-h-full items-end sm:items-center justify-center p-0 sm:p-4 py-0 sm:py-6">
         <div
-          className="w-full sm:max-w-md bg-[var(--bg-surface)] rounded-t-2xl sm:rounded-2xl border border-[var(--border)] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
+          className="w-full sm:max-w-md bg-[var(--bg-surface)] rounded-t-2xl sm:rounded-2xl border border-[var(--border)] shadow-2xl overflow-hidden"
           onClick={e => e.stopPropagation()}
         >
           {/* Header */}
@@ -73,7 +74,7 @@ export default function TransaksiDetailModal({ transactionId, onClose }: Props) 
           </div>
 
           {/* Body */}
-          <div className="overflow-y-auto flex-1">
+          <div>
             {loading ? (
               <div className="py-16 flex items-center justify-center">
                 <div className="w-8 h-8 rounded-full border-4 border-brand-primary/20 border-t-brand-primary animate-spin" />
@@ -186,6 +187,7 @@ export default function TransaksiDetailModal({ transactionId, onClose }: Props) 
               Tutup
             </button>
           </div>
+        </div>
         </div>
       </div>
 

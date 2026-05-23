@@ -157,8 +157,9 @@ export default function ExportModal({ householdId, onClose }: Props) {
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="flex min-h-full items-center justify-center p-4 py-6">
       <div className="relative bg-[var(--bg-surface)] rounded-2xl shadow-xl w-full max-w-sm">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)]">
@@ -251,6 +252,7 @@ export default function ExportModal({ householdId, onClose }: Props) {
             </button>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

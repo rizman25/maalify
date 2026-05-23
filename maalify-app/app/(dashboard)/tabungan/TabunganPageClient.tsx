@@ -319,8 +319,9 @@ function GoalFormModal({ householdId, userId, goal, onClose, onSaved, userRole }
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-[var(--bg-surface)] w-full max-w-md rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-sm">
+      <div className="flex min-h-full items-end sm:items-center justify-center p-4 sm:py-6">
+      <div className="bg-[var(--bg-surface)] w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
         <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border)]">
           <h2 className="font-bold text-[var(--text-primary)]">{isEdit ? "Edit Goal" : "Buat Goal Baru"}</h2>
           <button onClick={onClose} className="p-1 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)]">
@@ -427,6 +428,7 @@ function GoalFormModal({ householdId, userId, goal, onClose, onSaved, userRole }
           )}
         </div>
       </div>
+      </div>
     </div>
   );
 }
@@ -504,7 +506,8 @@ function ContributeModal({ goal, wallets, userId, mode, onClose, onSaved }: {
   const pct = Math.min(100, Math.round((Number(goal.current_amount) / Number(goal.target_amount)) * 100));
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-sm">
+      <div className="flex min-h-full items-end sm:items-center justify-center p-4 sm:py-6">
       <div className="bg-[var(--bg-surface)] w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden">
         <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border)]">
           <h2 className="font-bold text-[var(--text-primary)]">{isTopUp ? "Tambah Dana" : "Tarik Dana"}</h2>
@@ -581,6 +584,7 @@ function ContributeModal({ goal, wallets, userId, mode, onClose, onSaved }: {
           </div>
         </div>
       </div>
+      </div>
     </div>
   );
 }
@@ -598,7 +602,8 @@ function DetailModal({ goal, onClose, onTopUp, onWithdraw, onEdit }: {
   const daysLeft = goal.deadline ? Math.ceil((new Date(goal.deadline).getTime() - Date.now()) / 86400000) : null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-sm">
+      <div className="flex min-h-full items-end sm:items-center justify-center p-4 sm:py-6">
       <div className="bg-[var(--bg-surface)] w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden">
         <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border)]">
           <h2 className="font-bold text-[var(--text-primary)]">Detail Goal</h2>
@@ -674,6 +679,7 @@ function DetailModal({ goal, onClose, onTopUp, onWithdraw, onEdit }: {
             </div>
           )}
         </div>
+      </div>
       </div>
     </div>
   );

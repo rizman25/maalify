@@ -114,8 +114,9 @@ export default function AnggaranModal({
   const MONTHS = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+      <div className="flex min-h-full items-end sm:items-center justify-center p-0 sm:p-4 sm:py-6">
       <div className="relative bg-[var(--bg-surface)] w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border)]">
@@ -127,7 +128,7 @@ export default function AnggaranModal({
           </button>
         </div>
 
-        <div className="px-5 py-4 space-y-4 max-h-[75vh] overflow-y-auto">
+        <div className="px-5 py-4 space-y-4">
           {/* Period badge */}
           <div className="flex items-center gap-2">
             <div className="px-3 py-1 rounded-full bg-[var(--bg-elevated)] text-xs font-medium text-[var(--text-secondary)]">
@@ -275,6 +276,7 @@ export default function AnggaranModal({
             {loading ? "Menyimpan..." : "Simpan"}
           </button>
         </div>
+      </div>
       </div>
     </div>
   );

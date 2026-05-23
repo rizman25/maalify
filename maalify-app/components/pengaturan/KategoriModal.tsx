@@ -93,8 +93,9 @@ export default function KategoriModal({ mode, category, householdId, onClose, on
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+      <div className="flex min-h-full items-end sm:items-center justify-center p-0 sm:p-4 sm:py-6">
       <div className="relative bg-[var(--bg-surface)] w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden">
         <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border)]">
           <h2 className="font-semibold text-[var(--text-primary)]">
@@ -105,7 +106,7 @@ export default function KategoriModal({ mode, category, householdId, onClose, on
           </button>
         </div>
 
-        <div className="px-5 py-4 space-y-4 max-h-[78vh] overflow-y-auto">
+        <div className="px-5 py-4 space-y-4">
           {/* Preview */}
           <div className="flex items-center gap-3 p-3 rounded-xl bg-[var(--bg-elevated)]">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
@@ -208,6 +209,7 @@ export default function KategoriModal({ mode, category, householdId, onClose, on
             {loading ? "Menyimpan..." : "Simpan"}
           </button>
         </div>
+      </div>
       </div>
     </div>
   );
