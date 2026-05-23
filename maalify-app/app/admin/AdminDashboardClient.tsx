@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -90,8 +90,19 @@ export default function AdminDashboardClient({ stats, dailyTxData, topHouseholds
   const [darkMode, setDarkMode] = useState(() =>
     typeof document !== "undefined"
       ? document.documentElement.classList.contains("dark")
-      : true
+      : false  // false on SSR — anti-FOUC script handles the actual initial class
   );
+
+  // Safety net: re-sync dark class from localStorage after React hydration.
+  // Necessary because React's hydration commit can remove the 'dark' class
+  // that was added by the anti-FOUC script before React mounted.
+  useEffect(() => {
+    const saved = localStorage.getItem("maalify-theme");
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const isDark = saved === "dark" || (!saved && prefersDark);
+    setDarkMode(isDark);
+    document.documentElement.classList.toggle("dark", isDark);
+  }, []);
 
   function toggleDark() {
     const next = !darkMode;

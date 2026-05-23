@@ -36,6 +36,17 @@ export default function DashboardShell({ householdName, userName, avatarUrl, use
   );
   const pathname = usePathname();
 
+  // Safety net: re-sync dark class from localStorage after React hydration.
+  // Necessary because React's hydration commit can remove the 'dark' class
+  // that was added by the anti-FOUC script before React mounted.
+  useEffect(() => {
+    const saved = localStorage.getItem("maalify-theme");
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const isDark = saved === "dark" || (!saved && prefersDark);
+    setDarkMode(isDark);
+    document.documentElement.classList.toggle("dark", isDark);
+  }, []);
+
   // Close mobile sidebar on navigation
   useEffect(() => {
     setSidebarOpen(false);
