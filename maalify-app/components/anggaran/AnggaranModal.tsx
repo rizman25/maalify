@@ -276,7 +276,6 @@ export default function AnggaranModal({
           </button>
         </div>
       </div>
-      </div>
     </div>
   );
 }

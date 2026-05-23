@@ -212,7 +212,6 @@ export default function BayarModal({ debt, wallets, userId, onClose, onSaved }: 
           </button>
         </div>
       </div>
-      </div>
     </div>
   );
 }

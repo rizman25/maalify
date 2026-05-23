@@ -328,7 +328,6 @@ export default function HutangModal({ mode, debt, householdId, userId, onClose, 
           </button>
         </div>
       </div>
-      </div>
     </div>
   );
 }
