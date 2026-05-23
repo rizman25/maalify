@@ -22,6 +22,7 @@ interface BudgetItem {
   color: string;
   budget: number;
   spent: number;
+  isRecurring: boolean;
 }
 
 interface Props {
@@ -193,9 +194,14 @@ export default function AnggaranPageClient({
                         {b.icon}
                       </div>
                       <div>
-                        <p className="font-medium text-[var(--text-primary)] text-sm">
-                          {b.customName ?? b.name}
-                        </p>
+                        <div className="flex items-center gap-1.5">
+                          <p className="font-medium text-[var(--text-primary)] text-sm">
+                            {b.customName ?? b.name}
+                          </p>
+                          {b.isRecurring && (
+                            <span className="text-[10px] text-brand-primary bg-brand-primary/10 px-1.5 py-0.5 rounded-full font-medium flex-shrink-0">🔄</span>
+                          )}
+                        </div>
                         {b.customName && (
                           <p className="text-[10px] text-[var(--text-secondary)]">{b.name}</p>
                         )}

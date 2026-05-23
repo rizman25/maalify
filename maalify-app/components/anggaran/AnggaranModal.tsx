@@ -19,6 +19,7 @@ interface BudgetItem {
   color: string;
   budget: number;
   spent: number;
+  isRecurring: boolean;
 }
 
 interface Props {
@@ -38,6 +39,7 @@ export default function AnggaranModal({
   const [categoryId, setCategoryId] = useState(budget?.category_id ?? availableCategories[0]?.id ?? "");
   const [customName, setCustomName] = useState(budget?.customName ?? "");
   const [amount, setAmount] = useState(budget ? String(budget.budget) : "");
+  const [isRecurring, setIsRecurring] = useState(budget?.isRecurring ?? false);
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -78,11 +80,12 @@ export default function AnggaranModal({
           month,
           year,
           period: "monthly",
+          is_recurring: isRecurring,
         });
         if (err) throw err;
       } else if (budget) {
         const { error: err } = await supabase.from("budgets")
-          .update({ amount: amt, name: customName.trim() || null })
+          .update({ amount: amt, name: customName.trim() || null, is_recurring: isRecurring })
           .eq("id", budget.id);
         if (err) throw err;
       }
@@ -207,6 +210,36 @@ export default function AnggaranModal({
               <p className="text-xs text-[var(--text-secondary)]">Rp {formatRupiah(Number(amount))}</p>
             )}
           </div>
+
+          {/* Recurring toggle */}
+          <button
+            type="button"
+            onClick={() => setIsRecurring(!isRecurring)}
+            className={`w-full flex items-center justify-between p-3.5 rounded-xl border-2 transition-colors ${
+              isRecurring
+                ? "border-brand-primary bg-brand-primary/5"
+                : "border-[var(--border)] hover:border-[var(--text-secondary)]/30"
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <span className="text-xl">🔄</span>
+              <div className="text-left">
+                <p className={`text-sm font-medium ${isRecurring ? "text-brand-primary" : "text-[var(--text-primary)]"}`}>
+                  {isRecurring ? "Berulang tiap bulan" : "Hanya bulan ini"}
+                </p>
+                <p className="text-xs text-[var(--text-secondary)]">
+                  {isRecurring
+                    ? "Otomatis muncul di bulan berikutnya"
+                    : "Anggaran hanya berlaku bulan ini saja"}
+                </p>
+              </div>
+            </div>
+            <div className={`relative w-10 h-5.5 rounded-full transition-colors flex-shrink-0 ${isRecurring ? "bg-brand-primary" : "bg-[var(--border)]"}`}
+              style={{ width: 40, height: 22 }}>
+              <span className={`absolute top-0.5 w-4.5 h-4.5 rounded-full bg-white shadow transition-transform`}
+                style={{ width: 18, height: 18, left: isRecurring ? 20 : 2 }} />
+            </div>
+          </button>
 
           {/* Current spending info (edit mode) */}
           {mode === "edit" && budget && budget.spent > 0 && (
