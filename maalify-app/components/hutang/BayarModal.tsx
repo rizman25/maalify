@@ -94,12 +94,11 @@ export default function BayarModal({ debt, wallets, userId, onClose, onSaved }: 
   const isPayable = debt.type === "payable";
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-      <div className="flex min-h-full items-end sm:items-center justify-center p-0 sm:p-4 sm:py-6">
-      <div className="relative bg-[var(--bg-surface)] w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden">
+      <div className="relative bg-[var(--bg-surface)] w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden max-h-[calc(100vh)] sm:max-h-[calc(100vh-2rem)] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border)]">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border)] flex-shrink-0">
           <div>
             <h2 className="font-semibold text-[var(--text-primary)]">
               {isPayable ? "Catat Pembayaran" : "Catat Penerimaan"}
@@ -111,7 +110,7 @@ export default function BayarModal({ debt, wallets, userId, onClose, onSaved }: 
           </button>
         </div>
 
-        <div className="px-5 py-4 space-y-4">
+        <div className="overflow-y-auto flex-1 px-5 py-4 space-y-4">
           {/* Sisa info */}
           <div className={`flex items-center justify-between p-3 rounded-xl ${isPayable ? "bg-red-50" : "bg-blue-50"}`}>
             <span className="text-xs text-[var(--text-secondary)]">Sisa yang perlu dilunasi</span>

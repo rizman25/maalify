@@ -319,16 +319,16 @@ function GoalFormModal({ householdId, userId, goal, onClose, onSaved, userRole }
   }
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-sm">
-      <div className="flex min-h-full items-end sm:items-center justify-center p-4 sm:py-6">
-      <div className="bg-[var(--bg-surface)] w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border)]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <div className="bg-[var(--bg-surface)] w-full max-w-md rounded-2xl shadow-2xl max-h-[calc(100vh-2rem)] flex flex-col overflow-hidden">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border)] flex-shrink-0">
           <h2 className="font-bold text-[var(--text-primary)]">{isEdit ? "Edit Goal" : "Buat Goal Baru"}</h2>
           <button onClick={onClose} className="p-1 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)]">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
         </div>
 
+        <div className="overflow-y-auto flex-1">
         <div className="px-5 py-5 space-y-4">
           {/* Icon & Color picker */}
           <div className="space-y-2">
@@ -506,16 +506,16 @@ function ContributeModal({ goal, wallets, userId, mode, onClose, onSaved }: {
   const pct = Math.min(100, Math.round((Number(goal.current_amount) / Number(goal.target_amount)) * 100));
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-sm">
-      <div className="flex min-h-full items-end sm:items-center justify-center p-4 sm:py-6">
-      <div className="bg-[var(--bg-surface)] w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border)]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <div className="bg-[var(--bg-surface)] w-full max-w-sm rounded-2xl shadow-2xl max-h-[calc(100vh-2rem)] flex flex-col overflow-hidden">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border)] flex-shrink-0">
           <h2 className="font-bold text-[var(--text-primary)]">{isTopUp ? "Tambah Dana" : "Tarik Dana"}</h2>
           <button onClick={onClose} className="p-1 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)]">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
         </div>
 
+        <div className="overflow-y-auto flex-1">
         <div className="px-5 py-5 space-y-4">
           {/* Goal summary */}
           <div className="bg-[var(--bg-elevated)] rounded-xl p-3 space-y-2">
@@ -602,10 +602,9 @@ function DetailModal({ goal, onClose, onTopUp, onWithdraw, onEdit }: {
   const daysLeft = goal.deadline ? Math.ceil((new Date(goal.deadline).getTime() - Date.now()) / 86400000) : null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-sm">
-      <div className="flex min-h-full items-end sm:items-center justify-center p-4 sm:py-6">
-      <div className="bg-[var(--bg-surface)] w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border)]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <div className="bg-[var(--bg-surface)] w-full max-w-sm rounded-2xl shadow-2xl max-h-[calc(100vh-2rem)] flex flex-col overflow-hidden">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border)] flex-shrink-0">
           <h2 className="font-bold text-[var(--text-primary)]">Detail Goal</h2>
           <div className="flex gap-1">
             <button onClick={onEdit} className="p-1.5 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)]">
@@ -617,6 +616,7 @@ function DetailModal({ goal, onClose, onTopUp, onWithdraw, onEdit }: {
           </div>
         </div>
 
+        <div className="overflow-y-auto flex-1">
         <div className="px-5 py-5 space-y-4">
           {/* Icon + name */}
           <div className="flex items-center gap-3">

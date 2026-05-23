@@ -100,13 +100,10 @@ export default function RecurringModal({ item, wallets, categories, householdId,
   }
 
   return (
-    /* Outer overlay scrolls so the full modal is always reachable,
-       even when content is taller than the viewport */
-    <div className="fixed inset-0 z-50 overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="flex min-h-full items-center justify-center p-4 py-6">
-        <div className="relative bg-[var(--bg-surface)] rounded-2xl shadow-xl w-full max-w-md">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)]">
+      <div className="relative bg-[var(--bg-surface)] rounded-2xl shadow-xl w-full max-w-md max-h-[calc(100vh-2rem)] flex flex-col">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)] flex-shrink-0">
           <h2 className="font-semibold text-[var(--text-primary)]">
             {isEdit ? "Edit Transaksi Berulang" : "Tambah Transaksi Berulang"}
           </h2>
@@ -117,6 +114,7 @@ export default function RecurringModal({ item, wallets, categories, householdId,
           </button>
         </div>
 
+        <div className="overflow-y-auto flex-1">
         <form onSubmit={handleSubmit} className="px-6 py-5 space-y-5">
           {/* Type toggle */}
           <div className="grid grid-cols-2 gap-2">
