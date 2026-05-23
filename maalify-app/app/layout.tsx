@@ -50,11 +50,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="id"
-      className={`${plusJakartaSans.variable} ${jetbrainsMono.variable} h-full`}
-      suppressHydrationWarning
-    >
+    // suppressHydrationWarning: React tidak manage className di sini,
+    // supaya anti-FOUC script bisa set/hapus class 'dark' tanpa ditimpa React.
+    <html lang="id" suppressHydrationWarning>
       <head>
         {/* Anti-FOUC: set theme class BEFORE first paint */}
         <script
@@ -63,7 +61,10 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-full flex flex-col">
+      {/* Font variables dipindah ke body agar <html> tidak punya className prop
+          — jika ada className di <html>, React akan overwrite-nya saat hydration
+          dan menghapus class 'dark' yang diset anti-FOUC script. */}
+      <body className={`${plusJakartaSans.variable} ${jetbrainsMono.variable} min-h-full flex flex-col`}>
         <NavigationProgress />
         {children}
         <PwaRegister />

@@ -176,6 +176,11 @@ body {
   outline-offset: 2px;
 }
 
+/* html height — dibutuhkan agar body min-h-full = 100vh */
+html {
+  height: 100%;
+}
+
 /* Safe area for iPhone home indicator */
 .safe-area-bottom {
   padding-bottom: env(safe-area-inset-bottom, 0px);
