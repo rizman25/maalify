@@ -229,8 +229,8 @@ export default function ScanStrukModal({ wallets, categories, householdId, userI
   const CONFIDENCE_COLOR = { high: "text-success", medium: "text-warning", low: "text-danger" };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-black/50 backdrop-blur-sm">
-      <div className="w-full sm:max-w-lg bg-[var(--bg-surface)] rounded-t-2xl sm:rounded-2xl border border-[var(--border)] shadow-2xl max-h-[calc(100vh-0px)] sm:max-h-[calc(100vh-2rem)] flex flex-col overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-start justify-center sm:px-4 sm:pt-8 bg-black/50 backdrop-blur-sm">
+      <div className="w-full sm:max-w-lg bg-[var(--bg-surface)] rounded-t-2xl sm:rounded-2xl border border-[var(--border)] shadow-2xl max-h-[calc(100vh-0px)] sm:max-h-[calc(100vh-5rem)] flex flex-col overflow-hidden">
 
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border)] flex-shrink-0">
