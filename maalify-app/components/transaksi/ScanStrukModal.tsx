@@ -225,7 +225,7 @@ export default function ScanStrukModal({ wallets, categories, householdId, userI
     }
   }
 
-  const CONFIDENCE_LABEL = { high: "✅ Terbaca jelas", medium: "⚠️ Kemungkinan ada perbedaan", low: "❌ Mohon periksa ulang nominal" };
+  const CONFIDENCE_LABEL = { high: "Terbaca jelas", medium: "Kemungkinan ada perbedaan", low: "Mohon periksa ulang nominal" };
   const CONFIDENCE_COLOR = { high: "text-success", medium: "text-warning", low: "text-danger" };
 
   return (
@@ -264,7 +264,9 @@ export default function ScanStrukModal({ wallets, categories, householdId, userI
                 (["analyzing","review","saving"].indexOf(step) > ["upload","analyzing","review"].indexOf(s)) ? "bg-success text-white" :
                 "bg-[var(--bg-elevated)] text-[var(--text-secondary)]"
               ].join(" ")}>
-                {(["analyzing","review","saving"].indexOf(step) > ["upload","analyzing","review"].indexOf(s)) ? "✓" : i + 1}
+                {(["analyzing","review","saving"].indexOf(step) > ["upload","analyzing","review"].indexOf(s)) ? (
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                ) : i + 1}
               </div>
               <span className="text-[10px] text-[var(--text-secondary)] hidden sm:block">
                 {s === "upload" ? "Upload" : s === "analyzing" ? "Analisis" : "Review"}
@@ -505,7 +507,7 @@ export default function ScanStrukModal({ wallets, categories, householdId, userI
                   <select value={categoryId} onChange={e => setCategoryId(e.target.value)}
                     className="w-full border border-[var(--border)] rounded-xl px-3 py-2.5 text-sm text-[var(--text-primary)] bg-[var(--bg-surface)] outline-none focus:border-brand-primary transition-colors cursor-pointer">
                     <option value="">Pilih kategori...</option>
-                    {relevantCategories.map(c => <option key={c.id} value={c.id}>{c.icon ?? ""} {c.name}</option>)}
+                    {relevantCategories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                   </select>
                 </div>
 

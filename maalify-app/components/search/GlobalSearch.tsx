@@ -141,7 +141,7 @@ export default function GlobalSearch({ open, onClose }: Props) {
 
           {noResults && (
             <div className="px-4 py-8 text-center">
-              <p className="text-2xl mb-2">🔍</p>
+              <div className="mb-2 flex justify-center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--text-secondary)]"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
               <p className="text-sm text-[var(--text-secondary)]">Tidak ada hasil untuk <span className="font-medium text-[var(--text-primary)]">&ldquo;{query}&rdquo;</span></p>
             </div>
           )}

@@ -17,15 +17,15 @@ interface Props {
   onSaved: () => void;
 }
 
-const PROJECT_TYPES: { value: ProjectType; label: string; emoji: string }[] = [
-  { value: "trip",      label: "Trip",       emoji: "✈️" },
-  { value: "wedding",   label: "Pernikahan", emoji: "💍" },
-  { value: "property",  label: "Properti",   emoji: "🏠" },
-  { value: "purchase",  label: "Pembelian",  emoji: "🛒" },
-  { value: "education", label: "Pendidikan", emoji: "📚" },
-  { value: "vehicle",   label: "Kendaraan",  emoji: "🚗" },
-  { value: "health",    label: "Kesehatan",  emoji: "🏥" },
-  { value: "other",     label: "Lainnya",    emoji: "📦" },
+const PROJECT_TYPES: { value: ProjectType; label: string }[] = [
+  { value: "trip",      label: "Trip" },
+  { value: "wedding",   label: "Pernikahan" },
+  { value: "property",  label: "Properti" },
+  { value: "purchase",  label: "Pembelian" },
+  { value: "education", label: "Pendidikan" },
+  { value: "vehicle",   label: "Kendaraan" },
+  { value: "health",    label: "Kesehatan" },
+  { value: "other",     label: "Lainnya" },
 ];
 
 const STATUS_OPTIONS: { value: ProjectStatus; label: string }[] = [
@@ -35,7 +35,6 @@ const STATUS_OPTIONS: { value: ProjectStatus; label: string }[] = [
   { value: "cancelled", label: "Dibatalkan" },
 ];
 
-const EMOJI_OPTIONS = ["✈️","💍","🏠","🛒","📚","🚗","🏥","📦","🎯","🏖️","🎓","💼","🎪","🏕️","⛵","🎸","🌏","🏆","💡","🎁"];
 
 function formatAmountInput(val: string) {
   const digits = val.replace(/\D/g, "");
@@ -61,11 +60,8 @@ export default function ProjectModal({ mode, project, householdId, userId, walle
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showDelete, setShowDelete] = useState(false);
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-
   const parsedAmount = parseAmount(targetAmount);
   const parsedCurrentAmount = parseAmount(currentAmount);
-  const selectedTypeInfo = PROJECT_TYPES.find(t => t.value === type);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -104,7 +100,7 @@ export default function ProjectModal({ mode, project, householdId, userId, walle
       }
     } else {
       // Create dedicated wallet for this project
-      const walletName = `💼 ${name.trim()}`;
+      const walletName = name.trim();
       const initBalance = parsedCurrentAmount > 0 ? parsedCurrentAmount : 0;
       const { data: newWallet, error: walletErr } = await supabase
         .from("wallets")
@@ -173,56 +169,19 @@ export default function ProjectModal({ mode, project, householdId, userId, walle
 
         <div className="overflow-y-auto flex-1">
         <form onSubmit={handleSubmit} className="px-6 py-5 space-y-5">
-          {/* Emoji + Name row */}
-          <div className="flex gap-3 items-start">
-            <div className="flex-shrink-0">
-              <p className="text-xs font-medium text-[var(--text-primary)] mb-1.5">Ikon</p>
-              <button
-                type="button"
-                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                className="w-12 h-12 rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)] flex items-center justify-center text-2xl hover:border-brand-primary transition-colors"
-              >
-                {coverEmoji || selectedTypeInfo?.emoji || "📦"}
-              </button>
-            </div>
-            <div className="flex-1">
-              <label className="block text-xs font-medium text-[var(--text-primary)] mb-1.5">Nama Project</label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="contoh: Trip ke Bali 2026"
-                maxLength={100}
-                required
-                className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] text-sm text-[var(--text-primary)] bg-[var(--bg-surface)] placeholder:text-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-brand-primary"
-              />
-            </div>
+          {/* Name row */}
+          <div>
+            <label className="block text-xs font-medium text-[var(--text-primary)] mb-1.5">Nama Project</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="contoh: Trip ke Bali 2026"
+              maxLength={100}
+              required
+              className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--border)] text-sm text-[var(--text-primary)] bg-[var(--bg-surface)] placeholder:text-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-brand-primary"
+            />
           </div>
-
-          {/* Emoji picker */}
-          {showEmojiPicker && (
-            <div className="grid grid-cols-10 gap-1 p-2 rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)]">
-              {EMOJI_OPTIONS.map(em => (
-                <button
-                  key={em}
-                  type="button"
-                  onClick={() => { setCoverEmoji(em); setShowEmojiPicker(false); }}
-                  className={`w-8 h-8 rounded-lg text-lg flex items-center justify-center hover:bg-[var(--bg-surface)] transition-colors ${coverEmoji === em ? "bg-brand-primary/10 ring-1 ring-brand-primary" : ""}`}
-                >
-                  {em}
-                </button>
-              ))}
-              {coverEmoji && (
-                <button
-                  type="button"
-                  onClick={() => { setCoverEmoji(""); setShowEmojiPicker(false); }}
-                  className="w-8 h-8 rounded-lg text-xs text-[var(--text-secondary)] hover:bg-[var(--bg-surface)] flex items-center justify-center"
-                >
-                  ✕
-                </button>
-              )}
-            </div>
-          )}
 
           {/* Type grid */}
           <div>
@@ -240,8 +199,7 @@ export default function ProjectModal({ mode, project, householdId, userId, walle
                       : "border-[var(--border)] text-[var(--text-secondary)] hover:border-brand-primary/40",
                   ].join(" ")}
                 >
-                  <span className="text-xl">{t.emoji}</span>
-                  <span>{t.label}</span>
+                  {t.label}
                 </button>
               ))}
             </div>

@@ -1,9 +1,12 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { formatRupiah } from "@/lib/utils";
 import type { Project, ProjectItem, ProjectStatus } from "@/types";
+import { Plane, Home, Target, Receipt, Car, HeartPulse, Package, ShoppingCart } from "@/lib/icons";
+import type { LucideProps } from "lucide-react";
+import { GraduationCap, Diamond } from "lucide-react";
 import ProjectModal from "@/components/project/ProjectModal";
 import ProjectItemModal from "@/components/project/ProjectItemModal";
 import KontribusiModal from "@/components/project/KontribusiModal";
@@ -33,15 +36,15 @@ type ModalState =
   | { kind: "item"; projectId: string; item?: ProjectItem }
   | { kind: "kontribusi"; project: Project };
 
-export const PROJECT_TYPE_LABELS: Record<string, { label: string; emoji: string }> = {
-  trip:      { label: "Trip",        emoji: "✈️" },
-  wedding:   { label: "Pernikahan",  emoji: "💍" },
-  property:  { label: "Properti",    emoji: "🏠" },
-  purchase:  { label: "Pembelian",   emoji: "🛒" },
-  education: { label: "Pendidikan",  emoji: "📚" },
-  vehicle:   { label: "Kendaraan",   emoji: "🚗" },
-  health:    { label: "Kesehatan",   emoji: "🏥" },
-  other:     { label: "Lainnya",     emoji: "📦" },
+export const PROJECT_TYPE_LABELS: Record<string, { label: string; Icon: React.ComponentType<LucideProps> }> = {
+  trip:      { label: "Trip",        Icon: Plane },
+  wedding:   { label: "Pernikahan",  Icon: Diamond },
+  property:  { label: "Properti",    Icon: Home },
+  purchase:  { label: "Pembelian",   Icon: ShoppingCart },
+  education: { label: "Pendidikan",  Icon: GraduationCap },
+  vehicle:   { label: "Kendaraan",   Icon: Car },
+  health:    { label: "Kesehatan",   Icon: HeartPulse },
+  other:     { label: "Lainnya",     Icon: Package },
 };
 
 export const PROJECT_STATUS_LABELS: Record<string, { label: string; cls: string }> = {
@@ -192,8 +195,8 @@ export default function ProjectPageClient({
           {/* Project header card */}
           <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border)] p-5 space-y-4">
             <div className="flex items-start gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-[var(--bg-elevated)] flex items-center justify-center text-3xl flex-shrink-0">
-                {proj.cover_emoji ?? typeInfo.emoji}
+              <div className="w-14 h-14 rounded-2xl bg-[var(--bg-elevated)] flex items-center justify-center flex-shrink-0 text-[var(--text-secondary)]">
+                {proj.cover_emoji ? <span className="text-3xl">{proj.cover_emoji}</span> : <typeInfo.Icon size={28} />}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
@@ -203,7 +206,7 @@ export default function ProjectPageClient({
                   </span>
                 </div>
                 <div className="flex items-center gap-3 mt-1">
-                  <span className="text-xs text-[var(--text-secondary)]">{typeInfo.emoji} {typeInfo.label}</span>
+                  <span className="text-xs text-[var(--text-secondary)] flex items-center gap-1"><typeInfo.Icon size={12} /> {typeInfo.label}</span>
                   <span className="text-[var(--border)]">·</span>
                   <span className={`text-xs font-medium ${days < 0 ? "text-danger" : days <= 30 ? "text-warning" : "text-[var(--text-secondary)]"}`}>
                     {days < 0
@@ -303,7 +306,7 @@ export default function ProjectPageClient({
               <div className="py-8 text-center text-sm text-[var(--text-secondary)]">Memuat...</div>
             ) : projectItems.length === 0 ? (
               <div className="py-10 text-center space-y-2">
-                <div className="text-3xl">📋</div>
+                <div className="w-12 h-12 rounded-2xl bg-brand-primary/10 text-brand-primary flex items-center justify-center mx-auto"><Receipt size={24} /></div>
                 <p className="text-sm font-medium text-[var(--text-primary)]">Belum ada rincian anggaran</p>
                 <p className="text-xs text-[var(--text-secondary)]">Tambahkan item seperti tiket, hotel, atau pengeluaran lain</p>
               </div>
@@ -437,8 +440,8 @@ export default function ProjectPageClient({
         {/* Projects grid */}
         {filteredProjects.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center space-y-4">
-            <div className="w-20 h-20 rounded-3xl bg-[var(--bg-elevated)] flex items-center justify-center text-4xl">
-              🎯
+            <div className="w-20 h-20 rounded-3xl bg-brand-primary/10 text-brand-primary flex items-center justify-center">
+              <Target size={40} />
             </div>
             <div>
               <p className="font-semibold text-[var(--text-primary)] text-base">
@@ -476,8 +479,8 @@ export default function ProjectPageClient({
                 >
                   {/* Top row */}
                   <div className="flex items-start gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-[var(--bg-elevated)] flex items-center justify-center text-2xl flex-shrink-0">
-                      {proj.cover_emoji ?? typeInfo.emoji}
+                    <div className="w-12 h-12 rounded-xl bg-[var(--bg-elevated)] flex items-center justify-center flex-shrink-0 text-[var(--text-secondary)]">
+                      {proj.cover_emoji ? <span className="text-2xl">{proj.cover_emoji}</span> : <typeInfo.Icon size={22} />}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-1">
@@ -486,7 +489,7 @@ export default function ProjectPageClient({
                           {statusInfo.label}
                         </span>
                       </div>
-                      <p className="text-xs text-[var(--text-secondary)] mt-0.5">{typeInfo.emoji} {typeInfo.label}</p>
+                      <p className="text-xs text-[var(--text-secondary)] mt-0.5 flex items-center gap-1"><typeInfo.Icon size={11} /> {typeInfo.label}</p>
                     </div>
                   </div>
 

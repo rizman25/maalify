@@ -151,7 +151,7 @@ export default function ProjectItemModal({ projectId, item, userId, onClose, onS
                       onClick={() => setActualAmount(plannedAmount)}
                       className="text-[10px] font-semibold text-brand-primary bg-brand-primary/8 hover:bg-brand-primary/15 px-2 py-1 rounded-lg transition-colors"
                     >
-                      ✓ Sesuai Rencana
+                      Sesuai Rencana
                     </button>
                   )}
                 </div>

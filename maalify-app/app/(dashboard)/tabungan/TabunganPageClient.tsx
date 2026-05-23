@@ -4,6 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatRupiah } from "@/lib/utils";
 import { Toast, useToast } from "@/components/ui/Toast";
+import { CategoryIcon } from "@/lib/icons";
+import { Target, Home, Car, Plane, TrendingUp, HeartPulse, Wallet, Baby, Briefcase } from "@/lib/icons";
+import { GraduationCap, Heart } from "lucide-react";
 
 interface Goal {
   id: string;
@@ -33,7 +36,19 @@ interface Props {
   userRole: "super_admin" | "admin" | "member";
 }
 
-const ICON_OPTIONS = ["🎯","🏠","✈️","🎓","💍","🚗","📱","💻","🏥","🌴","🛒","💰","🎉","👶","🐶"];
+const ICON_OPTIONS = [
+  { slug: "target",      Icon: Target },
+  { slug: "home",        Icon: Home },
+  { slug: "plane",       Icon: Plane },
+  { slug: "graduation",  Icon: GraduationCap },
+  { slug: "heart",       Icon: Heart },
+  { slug: "car",         Icon: Car },
+  { slug: "trending-up", Icon: TrendingUp },
+  { slug: "heart-pulse", Icon: HeartPulse },
+  { slug: "wallet",      Icon: Wallet },
+  { slug: "baby",        Icon: Baby },
+  { slug: "briefcase",   Icon: Briefcase },
+];
 const COLOR_OPTIONS = ["#3B82F6","#10B981","#F59E0B","#EF4444","#8B5CF6","#EC4899","#06B6D4","#84CC16"];
 
 type ModalState =
@@ -110,7 +125,9 @@ export default function TabunganPageClient({ goals, wallets, householdId, userId
         {/* Goals grid */}
         {filtered.length === 0 ? (
           <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border)] py-16 text-center">
-            <div className="text-5xl mb-3">🎯</div>
+            <div className="w-16 h-16 rounded-2xl bg-brand-primary/10 text-brand-primary flex items-center justify-center mx-auto mb-3">
+              <Target size={32} />
+            </div>
             <p className="text-sm font-medium text-[var(--text-primary)]">Belum ada goal</p>
             <p className="text-xs text-[var(--text-secondary)] mt-1">Buat target keuangan pertama kamu</p>
             <button onClick={() => setModal({ type: "add" })}
@@ -196,14 +213,14 @@ function GoalCard({ goal, onTopUp, onEdit, onDetail }: {
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
-            style={{ backgroundColor: goal.color + "20" }}>
-            {goal.icon}
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+            style={{ backgroundColor: goal.color + "20", color: goal.color }}>
+            <CategoryIcon slug={goal.icon} size={20} />
           </div>
           <div>
             <p className="font-semibold text-[var(--text-primary)] text-sm leading-tight">{goal.name}</p>
             {goal.is_completed ? (
-              <span className="text-[10px] font-semibold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">✓ Selesai</span>
+              <span className="text-[10px] font-semibold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">Selesai</span>
             ) : daysLeft !== null ? (
               <span className={`text-[10px] font-medium ${daysLeft < 0 ? "text-danger" : daysLeft < 30 ? "text-warning" : "text-[var(--text-secondary)]"}`}>
                 {daysLeft < 0 ? `${Math.abs(daysLeft)}h terlambat` : daysLeft === 0 ? "Hari ini!" : `${daysLeft} hari lagi`}
@@ -264,7 +281,7 @@ function GoalFormModal({ householdId, userId, goal, onClose, onSaved, userRole }
   const [desc, setDesc] = useState(goal?.description ?? "");
   const [target, setTarget] = useState(goal ? String(Math.round(Number(goal.target_amount))) : "");
   const [deadline, setDeadline] = useState(goal?.deadline ?? "");
-  const [icon, setIcon] = useState(goal?.icon ?? "🎯");
+  const [icon, setIcon] = useState(goal?.icon ?? "target");
   const [color, setColor] = useState(goal?.color ?? "#3B82F6");
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -334,10 +351,10 @@ function GoalFormModal({ householdId, userId, goal, onClose, onSaved, userRole }
           <div className="space-y-2">
             <label className="text-xs font-medium text-[var(--text-secondary)]">Ikon</label>
             <div className="flex flex-wrap gap-2">
-              {ICON_OPTIONS.map(ic => (
-                <button key={ic} type="button" onClick={() => setIcon(ic)}
-                  className={`w-9 h-9 rounded-xl text-xl flex items-center justify-center transition-all ${icon === ic ? "ring-2 ring-brand-primary bg-brand-primary/5" : "bg-[var(--bg-elevated)] hover:bg-[var(--bg-card)]"}`}>
-                  {ic}
+              {ICON_OPTIONS.map(opt => (
+                <button key={opt.slug} type="button" onClick={() => setIcon(opt.slug)}
+                  className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${icon === opt.slug ? "ring-2 ring-brand-primary bg-brand-primary/5 text-brand-primary" : "bg-[var(--bg-elevated)] hover:bg-[var(--bg-card)] text-[var(--text-secondary)]"}`}>
+                  <opt.Icon size={18} />
                 </button>
               ))}
             </div>
@@ -356,7 +373,9 @@ function GoalFormModal({ householdId, userId, goal, onClose, onSaved, userRole }
 
           {/* Preview */}
           <div className="flex items-center gap-3 p-3 bg-[var(--bg-elevated)] rounded-xl">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style={{ backgroundColor: color + "20" }}>{icon}</div>
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: color + "20", color }}>
+              <CategoryIcon slug={icon} size={20} />
+            </div>
             <p className="font-semibold text-[var(--text-primary)] text-sm">{name || "Nama Goal"}</p>
           </div>
 
@@ -520,7 +539,7 @@ function ContributeModal({ goal, wallets, userId, mode, onClose, onSaved }: {
           {/* Goal summary */}
           <div className="bg-[var(--bg-elevated)] rounded-xl p-3 space-y-2">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center text-base" style={{ backgroundColor: goal.color + "20" }}>{goal.icon}</div>
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: goal.color + "20", color: goal.color }}><CategoryIcon slug={goal.icon} size={16} /></div>
               <div>
                 <p className="text-sm font-semibold text-[var(--text-primary)]">{goal.name}</p>
                 <p className="text-[10px] text-[var(--text-secondary)]">Rp {formatRupiah(Number(goal.current_amount))} / Rp {formatRupiah(Number(goal.target_amount))}</p>
@@ -620,11 +639,11 @@ function DetailModal({ goal, onClose, onTopUp, onWithdraw, onEdit }: {
         <div className="px-5 py-5 space-y-4">
           {/* Icon + name */}
           <div className="flex items-center gap-3">
-            <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl" style={{ backgroundColor: goal.color + "20" }}>{goal.icon}</div>
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ backgroundColor: goal.color + "20", color: goal.color }}><CategoryIcon slug={goal.icon} size={28} /></div>
             <div>
               <p className="font-bold text-lg text-[var(--text-primary)]">{goal.name}</p>
               {goal.description && <p className="text-xs text-[var(--text-secondary)] mt-0.5">{goal.description}</p>}
-              {goal.is_completed && <span className="text-xs font-semibold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">✓ Selesai</span>}
+              {goal.is_completed && <span className="text-xs font-semibold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">Selesai</span>}
             </div>
           </div>
 

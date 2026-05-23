@@ -4,6 +4,7 @@ import { useState, useMemo, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { formatRupiah } from "@/lib/utils";
 import type { Wallet, Category, TransactionWithCategory, TransactionType, TransactionVisibility } from "@/types";
+import { CategoryIcon, Lock, Home } from "@/lib/icons";
 
 interface Props {
   transaction: TransactionWithCategory | null;
@@ -189,7 +190,7 @@ export default function TransaksiModal({
                   : "border-[var(--border)] text-[var(--text-secondary)] hover:border-danger/40",
               ].join(" ")}
             >
-              📤 Pengeluaran
+              Pengeluaran
             </button>
             <button
               type="button"
@@ -201,7 +202,7 @@ export default function TransaksiModal({
                   : "border-[var(--border)] text-[var(--text-secondary)] hover:border-success/40",
               ].join(" ")}
             >
-              📥 Pemasukan
+              Pemasukan
             </button>
           </div>
 
@@ -252,7 +253,7 @@ export default function TransaksiModal({
                       : "border-[var(--border)] text-[var(--text-secondary)] hover:border-brand-primary/40",
                   ].join(" ")}
                 >
-                  <span className="text-lg">{cat.icon ?? "💰"}</span>
+                  <span style={{ color: cat.color ?? undefined }}><CategoryIcon slug={cat.icon} size={18} /></span>
                   <span className="text-center leading-tight">{cat.name}</span>
                 </button>
               ))}
@@ -368,7 +369,7 @@ export default function TransaksiModal({
                     : "border-[var(--border)] text-[var(--text-secondary)] hover:border-slate-400",
                 ].join(" ")}
               >
-                🔒 Pribadi
+                <Lock size={13} /> Pribadi
               </button>
               <button
                 type="button"
@@ -380,13 +381,13 @@ export default function TransaksiModal({
                     : "border-[var(--border)] text-[var(--text-secondary)] hover:border-brand-primary/40",
                 ].join(" ")}
               >
-                🏠 Bersama
+                <Home size={13} /> Bersama
               </button>
             </div>
             <p className="text-[10px] text-[var(--text-secondary)] mt-1.5 leading-relaxed">
               {visibility === "private"
-                ? "🔒 Hanya kamu yang bisa melihat transaksi ini"
-                : "🏠 Semua anggota keluarga bisa melihat transaksi ini"}
+                ? "Hanya kamu yang bisa melihat transaksi ini"
+                : "Semua anggota keluarga bisa melihat transaksi ini"}
             </p>
           </div>
 

@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { formatRupiah } from "@/lib/utils";
+import { CategoryIcon } from "@/lib/icons";
 import { saveRecurring, deleteRecurring } from "@/app/actions/recurring";
 import type { RecurringItem } from "@/app/(dashboard)/transaksi-berulang/page";
 
@@ -113,7 +114,7 @@ export default function RecurringModal({ item, wallets, categories, householdId,
                     ? t === "expense" ? "border-danger bg-red-50 text-danger" : "border-success bg-green-50 text-success"
                     : "border-[var(--border)] text-[var(--text-secondary)] hover:border-brand-primary/40"
                 ].join(" ")}>
-                {t === "expense" ? "📤 Pengeluaran" : "📥 Pemasukan"}
+                {t === "expense" ? "Pengeluaran" : "Pemasukan"}
               </button>
             ))}
           </div>
@@ -154,7 +155,7 @@ export default function RecurringModal({ item, wallets, categories, householdId,
                       ? "border-brand-primary bg-brand-primary/5 text-brand-primary"
                       : "border-[var(--border)] text-[var(--text-secondary)] hover:border-brand-primary/40"
                   ].join(" ")}>
-                  <span className="text-lg">{cat.icon ?? "💰"}</span>
+                  <span className="text-lg" style={{ color: cat.color ?? "#94A3B8" }}><CategoryIcon slug={cat.icon} size={18} /></span>
                   <span className="text-center leading-tight">{cat.name}</span>
                 </button>
               ))}

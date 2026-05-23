@@ -4,6 +4,7 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { formatRupiah } from "@/lib/utils";
 import { changeMemberRole, removeMember } from "@/app/actions/members";
+import { Star } from "@/lib/icons";
 
 interface Profile { id: string; name: string; email: string; avatar_url: string | null; phone: string | null; }
 interface Household { id: string; name: string; description: string | null; invite_code: string; }
@@ -395,7 +396,7 @@ export default function PengaturanPageClient({ profile, household, members, cate
       setMemberAction(null);
       router.refresh();
       showSuccessToast(
-        `✅ Berhasil! ${result.targetName} sekarang menjadi ${result.roleLabelNew} di Family ini.`
+        `Berhasil! ${result.targetName} sekarang menjadi ${result.roleLabelNew} di Family ini.`
       );
 
     } catch (e: unknown) {
@@ -466,7 +467,7 @@ export default function PengaturanPageClient({ profile, household, members, cate
       <div className="min-h-full flex items-center justify-center p-6">
         <div className="w-full max-w-sm space-y-5">
           <div className="text-center">
-            <div className="w-16 h-16 rounded-2xl bg-[var(--bg-elevated)] flex items-center justify-center text-3xl mx-auto mb-4">🏠</div>
+            <div className="w-16 h-16 rounded-2xl bg-brand-primary/10 text-brand-primary flex items-center justify-center mx-auto mb-4"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
             <h2 className="text-lg font-bold text-[var(--text-primary)]">Belum Bergabung ke Family</h2>
             <p className="text-sm text-[var(--text-secondary)] mt-1">Masukkan kode undangan dari anggota keluarga kamu</p>
           </div>
@@ -680,7 +681,7 @@ export default function PengaturanPageClient({ profile, household, members, cate
                     className={`px-4 py-3 rounded-xl text-sm font-medium transition-all flex-shrink-0 ${
                       copied ? "bg-green-100 text-green-700" : "bg-[var(--bg-elevated)] border border-[var(--border)] text-[var(--text-secondary)] hover:bg-brand-primary hover:text-white hover:border-brand-primary"
                     }`}>
-                    {copied ? "✓ Disalin" : "Salin"}
+                    {copied ? "Disalin" : "Salin"}
                   </button>
                 </div>
               </div>
@@ -698,7 +699,7 @@ export default function PengaturanPageClient({ profile, household, members, cate
                     className={`px-3 py-2.5 rounded-xl text-xs font-medium transition-all flex-shrink-0 ${
                       copiedLink ? "bg-green-100 text-green-700" : "bg-[var(--bg-elevated)] border border-[var(--border)] text-[var(--text-secondary)] hover:bg-brand-primary hover:text-white hover:border-brand-primary"
                     }`}>
-                    {copiedLink ? "✓" : "Salin"}
+                    {copiedLink ? "Disalin" : "Salin"}
                   </button>
                 </div>
               </div>
@@ -1042,7 +1043,7 @@ export default function PengaturanPageClient({ profile, household, members, cate
                           : "bg-brand-primary text-white border-brand-primary"
                         : "border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)]"
                     }`}>
-                    {t === "saran" ? "💡 Saran" : t === "kritik" ? "💬 Kritik" : "🐛 Bug"}
+                    {t === "saran" ? "Saran" : t === "kritik" ? "Kritik" : "Bug"}
                   </button>
                 ))}
               </div>
@@ -1056,8 +1057,8 @@ export default function PengaturanPageClient({ profile, household, members, cate
                       onClick={() => setFeedbackRating(star === feedbackRating ? 0 : star)}
                       onMouseEnter={() => setFeedbackHover(star)}
                       onMouseLeave={() => setFeedbackHover(0)}
-                      className="text-2xl transition-transform hover:scale-110">
-                      {star <= (feedbackHover || feedbackRating) ? "⭐" : "☆"}
+                      className="transition-transform hover:scale-110">
+                      <Star size={22} className={star <= (feedbackHover || feedbackRating) ? "text-amber-400 fill-amber-400" : "text-[var(--border)]"} />
                     </button>
                   ))}
                 </div>

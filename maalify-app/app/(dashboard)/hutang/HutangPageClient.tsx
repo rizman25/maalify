@@ -6,6 +6,7 @@ import { formatRupiah } from "@/lib/utils";
 import HutangModal from "@/components/hutang/HutangModal";
 import BayarModal from "@/components/hutang/BayarModal";
 import { Toast, useToast } from "@/components/ui/Toast";
+import { TrendingDown, ArrowRightLeft } from "@/lib/icons";
 
 interface Wallet {
   id: string;
@@ -130,7 +131,7 @@ export default function HutangPageClient({ debts, wallets, householdId, userId }
                   : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
               }`}
             >
-              {t === "payable" ? "💸 Hutang" : "🤝 Piutang"}
+              {t === "payable" ? "Hutang" : "Piutang"}
               {active.filter(d => d.type === t).length > 0 && tab !== t && (
                 <span className="ml-1.5 text-[10px] bg-[var(--bg-elevated)] text-[var(--text-secondary)] px-1.5 py-0.5 rounded-full">
                   {filtered.filter(d => d.type === t && d.status !== "settled").length}
@@ -143,8 +144,8 @@ export default function HutangPageClient({ debts, wallets, householdId, userId }
         {/* Active debts */}
         {active.length === 0 && settled.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center space-y-3">
-            <div className="w-16 h-16 rounded-2xl bg-[var(--bg-elevated)] flex items-center justify-center text-3xl">
-              {tab === "payable" ? "💸" : "🤝"}
+            <div className="w-16 h-16 rounded-2xl bg-brand-primary/10 text-brand-primary flex items-center justify-center">
+              {tab === "payable" ? <TrendingDown size={32} /> : <ArrowRightLeft size={32} />}
             </div>
             <div>
               <p className="font-semibold text-[var(--text-primary)]">
@@ -275,7 +276,7 @@ export default function HutangPageClient({ debts, wallets, householdId, userId }
                       <div>
                         <div className="flex items-center gap-2">
                           <p className="font-medium text-[var(--text-primary)] text-sm">{d.party_name}</p>
-                          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-green-100 text-green-700">Lunas ✓</span>
+                          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-green-100 text-green-700">Lunas</span>
                         </div>
                         <p className="text-xs text-[var(--text-secondary)] mt-0.5">
                           {formatDueDate(d.due_date)}

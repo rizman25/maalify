@@ -6,7 +6,7 @@ export default function PrintButton() {
       className="toolbar-btn"
       onClick={() => window.print()}
     >
-      🖨️ Cetak / Simpan PDF
+      Cetak / Simpan PDF
     </button>
   );
 }

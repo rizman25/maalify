@@ -80,7 +80,7 @@ export default function TourDriver() {
           {
             element: "#tour-summary",
             popover: {
-              title: "📊 Ringkasan Keuangan",
+              title: "Ringkasan Keuangan",
               description:
                 "Di sini kamu bisa lihat total saldo, pemasukan, dan pengeluaran bulan ini dalam satu tampilan.",
               side: "bottom",
@@ -90,7 +90,7 @@ export default function TourDriver() {
           {
             element: "#tour-ai-chat",
             popover: {
-              title: "🤖 Asisten AI Maali",
+              title: "Asisten AI Maali",
               description:
                 "Tanya apa saja soal keuangan keluarga! Maali siap bantu analisis pengeluaran dan kasih saran hemat.",
               side: "top",
@@ -100,7 +100,7 @@ export default function TourDriver() {
           {
             element: navTransaksi,
             popover: {
-              title: "📝 Menu Transaksi",
+              title: "Menu Transaksi",
               description:
                 "Yuk kita catat transaksi pertama kamu! Tap <b>Lanjut</b> untuk melihat fitur pencatatan.",
               side: navTransaksiSide,
@@ -146,7 +146,7 @@ export default function TourDriver() {
         progressText: "{{current}} dari {{total}}",
         nextBtnText: "Lanjut →",
         prevBtnText: "← Kembali",
-        doneBtnText: "Mulai! 🚀",
+        doneBtnText: "Mulai!",
         allowClose: true,
         overlayOpacity: 0.55,
         popoverClass: "maalify-tour-popover",
@@ -162,7 +162,7 @@ export default function TourDriver() {
           {
             element: "#tour-catat",
             popover: {
-              title: "✏️ Catat Transaksi",
+              title: "Catat Transaksi",
               description:
                 "Tap tombol ini untuk mencatat pemasukan atau pengeluaran baru.",
               side: "bottom",
@@ -172,7 +172,7 @@ export default function TourDriver() {
           {
             element: "#tour-scan",
             popover: {
-              title: "📷 Scan Struk",
+              title: "Scan Struk",
               description:
                 "Foto struk belanja kamu — AI akan otomatis membaca dan mengisi detail transaksinya. Praktis!",
               side: "bottom",
@@ -182,7 +182,7 @@ export default function TourDriver() {
           {
             element: navDompet,
             popover: {
-              title: "👛 Dompet",
+              title: "Dompet",
               description:
                 "Kelola semua rekening, dompet digital, dan kas tunai. Saldo otomatis terupdate tiap transaksi.",
               side: navDompetSide,
@@ -192,7 +192,7 @@ export default function TourDriver() {
           {
             element: navAnggaran,
             popover: {
-              title: "📊 Anggaran",
+              title: "Anggaran",
               description:
                 "Tetapkan batas pengeluaran per kategori setiap bulan. Dapat notifikasi kalau mendekati batas.",
               side: navAnggaranSide,
@@ -202,7 +202,7 @@ export default function TourDriver() {
           {
             element: navHutang,
             popover: {
-              title: "🤝 Hutang & Piutang",
+              title: "Hutang & Piutang",
               description:
                 "Lacak semua pinjam-meminjam. Catat jatuh tempo dan progres pembayaran dengan mudah.",
               side: navHutangSide,

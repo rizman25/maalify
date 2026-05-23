@@ -8,6 +8,7 @@ import type { Wallet, Category, TransactionWithCategory } from "@/types";
 import TransaksiModal from "@/components/transaksi/TransaksiModal";
 import ScanStrukModal from "@/components/transaksi/ScanStrukModal";
 import { Toast, useToast } from "@/components/ui/Toast";
+import { CategoryIcon, Lock, Home, AlertCircle, Receipt, Search } from "@/lib/icons";
 
 const BULAN = [
   "Januari","Februari","Maret","April","Mei","Juni",
@@ -267,7 +268,7 @@ export default function TransaksiPageClient({
             >
               <option value="all">Semua Kategori</option>
               {relevantCategories.map(c => (
-                <option key={c.id} value={c.id}>{c.icon ?? ""} {c.name}</option>
+                <option key={c.id} value={c.id}>{c.name}</option>
               ))}
             </select>
           )}
@@ -295,7 +296,7 @@ export default function TransaksiPageClient({
       {/* No wallet — inline callout */}
       {wallets.length === 0 && (
         <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl p-4">
-          <span className="text-xl flex-shrink-0 mt-0.5">⚠️</span>
+          <AlertCircle size={18} className="flex-shrink-0 mt-0.5 text-amber-600" />
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-amber-900">Belum ada dompet</p>
             <p className="text-xs text-amber-700 mt-0.5 leading-relaxed">
@@ -314,8 +315,8 @@ export default function TransaksiPageClient({
       {/* Transaction List */}
       {filtered.length === 0 ? (
         <div className="bg-[var(--bg-surface)] rounded-xl border border-[var(--border)] p-14 text-center">
-          <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-[var(--bg-elevated)] flex items-center justify-center text-xl">
-            {hasActiveFilter ? "🔍" : "📋"}
+          <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-brand-primary/10 text-brand-primary flex items-center justify-center">
+            {hasActiveFilter ? <Search size={22} /> : <Receipt size={22} />}
           </div>
           <p className="font-medium text-[var(--text-primary)]">
             {hasActiveFilter ? "Tidak ada transaksi yang cocok" : "Belum ada transaksi"}
@@ -351,9 +352,9 @@ export default function TransaksiPageClient({
                         i > 0 ? "border-t border-[var(--border)]" : "",
                         isOwn ? "hover:bg-[var(--bg-elevated)] cursor-pointer" : "cursor-default opacity-90",
                       ].join(" ")}>
-                      <div className="w-9 h-9 rounded-full flex items-center justify-center text-base flex-shrink-0"
-                        style={{ backgroundColor: (tx.categories?.color ?? "#94A3B8") + "20" }}>
-                        {tx.categories?.icon ?? "💸"}
+                      <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
+                        style={{ backgroundColor: (tx.categories?.color ?? "#94A3B8") + "20", color: tx.categories?.color ?? "#94A3B8" }}>
+                        <CategoryIcon slug={tx.categories?.icon} size={16} />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5">
@@ -362,13 +363,13 @@ export default function TransaksiPageClient({
                           </p>
                           {/* Visibility badge */}
                           {isOwn && isPrivate && (
-                            <span className="flex-shrink-0 text-[10px] font-medium text-slate-400 bg-slate-100 dark:bg-slate-700 dark:text-slate-400 px-1.5 py-0.5 rounded-full leading-none">
-                              🔒
+                            <span className="flex-shrink-0 text-slate-400 bg-slate-100 dark:bg-slate-700 dark:text-slate-400 px-1.5 py-0.5 rounded-full leading-none flex items-center">
+                              <Lock size={9} />
                             </span>
                           )}
                           {!isPrivate && (
-                            <span className="flex-shrink-0 text-[10px] font-medium text-brand-primary bg-brand-primary/10 px-1.5 py-0.5 rounded-full leading-none">
-                              🏠
+                            <span className="flex-shrink-0 text-brand-primary bg-brand-primary/10 px-1.5 py-0.5 rounded-full leading-none flex items-center">
+                              <Home size={9} />
                             </span>
                           )}
                           {tx.attachment_url && (

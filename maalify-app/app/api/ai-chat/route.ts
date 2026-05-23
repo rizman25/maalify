@@ -142,7 +142,7 @@ export async function POST(req: NextRequest) {
   // Hutang aktif
   const today = now.toISOString().split("T")[0];
   const debtLines = (debtsRes.data ?? []).map(d => {
-    const overdue = d.due_date && d.due_date < today ? " ⚠️ JATUH TEMPO" : "";
+    const overdue = d.due_date && d.due_date < today ? " [JATUH TEMPO]" : "";
     return `  - ${d.type === "payable" ? "Hutang" : "Piutang"} ke ${d.party_name}: Rp ${Number(d.remaining_amount).toLocaleString("id-ID")}${d.due_date ? ` (jatuh tempo ${d.due_date})` : ""}${overdue}`;
   }).join("\n") || "  Tidak ada";
 
@@ -176,27 +176,27 @@ Gunakan emoji secukupnya agar lebih ramah.
 DATA KEUANGAN USER (per hari ini, ${today})
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-📊 RINGKASAN BULAN INI (${bulanIni}):
+RINGKASAN BULAN INI (${bulanIni}):
   - Pemasukan: ${formatRp(curIncome)} ${prevIncome > 0 ? `(${bulanLalu}: ${formatRp(prevIncome)})` : ""}
   - Pengeluaran: ${formatRp(curExpense)} ${prevExpense > 0 ? `(${bulanLalu}: ${formatRp(prevExpense)})` : ""}
-  - Tabungan bersih: ${formatRp(Math.abs(netSavings))} (${netSavings >= 0 ? "✅ Surplus" : "⚠️ Defisit"})
+  - Tabungan bersih: ${formatRp(Math.abs(netSavings))} (${netSavings >= 0 ? "Surplus" : "Defisit"})
 
-💳 SALDO DOMPET (total: ${formatRp(totalAset)}):
+SALDO DOMPET (total: ${formatRp(totalAset)}):
 ${walletLines || "  Belum ada dompet"}
 
-📈 PENGELUARAN PER KATEGORI (${bulanIni}):
+PENGELUARAN PER KATEGORI (${bulanIni}):
 ${topCategories || "  Belum ada pengeluaran"}
 
-🎯 STATUS ANGGARAN (${bulanIni}):
+STATUS ANGGARAN (${bulanIni}):
 ${budgetLines || "  Belum ada anggaran"}
 
-💸 HUTANG & PIUTANG AKTIF:
+HUTANG & PIUTANG AKTIF:
 ${debtLines}
 
-🏦 TARGET TABUNGAN:
+TARGET TABUNGAN:
 ${goalLines}
 
-🕐 10 TRANSAKSI TERAKHIR:
+10 TRANSAKSI TERAKHIR:
 ${recentLines || "  Belum ada transaksi"}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -211,7 +211,7 @@ ATURAN PENTING — WAJIB DIPATUHI:
    - Literasi keuangan umum (inflasi, bunga majemuk, diversifikasi, dll)
    - Cara menggunakan fitur-fitur aplikasi Maalify
 2. Jika user bertanya di luar topik keuangan (misalnya politik, hiburan, resep masakan, cuaca, coding, olahraga, dan topik non-keuangan lainnya), TOLAK dengan sopan dan arahkan kembali.
-   Contoh respons penolakan: "Maaf, saya fokus sebagai advisor keuangan keluarga. Ada yang ingin kamu diskusikan seputar keuangan atau investasi? 😊"
+   Contoh respons penolakan: "Maaf, saya fokus sebagai advisor keuangan keluarga. Ada yang ingin kamu diskusikan seputar keuangan atau investasi?"
 3. Jangan pernah berpura-pura bisa menjawab topik di luar keuangan meski diminta.
 4. Jawab berdasarkan data keuangan user di atas bila relevan. Berikan saran yang actionable dan praktis.`;
 

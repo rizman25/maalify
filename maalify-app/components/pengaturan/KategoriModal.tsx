@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { CATEGORY_ICON_OPTIONS, CategoryIcon } from "@/lib/icons";
 
 interface Category {
   id: string;
@@ -26,15 +27,10 @@ const PRESET_COLORS = [
   "#6366F1","#84CC16",
 ];
 
-const COMMON_ICONS = [
-  "🏠","🍔","🚗","👕","💊","📚","✈️","🎮","💄","🐾",
-  "🎵","⚽","🍕","☕","🛒","💰","💳","🏋️","🎁","📱",
-  "🔧","🌱","🏖️","🎭","📷","🚌","🍜","🥗","🧴","🪴",
-];
 
 export default function KategoriModal({ mode, category, householdId, onClose, onSaved }: Props) {
   const [name, setName] = useState(category?.name ?? "");
-  const [icon, setIcon] = useState(category?.icon ?? "💰");
+  const [icon, setIcon] = useState(category?.icon ?? "coins");
   const [color, setColor] = useState(category?.color ?? "#1E3A5F");
   const [type, setType] = useState<"expense" | "income">(
     (category?.type as "expense" | "income") ?? "expense"
@@ -109,9 +105,9 @@ export default function KategoriModal({ mode, category, householdId, onClose, on
           <div className="px-5 py-4 space-y-4">
           {/* Preview */}
           <div className="flex items-center gap-3 p-3 rounded-xl bg-[var(--bg-elevated)]">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
-              style={{ backgroundColor: color + "20" }}>
-              {icon}
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+              style={{ backgroundColor: color + "20", color }}>
+              <CategoryIcon slug={icon} size={20} />
             </div>
             <div>
               <p className="font-medium text-[var(--text-primary)] text-sm">{name || "Nama kategori"}</p>
@@ -131,7 +127,7 @@ export default function KategoriModal({ mode, category, householdId, onClose, on
                         ? t === "expense" ? "bg-red-50 border-red-400 text-red-600" : "bg-green-50 border-green-400 text-green-700"
                         : "border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--text-secondary)]"
                     }`}>
-                    {t === "expense" ? "📤 Pengeluaran" : "📥 Pemasukan"}
+                    {t === "expense" ? "Pengeluaran" : "Pemasukan"}
                   </button>
                 ))}
               </div>
@@ -152,13 +148,14 @@ export default function KategoriModal({ mode, category, householdId, onClose, on
           {/* Icon picker */}
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-[var(--text-secondary)]">Ikon</label>
-            <div className="grid grid-cols-10 gap-1.5">
-              {COMMON_ICONS.map(em => (
-                <button key={em} type="button" onClick={() => setIcon(em)}
-                  className={`h-8 rounded-lg text-base flex items-center justify-center transition-all ${
-                    icon === em ? "bg-brand-primary/10 ring-1 ring-brand-primary" : "hover:bg-[var(--bg-elevated)]"
+            <div className="grid grid-cols-8 gap-1.5">
+              {CATEGORY_ICON_OPTIONS.map(opt => (
+                <button key={opt.slug} type="button" onClick={() => setIcon(opt.slug)}
+                  title={opt.label}
+                  className={`h-9 rounded-lg flex items-center justify-center transition-all ${
+                    icon === opt.slug ? "bg-brand-primary/10 ring-1 ring-brand-primary text-brand-primary" : "hover:bg-[var(--bg-elevated)] text-[var(--text-secondary)]"
                   }`}>
-                  {em}
+                  <opt.Icon size={16} />
                 </button>
               ))}
             </div>

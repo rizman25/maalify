@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { Users, User } from "lucide-react";
 
 export default function DashboardViewToggle({ current }: { current: "household" | "personal" }) {
   const router = useRouter();
@@ -25,7 +26,7 @@ export default function DashboardViewToggle({ current }: { current: "household" 
             : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]",
         ].join(" ")}
       >
-        <span>👨‍👩‍👧‍👦</span>
+        <Users size={14} />
         <span>Keluarga</span>
       </button>
       <button
@@ -37,7 +38,7 @@ export default function DashboardViewToggle({ current }: { current: "household" 
             : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]",
         ].join(" ")}
       >
-        <span>🙋</span>
+        <User size={14} />
         <span>Pribadi</span>
       </button>
     </div>

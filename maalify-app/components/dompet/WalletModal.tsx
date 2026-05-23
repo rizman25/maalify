@@ -5,12 +5,14 @@ import { createClient } from "@/lib/supabase/client";
 import type { Wallet, WalletType } from "@/types";
 import { updateWallet, deactivateWallet, getWalletHistory } from "@/app/actions/wallets";
 import { formatRupiah } from "@/lib/utils";
+import { WalletTypeIcon, Users, Lock } from "@/lib/icons";
+import type { WalletType as IconWalletType } from "@/lib/icons";
 
-const WALLET_TYPES: { value: WalletType; label: string; icon: string }[] = [
-  { value: "cash",    label: "Tunai",    icon: "💵" },
-  { value: "bank",    label: "Bank",     icon: "🏦" },
-  { value: "savings", label: "Tabungan", icon: "🏧" },
-  { value: "ewallet", label: "E-Wallet", icon: "📱" },
+const WALLET_TYPES: { value: WalletType; label: string }[] = [
+  { value: "cash",    label: "Tunai"    },
+  { value: "bank",    label: "Bank"     },
+  { value: "savings", label: "Tabungan" },
+  { value: "ewallet", label: "E-Wallet" },
 ];
 
 const TYPE_DEFAULT_COLOR: Record<WalletType, string> = {
@@ -288,7 +290,7 @@ export default function WalletModal({ wallet, householdId, userId, onClose, onSa
                           : "border-[var(--border)] text-[var(--text-secondary)] hover:border-brand-primary/40",
                       ].join(" ")}
                     >
-                      <span className="text-xl">{t.icon}</span>
+                      <WalletTypeIcon type={t.value as IconWalletType} size={20} />
                       {t.label}
                     </button>
                   ))}
@@ -325,7 +327,7 @@ export default function WalletModal({ wallet, householdId, userId, onClose, onSa
                   className={["flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl border-2 text-xs font-medium transition-colors",
                     isShared ? "border-brand-primary bg-brand-primary/5 text-brand-primary" : "border-[var(--border)] text-[var(--text-secondary)] hover:border-brand-primary/40"
                   ].join(" ")}>
-                  <span className="text-xl">👨‍👩‍👧‍👦</span>
+                  <Users size={20} />
                   <span>Bersama</span>
                   <span className="text-[10px] font-normal text-center leading-tight opacity-70">Semua anggota bisa lihat</span>
                 </button>
@@ -333,7 +335,7 @@ export default function WalletModal({ wallet, householdId, userId, onClose, onSa
                   className={["flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl border-2 text-xs font-medium transition-colors",
                     !isShared ? "border-brand-primary bg-brand-primary/5 text-brand-primary" : "border-[var(--border)] text-[var(--text-secondary)] hover:border-brand-primary/40"
                   ].join(" ")}>
-                  <span className="text-xl">🔒</span>
+                  <Lock size={20} />
                   <span>Pribadi</span>
                   <span className="text-[10px] font-normal text-center leading-tight opacity-70">Hanya kamu & Super Admin</span>
                 </button>

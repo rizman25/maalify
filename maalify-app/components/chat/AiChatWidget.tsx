@@ -27,7 +27,7 @@ export default function AiChatWidget() {
     if (open && messages.length === 0) {
       setMessages([{
         role: "assistant",
-        content: "Halo! 👋 Saya **Maali**, asisten keuangan keluarga kamu.\n\nSaya bisa bantu kamu menganalisis laporan keuangan, kasih saran penghematan, atau jawab pertanyaan seputar kondisi keuangan keluarga.\n\nAda yang ingin kamu tanyakan? 😊",
+        content: "Halo! Saya **Maali**, asisten keuangan keluarga kamu.\n\nSaya bisa bantu kamu menganalisis laporan keuangan, kasih saran penghematan, atau jawab pertanyaan seputar kondisi keuangan keluarga.\n\nAda yang ingin kamu tanyakan?",
       }]);
     }
   }, [open, messages.length]);

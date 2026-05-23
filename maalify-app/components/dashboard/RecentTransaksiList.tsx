@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { formatRupiah } from "@/lib/utils";
 import dynamic from "next/dynamic";
+import { CategoryIcon } from "@/lib/icons";
+import { Lock, Home } from "@/lib/icons";
 
 const TransaksiDetailModal = dynamic(() => import("@/components/transaksi/TransaksiDetailModal"), { ssr: false });
 
@@ -60,10 +62,10 @@ export default function RecentTransaksiList({ transactions, currentUserId }: Pro
             >
               {/* Icon */}
               <div
-                className="w-9 h-9 rounded-full flex items-center justify-center text-base flex-shrink-0"
-                style={{ backgroundColor: (cat?.color ?? "#94A3B8") + "20" }}
+                className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
+                style={{ backgroundColor: (cat?.color ?? "#94A3B8") + "20", color: cat?.color ?? "#94A3B8" }}
               >
-                {cat?.icon ?? "💸"}
+                <CategoryIcon slug={cat?.icon} size={16} />
               </div>
 
               {/* Info */}
@@ -71,10 +73,14 @@ export default function RecentTransaksiList({ transactions, currentUserId }: Pro
                 <div className="flex items-center gap-1.5">
                   <p className="text-sm font-medium text-[var(--text-primary)] truncate">{tx.description}</p>
                   {isOwn && isPrivate && (
-                    <span className="flex-shrink-0 text-[10px] text-slate-400 bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded-full leading-none">🔒</span>
+                    <span className="flex-shrink-0 text-slate-400 bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded-full leading-none flex items-center">
+                      <Lock size={9} />
+                    </span>
                   )}
                   {!isPrivate && (
-                    <span className="flex-shrink-0 text-[10px] text-brand-primary bg-brand-primary/10 px-1.5 py-0.5 rounded-full leading-none">🏠</span>
+                    <span className="flex-shrink-0 text-brand-primary bg-brand-primary/10 px-1.5 py-0.5 rounded-full leading-none flex items-center">
+                      <Home size={9} />
+                    </span>
                   )}
                 </div>
                 <div className="flex items-center gap-2 mt-0.5 flex-wrap">

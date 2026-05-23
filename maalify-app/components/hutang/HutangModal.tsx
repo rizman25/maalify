@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { formatRupiah } from "@/lib/utils";
+import { TrendingDown, ArrowRightLeft } from "@/lib/icons";
 
 interface DebtItem {
   id: string;
@@ -145,7 +146,7 @@ export default function HutangModal({ mode, debt, householdId, userId, onClose, 
                     ? "bg-red-50 border-red-400 text-red-600"
                     : "border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--text-secondary)]"
                 }`}>
-                💸 Hutang
+                <span className="flex items-center justify-center gap-1.5"><TrendingDown size={14} /> Hutang</span>
                 <p className="text-[10px] font-normal mt-0.5 opacity-70">Saya yang berhutang</p>
               </button>
               <button type="button" onClick={() => setType("receivable")}
@@ -154,7 +155,7 @@ export default function HutangModal({ mode, debt, householdId, userId, onClose, 
                     ? "bg-blue-50 border-blue-400 text-blue-600"
                     : "border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--text-secondary)]"
                 }`}>
-                🤝 Piutang
+                <span className="flex items-center justify-center gap-1.5"><ArrowRightLeft size={14} /> Piutang</span>
                 <p className="text-[10px] font-normal mt-0.5 opacity-70">Orang lain berhutang ke saya</p>
               </button>
             </div>
@@ -165,7 +166,7 @@ export default function HutangModal({ mode, debt, householdId, userId, onClose, 
             <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium ${
               debt.type === "payable" ? "bg-red-50 text-red-600" : "bg-blue-50 text-blue-600"
             }`}>
-              {debt.type === "payable" ? "💸 Hutang" : "🤝 Piutang"}
+              <span className="flex items-center gap-1.5">{debt.type === "payable" ? <><TrendingDown size={14} /> Hutang</> : <><ArrowRightLeft size={14} /> Piutang</>}</span>
             </div>
           )}
 

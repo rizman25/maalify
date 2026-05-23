@@ -24,7 +24,7 @@ export default async function JoinPage({ searchParams }: Props) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[var(--bg-base)] px-4">
         <div className="text-center max-w-sm">
-          <div className="text-4xl mb-4">❌</div>
+          <div className="mb-4 flex justify-center"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div>
           <h1 className="text-xl font-bold text-[var(--text-primary)] mb-2">Link Tidak Valid</h1>
           <p className="text-sm text-[var(--text-secondary)] mb-6">
             Kode undangan <span className="font-mono font-bold">{inviteCode}</span> tidak ditemukan atau sudah tidak aktif.

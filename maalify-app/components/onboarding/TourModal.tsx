@@ -1,46 +1,49 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
+import { Receipt, Wallet, BarChart2, ArrowRightLeft, Target, Zap } from "@/lib/icons";
+import type { LucideProps } from "lucide-react";
+import { Heart } from "lucide-react";
 
-const STEPS = [
+const STEPS: { Icon: React.ComponentType<LucideProps>; title: string; desc: string; color: string }[] = [
   {
-    icon: "👋",
+    Icon: Heart,
     title: "Selamat datang di Maalify!",
     desc: "Aplikasi pencatatan keuangan keluarga yang cerdas. Yuk, kenalan dulu dengan fitur-fitur utamanya.",
     color: "#3B82F6",
   },
   {
-    icon: "📝",
+    Icon: Receipt,
     title: "Catat Transaksi",
     desc: "Catat setiap pemasukan dan pengeluaran keluarga. Bisa juga scan struk belanja otomatis pakai AI.",
     color: "#10B981",
   },
   {
-    icon: "👛",
+    Icon: Wallet,
     title: "Kelola Dompet",
     desc: "Tambahkan rekening, dompet digital, atau kas tunai. Saldo otomatis terupdate setiap transaksi.",
     color: "#8B5CF6",
   },
   {
-    icon: "📊",
+    Icon: BarChart2,
     title: "Atur Anggaran",
     desc: "Tetapkan batas pengeluaran per kategori setiap bulan. Dapat notifikasi kalau sudah mendekati batas.",
     color: "#F59E0B",
   },
   {
-    icon: "🤝",
+    Icon: ArrowRightLeft,
     title: "Hutang & Piutang",
     desc: "Lacak semua pinjam-meminjam dengan mudah. Catat jatuh tempo dan progres pembayaran.",
     color: "#EF4444",
   },
   {
-    icon: "🎯",
+    Icon: Target,
     title: "Tabungan & Goals",
     desc: "Buat target keuangan keluarga — dana darurat, DP rumah, liburan. Pantau progresnya bersama.",
     color: "#EC4899",
   },
   {
-    icon: "🤖",
+    Icon: Zap,
     title: "AI Advisor Keuangan",
     desc: "Tanya apa saja soal keuangan keluarga — analisis pengeluaran, tips menabung, saran investasi.",
     color: "#06B6D4",
@@ -106,10 +109,10 @@ export default function TourModal() {
         >
           {/* Icon */}
           <div
-            className="w-20 h-20 rounded-3xl flex items-center justify-center text-5xl mx-auto transition-colors duration-500"
-            style={{ backgroundColor: current.color + "20" }}
+            className="w-20 h-20 rounded-3xl flex items-center justify-center mx-auto transition-colors duration-500"
+            style={{ backgroundColor: current.color + "20", color: current.color }}
           >
-            {current.icon}
+            <current.Icon size={40} />
           </div>
 
           {/* Text */}
@@ -158,7 +161,7 @@ export default function TourModal() {
             className="flex-1 py-2.5 rounded-xl text-white text-sm font-semibold transition-all hover:opacity-90"
             style={{ backgroundColor: current.color }}
           >
-            {isLast ? "Mulai Sekarang 🚀" : "Lanjut →"}
+            {isLast ? "Mulai Sekarang" : "Lanjut →"}
           </button>
         </div>
       </div>

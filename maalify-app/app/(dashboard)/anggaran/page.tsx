@@ -129,7 +129,7 @@ export default async function AnggaranPage({ searchParams }: Props) {
       category_id: b.category_id,
       name: cat?.name ?? "-",
       customName: b.name ?? null,
-      icon: cat?.icon ?? "💰",
+      icon: cat?.icon ?? "coins",
       color: cat?.color ?? "#94A3B8",
       budget: Number(b.amount),
       spent: spendMap.get(b.category_id) ?? 0,

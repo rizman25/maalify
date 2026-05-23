@@ -189,7 +189,7 @@ export default async function LaporanPage({ searchParams }: Props) {
     if (!cat) continue;
     const ex = catMap.get(cat.name);
     if (ex) ex.amount += Number(tx.amount);
-    else catMap.set(cat.name, { name: cat.name, icon: cat.icon ?? "💰", color: cat.color ?? "#94A3B8", amount: Number(tx.amount) });
+    else catMap.set(cat.name, { name: cat.name, icon: cat.icon ?? "coins", color: cat.color ?? "#94A3B8", amount: Number(tx.amount) });
   }
   const categoryExpense = Array.from(catMap.values()).sort((a, b) => b.amount - a.amount);
 
@@ -200,7 +200,7 @@ export default async function LaporanPage({ searchParams }: Props) {
     if (!cat) continue;
     const ex = incCatMap.get(cat.name);
     if (ex) ex.amount += Number(tx.amount);
-    else incCatMap.set(cat.name, { name: cat.name, icon: cat.icon ?? "💰", color: cat.color ?? "#94A3B8", amount: Number(tx.amount) });
+    else incCatMap.set(cat.name, { name: cat.name, icon: cat.icon ?? "coins", color: cat.color ?? "#94A3B8", amount: Number(tx.amount) });
   }
   const categoryIncome = Array.from(incCatMap.values()).sort((a, b) => b.amount - a.amount);
 

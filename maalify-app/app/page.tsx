@@ -1,3 +1,4 @@
+import React from "react";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
@@ -41,7 +42,7 @@ export default async function HomePage() {
       {/* ── Hero ── */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-20 pb-16 text-center">
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold mb-6">
-          <span className="text-base">✨</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
           Kini dilengkapi AI — Scan Struk & Asisten Keuangan
         </div>
 
@@ -65,10 +66,10 @@ export default async function HomePage() {
         </div>
 
         <div className="mt-4 flex items-center justify-center gap-4 flex-wrap">
-          <p className="text-xs text-neutral-400">✓ Gratis selamanya</p>
-          <p className="text-xs text-neutral-400">✓ Setup 2 menit</p>
-          <p className="text-xs text-neutral-400">✓ Bisa diinstall di HP</p>
-          <p className="text-xs text-neutral-400">✓ Tanpa kartu kredit</p>
+          <p className="text-xs text-neutral-400">Gratis selamanya</p>
+          <p className="text-xs text-neutral-400">Setup 2 menit</p>
+          <p className="text-xs text-neutral-400">Bisa diinstall di HP</p>
+          <p className="text-xs text-neutral-400">Tanpa kartu kredit</p>
         </div>
 
         {/* Hero visual */}
@@ -140,7 +141,7 @@ export default async function HomePage() {
                   <div className="w-5 h-5 rounded-full bg-[#1E3A5F] flex items-center justify-center text-white text-[8px] font-bold flex-shrink-0">M</div>
                   <div className="flex-1">
                     <p className="text-[8px] font-semibold text-[#1E3A5F]">Maali · Asisten AI</p>
-                    <p className="text-[8px] text-neutral-500 mt-0.5">Pengeluaran kamu bulan ini naik 12% dari bulan lalu, terutama di kategori Belanja. Coba kurangi 10% untuk mencapai target tabungan! 💡</p>
+                    <p className="text-[8px] text-neutral-500 mt-0.5">Pengeluaran kamu bulan ini naik 12% dari bulan lalu, terutama di kategori Belanja. Coba kurangi 10% untuk mencapai target tabungan!</p>
                   </div>
                 </div>
               </div>
@@ -164,7 +165,7 @@ export default async function HomePage() {
             {/* Scan Struk */}
             <div className="bg-white/10 rounded-2xl p-6 border border-white/10 hover:bg-white/15 transition-colors">
               <div className="flex items-start gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-[#27AE60]/20 flex items-center justify-center text-3xl flex-shrink-0">📸</div>
+                <div className="w-14 h-14 rounded-2xl bg-[#27AE60]/20 flex items-center justify-center flex-shrink-0"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#27AE60" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
                 <div>
                   <h3 className="font-bold text-white text-xl mb-2">Scan Struk Otomatis</h3>
                   <p className="text-blue-200 text-sm leading-relaxed mb-4">
@@ -182,7 +183,7 @@ export default async function HomePage() {
             {/* Maali AI */}
             <div className="bg-white/10 rounded-2xl p-6 border border-white/10 hover:bg-white/15 transition-colors">
               <div className="flex items-start gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-blue-400/20 flex items-center justify-center text-3xl flex-shrink-0">🤖</div>
+                <div className="w-14 h-14 rounded-2xl bg-blue-400/20 flex items-center justify-center flex-shrink-0"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#60A5FA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="12" y1="16" x2="12" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg></div>
                 <div>
                   <h3 className="font-bold text-white text-xl mb-2">Maali — Asisten Keuangan AI</h3>
                   <p className="text-blue-200 text-sm leading-relaxed mb-4">
@@ -210,7 +211,7 @@ export default async function HomePage() {
               <div className="flex gap-2">
                 <div className="w-7 h-7 rounded-full bg-[#27AE60] flex items-center justify-center text-white text-xs font-bold flex-shrink-0">M</div>
                 <div className="bg-white/10 rounded-2xl rounded-tl-sm px-4 py-2.5 max-w-sm">
-                  <p className="text-blue-100 text-sm">Bulan ini pemasukanmu <strong className="text-white">Rp 8.200.000</strong> dengan pengeluaran <strong className="text-white">Rp 3.750.000</strong> — kamu surplus <strong className="text-[#27AE60]">Rp 4.450.000</strong> 🎉 Kategori terbesar: Belanja (Rp 1,2 Jt). Saran: alokasikan 20% surplus ke tabungan darurat!</p>
+                  <p className="text-blue-100 text-sm">Bulan ini pemasukanmu <strong className="text-white">Rp 8.200.000</strong> dengan pengeluaran <strong className="text-white">Rp 3.750.000</strong> — kamu surplus <strong className="text-[#27AE60]">Rp 4.450.000</strong>! Kategori terbesar: Belanja (Rp 1,2 Jt). Saran: alokasikan 20% surplus ke tabungan darurat!</p>
                 </div>
               </div>
             </div>
@@ -228,19 +229,19 @@ export default async function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              { emoji: "🏦", title: "Multi Dompet", desc: "Kelola tunai, rekening bank, tabungan, dan e-wallet dalam satu dashboard. Transfer antar dompet dengan mudah." },
-              { emoji: "📊", title: "Anggaran Bulanan", desc: "Tetapkan batas pengeluaran per kategori. Notifikasi otomatis saat mendekati atau melampaui batas anggaran." },
-              { emoji: "💸", title: "Hutang & Piutang", desc: "Catat hutang dengan sistem cicilan. Pantau sisa, jatuh tempo, dan progres pembayaran secara real-time." },
-              { emoji: "🎯", title: "Tabungan & Goals", desc: "Buat target keuangan keluarga — DP rumah, liburan, pendidikan. Tabung bersama dan pantau progressnya." },
-              { emoji: "🔄", title: "Transaksi Berulang", desc: "Set gaji, tagihan, atau cicilan sekali. Otomatis tercatat sesuai jadwal bulanan atau mingguan." },
-              { emoji: "📈", title: "Laporan & Analisis", desc: "Laporan visual bulanan dan tahunan. Lihat tren, kategori terbesar, dan perbandingan bulan sebelumnya." },
-              { emoji: "🔍", title: "Global Search", desc: "Cari transaksi, dompet, atau hutang dalam hitungan detik dengan shortcut Ctrl+K dari mana saja." },
-              { emoji: "📲", title: "Install di HP", desc: "Maalify bisa diinstall di smartphone layaknya aplikasi native — buka cepat, bekerja offline untuk navigasi dasar." },
-              { emoji: "👨‍👩‍👧‍👦", title: "Multi Anggota Keluarga", desc: "Undang anggota lewat link WhatsApp atau kode unik. Tiga tingkat role (Super Admin, Admin, Member) dengan hak akses dan privasi masing-masing." },
-            ].map(f => (
+            {([
+              { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1E3A5F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>, title: "Multi Dompet", desc: "Kelola tunai, rekening bank, tabungan, dan e-wallet dalam satu dashboard. Transfer antar dompet dengan mudah." },
+              { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1E3A5F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>, title: "Anggaran Bulanan", desc: "Tetapkan batas pengeluaran per kategori. Notifikasi otomatis saat mendekati atau melampaui batas anggaran." },
+              { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1E3A5F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>, title: "Hutang & Piutang", desc: "Catat hutang dengan sistem cicilan. Pantau sisa, jatuh tempo, dan progres pembayaran secara real-time." },
+              { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1E3A5F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>, title: "Tabungan & Goals", desc: "Buat target keuangan keluarga — DP rumah, liburan, pendidikan. Tabung bersama dan pantau progressnya." },
+              { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1E3A5F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>, title: "Transaksi Berulang", desc: "Set gaji, tagihan, atau cicilan sekali. Otomatis tercatat sesuai jadwal bulanan atau mingguan." },
+              { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1E3A5F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>, title: "Laporan & Analisis", desc: "Laporan visual bulanan dan tahunan. Lihat tren, kategori terbesar, dan perbandingan bulan sebelumnya." },
+              { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1E3A5F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>, title: "Global Search", desc: "Cari transaksi, dompet, atau hutang dalam hitungan detik dengan shortcut Ctrl+K dari mana saja." },
+              { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1E3A5F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>, title: "Install di HP", desc: "Maalify bisa diinstall di smartphone layaknya aplikasi native — buka cepat, bekerja offline untuk navigasi dasar." },
+              { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1E3A5F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>, title: "Multi Anggota Keluarga", desc: "Undang anggota lewat link WhatsApp atau kode unik. Tiga tingkat role (Super Admin, Admin, Member) dengan hak akses dan privasi masing-masing." },
+            ] as { icon: React.ReactNode; title: string; desc: string }[]).map(f => (
               <div key={f.title} className="bg-white rounded-2xl border border-neutral-100 p-6 hover:shadow-md transition-shadow">
-                <div className="w-12 h-12 rounded-xl bg-[#1E3A5F]/5 flex items-center justify-center text-2xl mb-4">{f.emoji}</div>
+                <div className="w-12 h-12 rounded-xl bg-[#1E3A5F]/5 flex items-center justify-center mb-4">{f.icon}</div>
                 <h3 className="font-bold text-[#1E3A5F] text-lg mb-2">{f.title}</h3>
                 <p className="text-neutral-500 text-sm leading-relaxed">{f.desc}</p>
               </div>
@@ -260,9 +261,9 @@ export default async function HomePage() {
 
           {/* Role cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12">
-            {[
+            {([
               {
-                icon: "👑",
+                icon: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#92400E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>,
                 role: "Super Admin",
                 badge: "bg-amber-100 text-amber-700 border-amber-200",
                 border: "border-amber-200",
@@ -272,7 +273,7 @@ export default async function HomePage() {
                 desc: "Akses penuh ke semua fitur — transaksi, anggaran, laporan, hutang, manajemen anggota, dan melihat ringkasan pengeluaran seluruh keluarga.",
               },
               {
-                icon: "🛡️",
+                icon: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1E40AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>,
                 role: "Admin",
                 badge: "bg-blue-100 text-blue-700 border-blue-200",
                 border: "border-blue-200",
@@ -282,7 +283,7 @@ export default async function HomePage() {
                 desc: "Bisa mengelola transaksi, anggaran, hutang, dan laporan. Cocok untuk pasangan atau anggota dewasa yang ikut aktif mengelola keuangan keluarga.",
               },
               {
-                icon: "👤",
+                icon: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#475569" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
                 role: "Member",
                 badge: "bg-slate-100 text-slate-600 border-slate-200",
                 border: "border-slate-200",
@@ -291,9 +292,9 @@ export default async function HomePage() {
                 when: "Default saat bergabung via undangan",
                 desc: "Bisa mencatat transaksi sendiri dan melihat ringkasan keluarga. Tidak bisa akses hutang atau laporan lengkap. Cocok untuk anak atau anggota muda.",
               },
-            ].map((r) => (
+            ] as { icon: React.ReactNode; role: string; badge: string; border: string; bg: string; text: string; when: string; desc: string }[]).map((r) => (
               <div key={r.role} className={`rounded-2xl border ${r.border} ${r.bg} p-6`}>
-                <div className="text-3xl mb-3">{r.icon}</div>
+                <div className="mb-3">{r.icon}</div>
                 <span className={`inline-block text-[11px] font-semibold px-2.5 py-1 rounded-full border mb-3 ${r.badge}`}>{r.role}</span>
                 <p className={`text-xs font-semibold mb-2 ${r.text}`}>{r.when}</p>
                 <p className={`text-sm leading-relaxed ${r.text}`}>{r.desc}</p>
@@ -306,7 +307,7 @@ export default async function HomePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
               <div>
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-xl bg-[#1E3A5F]/10 flex items-center justify-center text-xl">🔒</div>
+                  <div className="w-10 h-10 rounded-xl bg-[#1E3A5F]/10 flex items-center justify-center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1E3A5F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
                   <h3 className="text-xl font-bold text-[#1E3A5F]">Privasi yang Dihormati</h3>
                 </div>
                 <p className="text-neutral-600 leading-relaxed mb-4">
@@ -314,8 +315,8 @@ export default async function HomePage() {
                 </p>
                 <div className="space-y-2">
                   {[
-                    "🔒 Pribadi — hanya terlihat oleh yang mencatat",
-                    "🏠 Bersama — terlihat semua anggota keluarga",
+                    "Pribadi — hanya terlihat oleh yang mencatat",
+                    "Bersama — terlihat semua anggota keluarga",
                     "Super Admin hanya melihat total, bukan detail privat",
                     "Data dilindungi Row Level Security (Supabase)",
                   ].map((item) => (
@@ -330,7 +331,7 @@ export default async function HomePage() {
                 <div className="bg-white rounded-xl border border-neutral-200 p-4 shadow-sm">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-xs font-semibold text-neutral-500">Transaksi Anak</span>
-                    <span className="text-[10px] bg-neutral-100 text-neutral-500 px-2 py-0.5 rounded-full">🔒 Pribadi</span>
+                    <span className="text-[10px] bg-neutral-100 text-neutral-500 px-2 py-0.5 rounded-full">Pribadi</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-neutral-700">Jajan kantin</span>
@@ -342,7 +343,7 @@ export default async function HomePage() {
                 <div className="bg-white rounded-xl border border-neutral-200 p-4 shadow-sm">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-xs font-semibold text-neutral-500">Transaksi Keluarga</span>
-                    <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full border border-blue-200">🏠 Bersama</span>
+                    <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full border border-blue-200">Bersama</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-neutral-700">Belanja bulanan</span>
@@ -459,14 +460,14 @@ export default async function HomePage() {
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              {[
-                { icon: "👨‍👩‍👧‍👦", label: "Multi Member", desc: "Kelola bersama" },
-                { icon: "🤖", label: "AI Powered", desc: "Scan & advisor" },
-                { icon: "📱", label: "Bisa Diinstall", desc: "Layaknya aplikasi" },
-                { icon: "🔐", label: "Aman & Private", desc: "Data terenkripsi" },
-              ].map(c => (
+              {([
+                { icon: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>, label: "Multi Member", desc: "Kelola bersama" },
+                { icon: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="12" y1="16" x2="12" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg>, label: "AI Powered", desc: "Scan & advisor" },
+                { icon: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>, label: "Bisa Diinstall", desc: "Layaknya aplikasi" },
+                { icon: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>, label: "Aman & Private", desc: "Data terenkripsi" },
+              ] as { icon: React.ReactNode; label: string; desc: string }[]).map(c => (
                 <div key={c.label} className="bg-white/10 rounded-xl p-4 text-center">
-                  <div className="text-3xl mb-2">{c.icon}</div>
+                  <div className="flex justify-center mb-2">{c.icon}</div>
                   <p className="text-white font-semibold text-sm">{c.label}</p>
                   <p className="text-blue-300 text-xs mt-0.5">{c.desc}</p>
                 </div>

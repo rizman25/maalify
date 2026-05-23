@@ -9,6 +9,8 @@ import RecentTransaksiList from "@/components/dashboard/RecentTransaksiList";
 import MemberSpendingSummary from "@/components/dashboard/MemberSpendingSummary";
 import type { MemberSpending } from "@/components/dashboard/MemberSpendingSummary";
 import Link from "next/link";
+import { CategoryIcon } from "@/lib/icons";
+import { Users, User, Target } from "@/lib/icons";
 
 const BULAN_SHORT = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
 const BULAN_PANJANG = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
@@ -222,7 +224,7 @@ export default async function DashboardPage() {
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0 pr-2">
           <h1 className="text-2xl font-bold text-[var(--text-primary)]">
-            Selamat datang kembali, {firstName} 👋
+            Selamat datang kembali, {firstName}
           </h1>
           <p className="text-sm text-[var(--text-secondary)] mt-1">
             {isMember
@@ -249,7 +251,10 @@ export default async function DashboardPage() {
       {/* Summary Cards — Bersama */}
       <div id="tour-summary" className="space-y-3">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-[var(--text-secondary)]">👨‍👩‍👧‍👦 Bersama</span>
+          <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--text-secondary)]">
+            <Users size={14} />
+            Bersama
+          </span>
           <div className="flex-1 h-px bg-[var(--border)]" />
         </div>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -278,7 +283,10 @@ export default async function DashboardPage() {
       {/* Summary Cards — Pribadi */}
       <div className="space-y-3">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-[var(--text-secondary)]">🙋 Pribadi</span>
+          <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--text-secondary)]">
+            <User size={14} />
+            Pribadi
+          </span>
           <div className="flex-1 h-px bg-[var(--border)]" />
         </div>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -492,9 +500,9 @@ export default async function DashboardPage() {
               const pctDone = g.target_amount > 0 ? Math.min((g.current_amount / g.target_amount) * 100, 100) : 0;
               return (
                 <div key={g.id} className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-lg flex items-center justify-center text-lg flex-shrink-0"
-                    style={{ backgroundColor: (g.color || "#8B5CF6") + "20" }}>
-                    {g.icon || "🎯"}
+                  <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+                    style={{ backgroundColor: (g.color || "#8B5CF6") + "20", color: g.color || "#8B5CF6" }}>
+                    <CategoryIcon slug={g.icon} size={18} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">

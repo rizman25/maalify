@@ -173,7 +173,7 @@ export default async function DashboardLayout({
       const ratio = spent / Number(b.amount);
       if (ratio < 0.8) continue;
       const cat = b.categories as unknown as { name: string; icon: string | null } | null;
-      const label = `${cat?.icon ?? "📊"} ${cat?.name ?? "Kategori"}`;
+      const label = cat?.name ?? "Kategori";
       const pct = Math.round(ratio * 100);
       allNotifications.push({
         id: ratio >= 1 ? `budget-over-${b.id}` : `budget-near-${b.id}`,
@@ -199,7 +199,7 @@ export default async function DashboardLayout({
         id: `goal-${g.id}`,
         type: "savings_goal_due",
         title: isUrgent ? "Target Tabungan Hampir Deadline!" : "Target Tabungan Mendekati Deadline",
-        message: `${g.icon ?? "🎯"} ${g.name} · ${pct}% tercapai · ${daysLeft} hari lagi`,
+        message: `${g.name} · ${pct}% tercapai · ${daysLeft} hari lagi`,
         href: "/tabungan",
         urgency: isUrgent ? "high" : "medium",
       });

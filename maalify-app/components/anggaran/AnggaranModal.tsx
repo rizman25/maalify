@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { formatRupiah } from "@/lib/utils";
+import { CategoryIcon, RefreshCw } from "@/lib/icons";
 
 interface Category {
   id: string;
@@ -145,7 +146,7 @@ export default function AnggaranModal({
                   : "border-[var(--border)] text-[var(--text-secondary)] hover:border-brand-primary/40"
               }`}
             >
-              <span className="text-sm">🔄</span>
+              <RefreshCw size={14} />
               <span className="text-xs font-semibold">
                 {isRecurring ? "Berulang" : "Sekali"}
               </span>
@@ -196,7 +197,7 @@ export default function AnggaranModal({
                           : "border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--text-secondary)]"
                       }`}
                     >
-                      <span className="text-base">{cat.icon ?? "💰"}</span>
+                      <span className="text-[var(--text-secondary)]"><CategoryIcon slug={cat.icon} size={16} /></span>
                       <span className="truncate">{cat.name}</span>
                     </button>
                   ))}
@@ -208,7 +209,7 @@ export default function AnggaranModal({
           {/* Category display (edit mode) */}
           {mode === "edit" && budget && (
             <div className="flex items-center gap-3 p-3 rounded-xl bg-[var(--bg-elevated)]">
-              <span className="text-2xl">{budget.icon}</span>
+              <span className="text-[var(--text-secondary)]"><CategoryIcon slug={budget.icon} size={22} /></span>
               <div>
                 <p className="font-medium text-[var(--text-primary)] text-sm">{budget.name}</p>
                 <p className="text-xs text-[var(--text-secondary)]">Kategori pengeluaran</p>

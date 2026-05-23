@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { formatRupiah } from "@/lib/utils";
+import { WalletTypeIcon, Receipt, BarChart2, Users, CheckCircle2 } from "@/lib/icons";
 
 interface Props {
   householdId: string;
@@ -13,11 +14,11 @@ interface Props {
 type WalletType = "cash" | "bank" | "ewallet" | "savings";
 type Step = 1 | 2 | 3;
 
-const WALLET_TYPES: { id: WalletType; label: string; icon: string; desc: string }[] = [
-  { id: "cash",    label: "Tunai",      icon: "💵", desc: "Uang cash / dompet fisik" },
-  { id: "bank",    label: "Bank",       icon: "🏦", desc: "Rekening tabungan / giro" },
-  { id: "ewallet", label: "E-Wallet",   icon: "📱", desc: "GoPay, OVO, Dana, dll" },
-  { id: "savings", label: "Tabungan",   icon: "🐷", desc: "Tabungan tujuan khusus" },
+const WALLET_TYPES: { id: WalletType; label: string; desc: string }[] = [
+  { id: "cash",    label: "Tunai",      desc: "Uang cash / dompet fisik" },
+  { id: "bank",    label: "Bank",       desc: "Rekening tabungan / giro" },
+  { id: "ewallet", label: "E-Wallet",   desc: "GoPay, OVO, Dana, dll" },
+  { id: "savings", label: "Tabungan",   desc: "Tabungan tujuan khusus" },
 ];
 
 const WALLET_SUGGESTIONS: Record<WalletType, string[]> = {
@@ -117,7 +118,7 @@ export default function OnboardingWizard({ householdId, userId, userName }: Prop
         {/* ── Step 1: Welcome ── */}
         {step === 1 && (
           <div className="px-8 py-10 text-center space-y-5">
-            <div className="text-5xl">👋</div>
+            <div className="w-16 h-16 rounded-2xl bg-brand-primary/10 text-brand-primary flex items-center justify-center mx-auto"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
             <div>
               <h2 className="text-xl font-bold text-[var(--text-primary)]">
                 Halo, {firstName}!
@@ -130,12 +131,12 @@ export default function OnboardingWizard({ householdId, userId, userName }: Prop
 
             <div className="grid grid-cols-3 gap-3 text-center text-xs text-[var(--text-secondary)]">
               {[
-                { icon: "💳", label: "Catat transaksi" },
-                { icon: "📊", label: "Pantau anggaran" },
-                { icon: "👨‍👩‍👧", label: "Kelola bersama" },
+                { Icon: Receipt, label: "Catat transaksi" },
+                { Icon: BarChart2, label: "Pantau anggaran" },
+                { Icon: Users, label: "Kelola bersama" },
               ].map(f => (
                 <div key={f.label} className="bg-[var(--bg-elevated)] rounded-xl py-3 px-2 space-y-1.5">
-                  <span className="text-2xl">{f.icon}</span>
+                  <div className="flex justify-center text-brand-primary"><f.Icon size={22} /></div>
                   <p>{f.label}</p>
                 </div>
               ))}
@@ -173,7 +174,7 @@ export default function OnboardingWizard({ householdId, userId, userName }: Prop
                         ? "border-brand-primary bg-brand-primary/5"
                         : "border-[var(--border)] hover:border-brand-primary/40",
                     ].join(" ")}>
-                    <span className="text-xl">{wt.icon}</span>
+                    <div className="text-brand-primary"><WalletTypeIcon type={wt.id} size={20} /></div>
                     <p className="text-xs font-semibold text-[var(--text-primary)] mt-1">{wt.label}</p>
                     <p className="text-[10px] text-[var(--text-secondary)]">{wt.desc}</p>
                   </button>
@@ -247,7 +248,7 @@ export default function OnboardingWizard({ householdId, userId, userName }: Prop
         {/* ── Step 3: Done ── */}
         {step === 3 && (
           <div className="px-8 py-10 text-center space-y-5">
-            <div className="text-5xl">🎉</div>
+            <div className="w-16 h-16 rounded-2xl bg-green-100 text-green-600 flex items-center justify-center mx-auto"><CheckCircle2 size={32} /></div>
             <div>
               <h2 className="text-xl font-bold text-[var(--text-primary)]">Siap digunakan!</h2>
               <p className="text-sm text-[var(--text-secondary)] mt-2">
@@ -258,12 +259,12 @@ export default function OnboardingWizard({ householdId, userId, userName }: Prop
             <div className="bg-[var(--bg-elevated)] rounded-xl p-4 text-left space-y-2.5">
               <p className="text-xs font-semibold text-[var(--text-secondary)] tracking-wider uppercase">Tips memulai</p>
               {[
-                { icon: "📝", text: "Catat setiap transaksi di menu Transaksi" },
-                { icon: "📊", text: "Set anggaran bulanan di menu Anggaran" },
-                { icon: "👨‍👩‍👧", text: "Undang anggota keluarga lewat Pengaturan → Kode Undangan" },
+                { Icon: Receipt, text: "Catat setiap transaksi di menu Transaksi" },
+                { Icon: BarChart2, text: "Set anggaran bulanan di menu Anggaran" },
+                { Icon: Users, text: "Undang anggota keluarga lewat Pengaturan → Kode Undangan" },
               ].map(tip => (
                 <div key={tip.text} className="flex items-start gap-2.5">
-                  <span className="text-base flex-shrink-0">{tip.icon}</span>
+                  <tip.Icon size={16} className="flex-shrink-0 text-brand-primary mt-0.5" />
                   <p className="text-xs text-[var(--text-secondary)] leading-relaxed">{tip.text}</p>
                 </div>
               ))}

@@ -55,8 +55,8 @@ export default function JoinPageClient({
 
         {/* Household card */}
         <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border)] p-6 text-center space-y-3">
-          <div className="w-16 h-16 rounded-2xl bg-brand-primary/10 flex items-center justify-center mx-auto text-3xl">
-            🏠
+          <div className="w-16 h-16 rounded-2xl bg-brand-primary/10 flex items-center justify-center mx-auto">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-brand-primary"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>
           </div>
           <div>
             <h1 className="text-xl font-bold text-[var(--text-primary)]">{householdName}</h1>

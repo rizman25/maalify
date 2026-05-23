@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { formatRupiah } from "@/lib/utils";
 import AnggaranModal from "@/components/anggaran/AnggaranModal";
 import { Toast, useToast } from "@/components/ui/Toast";
+import { CategoryIcon } from "@/lib/icons";
+import { Coins, AlertCircle, RefreshCw } from "@/lib/icons";
 
 interface Category {
   id: string;
@@ -143,7 +145,7 @@ export default function AnggaranPageClient({
 
             {overBudgetCount > 0 && (
               <div className="flex items-center gap-2 p-2.5 rounded-lg bg-red-50 border border-red-100">
-                <span className="text-red-500">⚠️</span>
+                <AlertCircle size={14} className="text-red-500 flex-shrink-0" />
                 <p className="text-xs text-red-600">{overBudgetCount} kategori melebihi anggaran</p>
               </div>
             )}
@@ -153,7 +155,9 @@ export default function AnggaranPageClient({
         {/* Budget list */}
         {budgets.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center space-y-3">
-            <div className="w-16 h-16 rounded-2xl bg-[var(--bg-elevated)] flex items-center justify-center text-3xl">💰</div>
+            <div className="w-16 h-16 rounded-2xl bg-brand-primary/10 text-brand-primary flex items-center justify-center">
+              <Coins size={32} />
+            </div>
             <div>
               <p className="font-semibold text-[var(--text-primary)]">Belum ada anggaran</p>
               <p className="text-sm text-[var(--text-secondary)] mt-1">Tambah anggaran untuk mengontrol pengeluaran bulan ini</p>
@@ -188,10 +192,10 @@ export default function AnggaranPageClient({
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div
-                        className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
-                        style={{ backgroundColor: `${b.color}20` }}
+                        className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                        style={{ backgroundColor: `${b.color}20`, color: b.color }}
                       >
-                        {b.icon}
+                        <CategoryIcon slug={b.icon} size={20} />
                       </div>
                       <div>
                         <div className="flex items-center gap-1.5">
@@ -199,7 +203,9 @@ export default function AnggaranPageClient({
                             {b.customName ?? b.name}
                           </p>
                           {b.isRecurring && (
-                            <span className="text-[10px] text-brand-primary bg-brand-primary/10 px-1.5 py-0.5 rounded-full font-medium flex-shrink-0">🔄</span>
+                            <span className="text-brand-primary bg-brand-primary/10 px-1.5 py-0.5 rounded-full font-medium flex-shrink-0 flex items-center">
+                              <RefreshCw size={9} />
+                            </span>
                           )}
                         </div>
                         {b.customName && (
@@ -255,7 +261,7 @@ export default function AnggaranPageClient({
               {availableCategories.map((cat) => (
                 <div key={cat.id} className="flex items-center justify-between px-4 py-3">
                   <div className="flex items-center gap-3">
-                    <span className="text-lg">{cat.icon ?? "💰"}</span>
+                    <span className="text-[var(--text-secondary)]"><CategoryIcon slug={cat.icon} size={16} /></span>
                     <span className="text-sm text-[var(--text-secondary)]">{cat.name}</span>
                   </div>
                   {canManage && (

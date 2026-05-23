@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { formatRupiah } from "@/lib/utils";
+import { CategoryIcon } from "@/lib/icons";
 
 interface TxDetail {
   id: string;
@@ -86,9 +87,9 @@ export default function TransaksiDetailModal({ transactionId, onClose }: Props) 
                 <div className="text-center py-4">
                   <div
                     className="w-14 h-14 rounded-2xl mx-auto mb-3 flex items-center justify-center text-2xl"
-                    style={{ backgroundColor: (cat?.color ?? "#94A3B8") + "20" }}
+                    style={{ backgroundColor: (cat?.color ?? "#94A3B8") + "20", color: cat?.color ?? "#94A3B8" }}
                   >
-                    {cat?.icon ?? (tx.type === "income" ? "💰" : "💸")}
+                    <CategoryIcon slug={cat?.icon} size={24} />
                   </div>
                   <p className={["font-financial text-3xl font-bold", tx.type === "income" ? "text-success" : "text-danger"].join(" ")}>
                     {tx.type === "income" ? "+" : "−"}Rp {formatRupiah(Number(tx.amount))}

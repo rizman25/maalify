@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import ThemeToggle from "@/components/ui/ThemeToggle";
+import { Users, Zap, Home, FileText, Camera, Star, Settings, Target, RefreshCw, ArrowRightLeft, Receipt, Wallet } from "@/lib/icons";
+import type { LucideProps } from "lucide-react";
 
 interface Stats {
   totalUsers: number; activeUsers7d: number; newUsersMonth: number;
@@ -196,10 +198,10 @@ export default function AdminDashboardClient({ stats, dailyTxData, topHouseholds
         {tab === "overview" && (
           <div className="space-y-6">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <KpiCard label="Total Users"      value={fmt(stats.totalUsers)}      sub={`+${fmt(stats.newUsersMonth)} bulan ini`} color="#3B82F6" icon="👥" />
-              <KpiCard label="Aktif 7 Hari"     value={fmt(stats.activeUsers7d)}   sub={`${stats.totalUsers > 0 ? Math.round(stats.activeUsers7d / stats.totalUsers * 100) : 0}% dari total`} color="#10B981" icon="⚡" />
-              <KpiCard label="Total Households" value={fmt(stats.totalHouseholds)} sub={`avg ${stats.avgMembersPerHousehold} anggota`} color="#8B5CF6" icon="🏠" />
-              <KpiCard label="Total Transaksi"  value={fmt(stats.totalTx)}         sub={`${fmt(stats.txThisMonth)} bulan ini`} color="#F59E0B" icon="📝" />
+              <KpiCard label="Total Users"      value={fmt(stats.totalUsers)}      sub={`+${fmt(stats.newUsersMonth)} bulan ini`} color="#3B82F6" Icon={Users} />
+              <KpiCard label="Aktif 7 Hari"     value={fmt(stats.activeUsers7d)}   sub={`${stats.totalUsers > 0 ? Math.round(stats.activeUsers7d / stats.totalUsers * 100) : 0}% dari total`} color="#10B981" Icon={Zap} />
+              <KpiCard label="Total Households" value={fmt(stats.totalHouseholds)} sub={`avg ${stats.avgMembersPerHousehold} anggota`} color="#8B5CF6" Icon={Home} />
+              <KpiCard label="Total Transaksi"  value={fmt(stats.totalTx)}         sub={`${fmt(stats.txThisMonth)} bulan ini`} color="#F59E0B" Icon={FileText} />
             </div>
 
             {/* Transaction trend chart */}
@@ -257,18 +259,18 @@ export default function AdminDashboardClient({ stats, dailyTxData, topHouseholds
               <p className="font-semibold text-[var(--text-primary)] mb-4">Feature Adoption</p>
               <div className="space-y-4">
                 {[
-                  { label: "Catat Transaksi",     pct: stats.adoptionTx,          color: "#3B82F6", icon: "💸" },
-                  { label: "Tambah Dompet",        pct: stats.adoptionWallet,      color: "#06B6D4", icon: "🏦" },
-                  { label: "Scan Struk AI",        pct: stats.adoptionScan,        color: "#10B981", icon: "📸" },
-                  { label: "Anggaran Bulanan",     pct: stats.adoptionBudget,      color: "#F59E0B", icon: "📊" },
-                  { label: "Tabungan & Goals",     pct: stats.adoptionGoals,       color: "#8B5CF6", icon: "🎯" },
-                  { label: "Transaksi Berulang",   pct: stats.adoptionRecurring,   color: "#EC4899", icon: "🔄" },
-                  { label: "Multi Member",         pct: stats.adoptionMultiMember, color: "#F97316", icon: "👨‍👩‍👧" },
+                  { label: "Catat Transaksi",     pct: stats.adoptionTx,          color: "#3B82F6", Icon: Receipt },
+                  { label: "Tambah Dompet",        pct: stats.adoptionWallet,      color: "#06B6D4", Icon: Wallet },
+                  { label: "Scan Struk AI",        pct: stats.adoptionScan,        color: "#10B981", Icon: Camera },
+                  { label: "Anggaran Bulanan",     pct: stats.adoptionBudget,      color: "#F59E0B", Icon: FileText },
+                  { label: "Tabungan & Goals",     pct: stats.adoptionGoals,       color: "#8B5CF6", Icon: Target },
+                  { label: "Transaksi Berulang",   pct: stats.adoptionRecurring,   color: "#EC4899", Icon: RefreshCw },
+                  { label: "Multi Member",         pct: stats.adoptionMultiMember, color: "#F97316", Icon: Users },
                 ].map(f => (
                   <div key={f.label}>
                     <div className="flex items-center justify-between mb-1.5">
                       <span className="text-sm text-[var(--text-secondary)] flex items-center gap-2">
-                        <span>{f.icon}</span>{f.label}
+                        <f.Icon size={14} style={{ color: f.color }} />{f.label}
                       </span>
                       <span className="text-sm font-bold" style={{ color: f.color }}>{f.pct}%</span>
                     </div>
@@ -290,15 +292,15 @@ export default function AdminDashboardClient({ stats, dailyTxData, topHouseholds
         {tab === "ai" && (
           <div className="space-y-6">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <KpiCard label="Scan Struk (total)"  value={fmt(stats.scanTotal)}     sub={`${fmt(stats.scanMonth)} bulan ini`}  color="#10B981" icon="📸" />
-              <KpiCard label="Maali Chat (total)"  value={fmt(stats.chatTotal)}     sub={`${fmt(stats.chatMonth)} bulan ini`}  color="#3B82F6" icon="🤖" />
-              <KpiCard label="Total Token"         value={fmt(stats.totalTokens)}   sub={`${fmt(stats.monthTokens)} bulan ini`} color="#8B5CF6" icon="⚙️" />
-              <KpiCard label="Est. Biaya (total)"  value={fmtUsd(stats.totalCostUsd)} sub={`${fmtUsd(stats.monthCostUsd)} bulan ini`} color="#F59E0B" icon="💰" />
+              <KpiCard label="Scan Struk (total)"  value={fmt(stats.scanTotal)}     sub={`${fmt(stats.scanMonth)} bulan ini`}  color="#10B981" Icon={Camera} />
+              <KpiCard label="Maali Chat (total)"  value={fmt(stats.chatTotal)}     sub={`${fmt(stats.chatMonth)} bulan ini`}  color="#3B82F6" Icon={Zap} />
+              <KpiCard label="Total Token"         value={fmt(stats.totalTokens)}   sub={`${fmt(stats.monthTokens)} bulan ini`} color="#8B5CF6" Icon={Settings} />
+              <KpiCard label="Est. Biaya (total)"  value={fmtUsd(stats.totalCostUsd)} sub={`${fmtUsd(stats.monthCostUsd)} bulan ini`} color="#F59E0B" Icon={Star} />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border)] p-5 space-y-4">
-                <p className="font-semibold text-[var(--text-primary)] flex items-center gap-2">📸 Scan Struk</p>
+                <p className="font-semibold text-[var(--text-primary)] flex items-center gap-2"><Camera size={16} /> Scan Struk</p>
                 <div className="space-y-3">
                   <StatRow label="Total request"    value={fmt(stats.scanTotal)} />
                   <StatRow label="Bulan ini"         value={fmt(stats.scanMonth)} />
@@ -307,7 +309,7 @@ export default function AdminDashboardClient({ stats, dailyTxData, topHouseholds
                 </div>
               </div>
               <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border)] p-5 space-y-4">
-                <p className="font-semibold text-[var(--text-primary)] flex items-center gap-2">🤖 Maali AI Chat</p>
+                <p className="font-semibold text-[var(--text-primary)] flex items-center gap-2"><Zap size={16} /> Maali AI Chat</p>
                 <div className="space-y-3">
                   <StatRow label="Total request"    value={fmt(stats.chatTotal)} />
                   <StatRow label="Bulan ini"         value={fmt(stats.chatMonth)} />
@@ -318,7 +320,7 @@ export default function AdminDashboardClient({ stats, dailyTxData, topHouseholds
             </div>
 
             <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border)] p-5 space-y-4">
-              <p className="font-semibold text-[var(--text-primary)]">💰 Estimasi Biaya (OpenRouter)</p>
+              <p className="font-semibold text-[var(--text-primary)] flex items-center gap-2"><Star size={16} /> Estimasi Biaya (OpenRouter)</p>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {[
                   { label: "Total Token",     val: fmt(stats.totalTokens),    cls: "text-[var(--text-primary)]" },
@@ -343,9 +345,9 @@ export default function AdminDashboardClient({ stats, dailyTxData, topHouseholds
         {tab === "users" && (
           <div className="space-y-6">
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-              <KpiCard label="Total Users"   value={fmt(stats.totalUsers)}    color="#3B82F6" icon="👥" />
-              <KpiCard label="Aktif 7 Hari" value={fmt(stats.activeUsers7d)} sub={`${stats.totalUsers > 0 ? Math.round(stats.activeUsers7d / stats.totalUsers * 100) : 0}% dari total`} color="#10B981" icon="⚡" />
-              <KpiCard label="Baru Bulan Ini" value={fmt(stats.newUsersMonth)} color="#8B5CF6" icon="🆕" />
+              <KpiCard label="Total Users"   value={fmt(stats.totalUsers)}    color="#3B82F6" Icon={Users} />
+              <KpiCard label="Aktif 7 Hari" value={fmt(stats.activeUsers7d)} sub={`${stats.totalUsers > 0 ? Math.round(stats.activeUsers7d / stats.totalUsers * 100) : 0}% dari total`} color="#10B981" Icon={Zap} />
+              <KpiCard label="Baru Bulan Ini" value={fmt(stats.newUsersMonth)} color="#8B5CF6" Icon={Star} />
             </div>
 
             <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border)] overflow-hidden">
@@ -455,9 +457,9 @@ export default function AdminDashboardClient({ stats, dailyTxData, topHouseholds
         {tab === "households" && (
           <div className="space-y-6">
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-              <KpiCard label="Total Households" value={fmt(stats.totalHouseholds)}        color="#8B5CF6" icon="🏠" />
-              <KpiCard label="Avg Anggota"      value={stats.avgMembersPerHousehold} sub="per household" color="#3B82F6" icon="👥" />
-              <KpiCard label="Total Transaksi"  value={fmt(stats.totalTx)} sub={`${fmt(stats.txThisMonth)} bulan ini`} color="#F59E0B" icon="📝" />
+              <KpiCard label="Total Households" value={fmt(stats.totalHouseholds)}        color="#8B5CF6" Icon={Home} />
+              <KpiCard label="Avg Anggota"      value={stats.avgMembersPerHousehold} sub="per household" color="#3B82F6" Icon={Users} />
+              <KpiCard label="Total Transaksi"  value={fmt(stats.totalTx)} sub={`${fmt(stats.txThisMonth)} bulan ini`} color="#F59E0B" Icon={FileText} />
             </div>
 
             <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border)] overflow-hidden">
@@ -479,7 +481,7 @@ export default function AdminDashboardClient({ stats, dailyTxData, topHouseholds
                       <tr key={h.id} className="hover:bg-[var(--bg-elevated)] transition-colors">
                         <td className="px-5 py-3.5">
                           <div className="flex items-center gap-2.5">
-                            <div className="w-7 h-7 rounded-lg bg-brand-primary/10 flex items-center justify-center text-[10px] font-bold flex-shrink-0">🏠</div>
+                            <div className="w-7 h-7 rounded-lg bg-brand-primary/10 text-brand-primary flex items-center justify-center flex-shrink-0"><Home size={13} /></div>
                             <span className="text-sm text-[var(--text-primary)] font-medium">{h.name}</span>
                           </div>
                         </td>
@@ -503,8 +505,8 @@ export default function AdminDashboardClient({ stats, dailyTxData, topHouseholds
               {(["saran","kritik","bug"] as const).map(t => {
                 const count = feedbackList.filter(f => f.type === t).length;
                 const color = t === "bug" ? "#EF4444" : t === "kritik" ? "#F59E0B" : "#3B82F6";
-                const icon  = t === "bug" ? "🐛" : t === "kritik" ? "💬" : "💡";
-                return <KpiCard key={t} label={t.charAt(0).toUpperCase() + t.slice(1)} value={String(count)} color={color} icon={icon} />;
+                const Icon  = t === "bug" ? Zap : t === "kritik" ? ArrowRightLeft : Star;
+                return <KpiCard key={t} label={t.charAt(0).toUpperCase() + t.slice(1)} value={String(count)} color={color} Icon={Icon} />;
               })}
             </div>
 
@@ -531,14 +533,16 @@ export default function AdminDashboardClient({ stats, dailyTxData, topHouseholds
                         </div>
                         <div className="flex items-center gap-2 flex-shrink-0">
                           {f.rating && (
-                            <span className="text-xs text-amber-500">{"⭐".repeat(f.rating)}</span>
+                            <span className="inline-flex gap-0.5 text-amber-500">
+                              {Array.from({ length: f.rating }).map((_, i) => <Star key={i} size={11} fill="currentColor" />)}
+                            </span>
                           )}
                           <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
                             f.type === "bug" ? "bg-red-50 text-red-500"
                             : f.type === "kritik" ? "bg-amber-50 text-amber-600"
                             : "bg-blue-50 text-blue-600"
                           }`}>
-                            {f.type === "bug" ? "🐛 Bug" : f.type === "kritik" ? "💬 Kritik" : "💡 Saran"}
+                            {f.type === "bug" ? "Bug" : f.type === "kritik" ? "Kritik" : "Saran"}
                           </span>
                         </div>
                       </div>
@@ -567,14 +571,16 @@ export default function AdminDashboardClient({ stats, dailyTxData, topHouseholds
 
 /* ── Sub-components ── */
 
-function KpiCard({ label, value, sub, color, icon }: {
-  label: string; value: string; sub?: string; color: string; icon: string;
+function KpiCard({ label, value, sub, color, Icon }: {
+  label: string; value: string; sub?: string; color: string; Icon: React.ComponentType<LucideProps>;
 }) {
   return (
     <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border)] p-5 hover:shadow-[var(--shadow-md)] transition-shadow">
       <div className="flex items-center justify-between mb-3">
         <p className="text-[10px] text-[var(--text-secondary)] uppercase tracking-wider font-semibold">{label}</p>
-        <span className="text-xl">{icon}</span>
+        <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: color + "18", color }}>
+          <Icon size={16} />
+        </div>
       </div>
       <p className="text-2xl font-bold" style={{ color }}>{value}</p>
       {sub && <p className="text-xs text-[var(--text-secondary)] mt-1">{sub}</p>}

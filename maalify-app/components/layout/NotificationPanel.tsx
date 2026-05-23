@@ -1,23 +1,26 @@
 "use client";
 
-import { useEffect, useRef, useTransition } from "react";
+import React, { useEffect, useRef, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import type { AppNotification } from "@/types";
 import { markNotificationsRead } from "@/app/actions/notifications";
+import { AlertCircle, Target, RefreshCw, Bell } from "@/lib/icons";
+import type { LucideProps } from "lucide-react";
+import { AlertTriangle, Crown } from "lucide-react";
 
 interface Props {
   notifications: AppNotification[];
   onClose: () => void;
 }
 
-const ICON: Record<AppNotification["type"], string> = {
-  debt_overdue:     "🔴",
-  debt_due_soon:    "🟡",
-  budget_over:      "🔴",
-  budget_near:      "🟡",
-  savings_goal_due: "🎯",
-  recurring_due:    "🔁",
-  role_change:      "👑",
+const ICON: Record<AppNotification["type"], React.ComponentType<LucideProps>> = {
+  debt_overdue:     AlertCircle,
+  debt_due_soon:    AlertTriangle,
+  budget_over:      AlertCircle,
+  budget_near:      AlertTriangle,
+  savings_goal_due: Target,
+  recurring_due:    RefreshCw,
+  role_change:      Crown,
 };
 
 export default function NotificationPanel({ notifications, onClose }: Props) {
@@ -78,7 +81,7 @@ export default function NotificationPanel({ notifications, onClose }: Props) {
       {/* List */}
       {notifications.length === 0 ? (
         <div className="px-4 py-8 text-center">
-          <p className="text-2xl mb-2">🔔</p>
+          <div className="w-10 h-10 rounded-full bg-brand-primary/10 text-brand-primary flex items-center justify-center mx-auto mb-2"><Bell size={20} /></div>
           <p className="text-sm font-medium text-[var(--text-primary)]">Semua beres!</p>
           <p className="text-xs text-[var(--text-secondary)] mt-0.5">Tidak ada notifikasi baru</p>
         </div>
@@ -91,7 +94,7 @@ export default function NotificationPanel({ notifications, onClose }: Props) {
                 disabled={isPending}
                 className="w-full text-left px-4 py-3.5 hover:bg-[var(--bg-elevated)] transition-colors flex items-start gap-3 disabled:opacity-50"
               >
-                <span className="text-base mt-0.5 flex-shrink-0">{ICON[n.type]}</span>
+                <span className="mt-0.5 flex-shrink-0 text-[var(--text-secondary)]">{React.createElement(ICON[n.type], { size: 16 })}</span>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-semibold text-[var(--text-primary)] leading-snug">{n.title}</p>
                   <p className="text-xs text-[var(--text-secondary)] mt-0.5 line-clamp-2 leading-snug">{n.message}</p>

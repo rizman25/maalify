@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import { Info, User, Lock } from "@/lib/icons";
+import { AlertTriangle, Lightbulb, Crown, Shield } from "lucide-react";
 
 const TOC = [
   { id: "tentang",        label: "Tentang Maalify" },
@@ -65,14 +67,14 @@ function SubSection({ title, children }: { title: string; children: React.ReactN
 
 function InfoBox({ type = "info", children }: { type?: "info" | "warning" | "tip"; children: React.ReactNode }) {
   const styles = {
-    info:    { wrap: "bg-blue-50 border-blue-200 text-blue-800",    icon: "ℹ️" },
-    warning: { wrap: "bg-amber-50 border-amber-200 text-amber-800", icon: "⚠️" },
-    tip:     { wrap: "bg-green-50 border-green-200 text-green-800", icon: "💡" },
+    info:    { wrap: "bg-blue-50 border-blue-200 text-blue-800",    Icon: Info },
+    warning: { wrap: "bg-amber-50 border-amber-200 text-amber-800", Icon: AlertTriangle },
+    tip:     { wrap: "bg-green-50 border-green-200 text-green-800", Icon: Lightbulb },
   };
   const s = styles[type];
   return (
     <div className={cn("flex gap-3 border rounded-xl px-4 py-3 text-sm", s.wrap)}>
-      <span className="text-base flex-shrink-0 mt-0.5">{s.icon}</span>
+      <span className="flex-shrink-0 mt-0.5"><s.Icon size={16} /></span>
       <div>{children}</div>
     </div>
   );
@@ -81,7 +83,7 @@ function InfoBox({ type = "info", children }: { type?: "info" | "warning" | "tip
 function RoleRow({ feature, sa, admin, member }: { feature: string; sa: boolean | string; admin: boolean | string; member: boolean | string }) {
   const cell = (v: boolean | string) =>
     typeof v === "string" ? <span className="text-xs text-[var(--text-secondary)]">{v}</span>
-    : v ? <span className="text-green-600 font-bold">✓</span>
+    : v ? <span className="text-green-600 font-bold"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{display:"inline"}}><polyline points="20 6 9 17 4 12"/></svg></span>
     : <span className="text-slate-300">—</span>;
   return (
     <tr className="border-b border-[var(--border)] last:border-0">
@@ -224,7 +226,7 @@ export default function PanduanPageClient() {
                 "Daftar akun — isi nama lengkap, email, No. WhatsApp (wajib), dan password",
                 "Verifikasi email jika diminta (cek kotak masuk dan klik link konfirmasi)",
                 "Halaman Onboarding — pilih Buat Family Baru (jadi Super Admin) atau Bergabung ke Family (masukkan kode undangan)",
-                "Masuk ke Dashboard — gunakan widget 🚀 Get Started untuk panduan langkah awal",
+                "Masuk ke Dashboard — gunakan widget Get Started untuk panduan langkah awal",
               ]} />
             </SubSection>
             <InfoBox type="info">
@@ -242,21 +244,21 @@ export default function PanduanPageClient() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-2">
               <div className="border border-amber-200 bg-amber-50 rounded-xl p-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-xl">👑</span>
+                  <Crown size={18} className="text-amber-600" />
                   <Badge color="amber">Super Admin</Badge>
                 </div>
                 <p className="text-xs text-amber-800">Pemilik family. Memiliki akses penuh ke seluruh fitur termasuk manajemen anggota, laporan, dan data sensitif.</p>
               </div>
               <div className="border border-blue-200 bg-blue-50 rounded-xl p-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-xl">🛡️</span>
+                  <Shield size={18} className="text-blue-600" />
                   <Badge color="blue">Admin</Badge>
                 </div>
                 <p className="text-xs text-blue-800">Dapat mengelola transaksi, anggaran, hutang, dan laporan. Tidak bisa mengubah keanggotaan atau pengaturan family.</p>
               </div>
               <div className="border border-slate-200 bg-slate-50 rounded-xl p-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-xl">👤</span>
+                  <User size={18} className="text-slate-500" />
                   <Badge color="slate">Member</Badge>
                 </div>
                 <p className="text-xs text-slate-700">Anggota biasa. Bisa mencatat transaksi, melihat tabungan, anggaran, dan project. Tidak bisa mengakses data hutang atau laporan penuh.</p>
@@ -267,7 +269,7 @@ export default function PanduanPageClient() {
               <div className="space-y-3">
                 {/* Super Admin */}
                 <div className="flex gap-4 p-4 rounded-xl border border-amber-200 bg-amber-50">
-                  <div className="flex-shrink-0 w-9 h-9 rounded-full bg-amber-100 flex items-center justify-center text-lg">👑</div>
+                  <div className="flex-shrink-0 w-9 h-9 rounded-full bg-amber-100 flex items-center justify-center text-amber-600"><Crown size={18} /></div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="font-semibold text-amber-800 text-sm">Super Admin</span>
@@ -285,7 +287,7 @@ export default function PanduanPageClient() {
 
                 {/* Admin */}
                 <div className="flex gap-4 p-4 rounded-xl border border-blue-200 bg-blue-50">
-                  <div className="flex-shrink-0 w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center text-lg">🛡️</div>
+                  <div className="flex-shrink-0 w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center text-blue-600"><Shield size={18} /></div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="font-semibold text-blue-800 text-sm">Admin</span>
@@ -303,7 +305,7 @@ export default function PanduanPageClient() {
 
                 {/* Member */}
                 <div className="flex gap-4 p-4 rounded-xl border border-slate-200 bg-slate-50">
-                  <div className="flex-shrink-0 w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center text-lg">👤</div>
+                  <div className="flex-shrink-0 w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center text-slate-500"><User size={18} /></div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="font-semibold text-slate-700 text-sm">Member</span>
@@ -322,7 +324,7 @@ export default function PanduanPageClient() {
 
               <div className="mt-4 p-3.5 bg-[var(--bg-elevated)] rounded-xl border border-[var(--border)]">
                 <p className="text-xs font-semibold text-[var(--text-primary)] mb-2 flex items-center gap-1.5">
-                  <span>🔒</span> Privasi Transaksi
+                  <Lock size={13} /> Privasi Transaksi
                 </p>
                 <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
                   Setiap transaksi bisa diatur sebagai <strong>Pribadi</strong> (hanya terlihat oleh yang mencatat) atau <strong>Bersama</strong> (terlihat oleh semua anggota). Default-nya adalah Pribadi — jadi anggota keluarga seperti anak tidak perlu khawatir keuangan pribadinya dilihat orang lain.
@@ -451,8 +453,8 @@ export default function PanduanPageClient() {
               <p>Tombol <strong>"+ Catat Transaksi"</strong> dan <strong>"Scan Struk"</strong> di pojok kanan atas memungkinkan pencatatan transaksi tanpa berpindah halaman. Pilih jenis (pemasukan/pengeluaran), nominal, kategori, dan dompet langsung dari dashboard.</p>
             </SubSection>
 
-            <SubSection title="Widget Get Started 🚀">
-              <p>Saat pertama kali menggunakan Maalify, akan muncul tombol <strong>🚀 Get Started!</strong> di sudut kanan bawah layar. Klik tombol tersebut untuk membuka checklist pengaturan awal:</p>
+            <SubSection title="Widget Get Started">
+              <p>Saat pertama kali menggunakan Maalify, akan muncul tombol <strong>Get Started!</strong> di sudut kanan bawah layar. Klik tombol tersebut untuk membuka checklist pengaturan awal:</p>
               <BulletList items={[
                 "Tambah dompet pertama (Wajib)",
                 "Catat transaksi pertama (Wajib)",
@@ -497,8 +499,8 @@ export default function PanduanPageClient() {
 
             <SubSection title="Edit & Hapus Transaksi">
               <BulletList items={[
-                "Klik ikon pensil (✏️) di baris transaksi untuk membuka form edit",
-                "Klik ikon tempat sampah (🗑️) untuk menghapus — akan muncul konfirmasi",
+                "Klik ikon pensil di baris transaksi untuk membuka form edit",
+                "Klik ikon tempat sampah untuk menghapus — akan muncul konfirmasi",
                 "Member hanya bisa edit/hapus transaksi yang dibuat sendiri",
                 "Admin dan Super Admin bisa edit/hapus transaksi siapapun",
               ]} />
@@ -543,7 +545,7 @@ export default function PanduanPageClient() {
 
             <SubSection title="Menonaktifkan & Menghapus">
               <BulletList items={[
-                "Klik tombol pause (⏸) untuk menonaktifkan sementara tanpa menghapus",
+                "Klik tombol pause untuk menonaktifkan sementara tanpa menghapus",
                 "Klik tombol hapus untuk menghentikan permanen — transaksi yang sudah dibuat tidak ikut terhapus",
               ]} />
             </SubSection>

@@ -65,14 +65,14 @@ function SubSection({ title, children }: { title: string; children: React.ReactN
 
 function InfoBox({ type = "info", children }: { type?: "info" | "warning" | "tip"; children: React.ReactNode }) {
   const styles = {
-    info:    { wrap: "bg-blue-50 border-blue-200 text-blue-800",    icon: "ℹ️" },
-    warning: { wrap: "bg-amber-50 border-amber-200 text-amber-800", icon: "⚠️" },
-    tip:     { wrap: "bg-green-50 border-green-200 text-green-800", icon: "💡" },
+    info:    { wrap: "bg-blue-50 border-blue-200 text-blue-800",    icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> },
+    warning: { wrap: "bg-amber-50 border-amber-200 text-amber-800", icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> },
+    tip:     { wrap: "bg-green-50 border-green-200 text-green-800", icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg> },
   };
   const s = styles[type];
   return (
     <div className={cn("flex gap-3 border rounded-xl px-4 py-3 text-sm", s.wrap)}>
-      <span className="text-base flex-shrink-0 mt-0.5">{s.icon}</span>
+      <span className="flex-shrink-0 mt-0.5">{s.icon}</span>
       <div>{children}</div>
     </div>
   );
@@ -83,7 +83,7 @@ function RoleRow({ feature, sa, admin, member }: { feature: string; sa: boolean 
     typeof v === "string"
       ? <span className="text-xs text-neutral-500">{v}</span>
       : v
-        ? <span className="text-green-600 font-bold">✓</span>
+        ? <span className="text-green-600 font-bold"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{display:"inline"}}><polyline points="20 6 9 17 4 12"/></svg></span>
         : <span className="text-neutral-300">—</span>;
   return (
     <tr className="border-b border-neutral-100 last:border-0">
@@ -302,21 +302,21 @@ export default function PanduanPublicClient() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-2">
                 <div className="border border-amber-200 bg-amber-50 rounded-xl p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-xl">👑</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-600"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
                     <Badge color="amber">Super Admin</Badge>
                   </div>
                   <p className="text-xs text-amber-800">Pemilik family. Memiliki akses penuh ke seluruh fitur termasuk manajemen anggota, laporan, dan data sensitif.</p>
                 </div>
                 <div className="border border-blue-200 bg-blue-50 rounded-xl p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-xl">🛡️</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-600"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                     <Badge color="blue">Admin</Badge>
                   </div>
                   <p className="text-xs text-blue-800">Dapat mengelola transaksi, anggaran, hutang, dan laporan. Tidak bisa mengubah keanggotaan atau pengaturan family.</p>
                 </div>
                 <div className="border border-slate-200 bg-slate-50 rounded-xl p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-xl">👤</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-500"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                     <Badge color="slate">Member</Badge>
                   </div>
                   <p className="text-xs text-slate-700">Anggota biasa. Bisa mencatat transaksi, melihat tabungan, anggaran, dan project. Tidak bisa mengakses data hutang atau laporan penuh.</p>
@@ -326,7 +326,7 @@ export default function PanduanPublicClient() {
               <SubSection title="Bagaimana Role Ditetapkan?">
                 <div className="space-y-3">
                   <div className="flex gap-4 p-4 rounded-xl border border-amber-200 bg-amber-50">
-                    <div className="flex-shrink-0 w-9 h-9 rounded-full bg-amber-100 flex items-center justify-center text-lg">👑</div>
+                    <div className="flex-shrink-0 w-9 h-9 rounded-full bg-amber-100 flex items-center justify-center text-amber-600"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="font-semibold text-amber-800 text-sm">Super Admin</span>
@@ -339,7 +339,7 @@ export default function PanduanPublicClient() {
                   </div>
 
                   <div className="flex gap-4 p-4 rounded-xl border border-blue-200 bg-blue-50">
-                    <div className="flex-shrink-0 w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center text-lg">🛡️</div>
+                    <div className="flex-shrink-0 w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center text-blue-600"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="font-semibold text-blue-800 text-sm">Admin</span>
@@ -352,7 +352,7 @@ export default function PanduanPublicClient() {
                   </div>
 
                   <div className="flex gap-4 p-4 rounded-xl border border-slate-200 bg-slate-50">
-                    <div className="flex-shrink-0 w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center text-lg">👤</div>
+                    <div className="flex-shrink-0 w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center text-slate-500"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="font-semibold text-slate-700 text-sm">Member</span>
@@ -369,7 +369,7 @@ export default function PanduanPublicClient() {
               <SubSection title="Privasi Transaksi">
                 <div className="p-4 rounded-xl border border-neutral-200 bg-neutral-50">
                   <div className="flex items-start gap-3">
-                    <span className="text-2xl flex-shrink-0">🔒</span>
+                    <span className="flex-shrink-0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
                     <div>
                       <p className="font-semibold text-neutral-800 text-sm mb-1">Transaksi Pribadi vs Bersama</p>
                       <p className="text-xs text-neutral-600 leading-relaxed">
@@ -513,7 +513,7 @@ export default function PanduanPublicClient() {
                   "Pilih kategori yang sesuai",
                   "Pilih dompet sumber/tujuan dana",
                   "Isi deskripsi singkat (contoh: \"Gaji Juli\", \"Makan siang\")",
-                  "Atur visibilitas: 🔒 Pribadi (hanya kamu) atau 🏠 Bersama (semua anggota)",
+                  "Atur visibilitas: Pribadi (hanya kamu) atau Bersama (semua anggota)",
                   "Atur tanggal transaksi (default hari ini)",
                   "Klik Simpan",
                 ]} />
@@ -522,11 +522,11 @@ export default function PanduanPublicClient() {
               <SubSection title="Visibilitas Transaksi">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="p-3.5 rounded-xl border border-neutral-200 bg-neutral-50">
-                    <p className="font-semibold text-neutral-800 text-sm mb-1">🔒 Pribadi (Default)</p>
+                    <p className="font-semibold text-neutral-800 text-sm mb-1">Pribadi (Default)</p>
                     <p className="text-xs text-neutral-500">Hanya kamu yang bisa melihat. Anggota lain tidak tahu transaksi ini ada. Super Admin hanya melihat totalnya, bukan detailnya.</p>
                   </div>
                   <div className="p-3.5 rounded-xl border border-neutral-200 bg-neutral-50">
-                    <p className="font-semibold text-neutral-800 text-sm mb-1">🏠 Bersama</p>
+                    <p className="font-semibold text-neutral-800 text-sm mb-1">Bersama</p>
                     <p className="text-xs text-neutral-500">Terlihat oleh semua anggota family. Gunakan untuk pengeluaran keluarga bersama seperti belanja bulanan atau tagihan rumah.</p>
                   </div>
                 </div>
@@ -543,8 +543,8 @@ export default function PanduanPublicClient() {
 
               <SubSection title="Edit & Hapus Transaksi">
                 <BulletList items={[
-                  "Klik ikon pensil (✏️) di baris transaksi untuk membuka form edit",
-                  "Klik ikon tempat sampah (🗑️) untuk menghapus — akan muncul konfirmasi",
+                  "Klik ikon pensil di baris transaksi untuk membuka form edit",
+                  "Klik ikon tempat sampah untuk menghapus — akan muncul konfirmasi",
                   "Member hanya bisa edit/hapus transaksi yang dibuat sendiri",
                   "Admin dan Super Admin bisa edit/hapus transaksi siapapun",
                 ]} />
@@ -583,7 +583,7 @@ export default function PanduanPublicClient() {
 
               <SubSection title="Menonaktifkan & Menghapus">
                 <BulletList items={[
-                  "Klik tombol pause (⏸) untuk menonaktifkan sementara tanpa menghapus",
+                  "Klik tombol pause untuk menonaktifkan sementara tanpa menghapus",
                   "Klik tombol hapus untuk menghentikan permanen — transaksi yang sudah dibuat tidak ikut terhapus",
                 ]} />
               </SubSection>

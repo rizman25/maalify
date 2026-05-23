@@ -9,19 +9,14 @@ import TransferModal from "@/components/dompet/TransferModal";
 import { Toast, useToast } from "@/components/ui/Toast";
 import type { TransferRecord } from "./page";
 import { deleteWallet, deactivateWallet, activateWallet } from "@/app/actions/wallets";
+import { WalletTypeIcon, Users, Lock, Building2, ArrowRightLeft } from "@/lib/icons";
+import type { WalletType as IconWalletType } from "@/lib/icons";
 
 const TYPE_LABEL: Record<WalletType, string> = {
   cash: "Tunai",
   bank: "Bank",
   savings: "Tabungan",
   ewallet: "E-Wallet",
-};
-
-const TYPE_ICON: Record<WalletType, string> = {
-  cash: "💵",
-  bank: "🏦",
-  savings: "🏧",
-  ewallet: "📱",
 };
 
 const TYPE_DEFAULT_COLOR: Record<WalletType, string> = {
@@ -171,7 +166,7 @@ export default function WalletPageClient({ wallets, inactiveWallets, transfers, 
         <div className="grid grid-cols-2 gap-4">
           <div>
             <div className="flex items-center gap-1.5 mb-1">
-              <span className="text-base">👨‍👩‍👧‍👦</span>
+              <Users size={14} className="opacity-75" />
               <p className="text-xs font-medium opacity-75">Aset Bersama</p>
             </div>
             <p className="font-financial text-lg font-bold">Rp {formatRupiah(totalBersama)}</p>
@@ -179,7 +174,7 @@ export default function WalletPageClient({ wallets, inactiveWallets, transfers, 
           </div>
           <div className="border-l border-white/10 pl-4">
             <div className="flex items-center gap-1.5 mb-1">
-              <span className="text-base">🔒</span>
+              <Lock size={14} className="opacity-75" />
               <p className="text-xs font-medium opacity-75">Aset Pribadi</p>
             </div>
             <p className="font-financial text-lg font-bold">Rp {formatRupiah(totalPribadi)}</p>
@@ -192,8 +187,8 @@ export default function WalletPageClient({ wallets, inactiveWallets, transfers, 
       {wallets.length === 0 ? (
         <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border)] px-6 py-14 text-center space-y-4">
           {/* Illustration */}
-          <div className="w-20 h-20 mx-auto rounded-2xl bg-brand-primary/8 flex items-center justify-center text-4xl">
-            🏦
+          <div className="w-20 h-20 mx-auto rounded-2xl bg-brand-primary/8 flex items-center justify-center text-brand-primary">
+            <Building2 size={36} strokeWidth={1.5} />
           </div>
 
           <div className="space-y-1.5">
@@ -221,26 +216,21 @@ export default function WalletPageClient({ wallets, inactiveWallets, transfers, 
             </div>
           ) : (
             <p className="text-xs text-[var(--text-secondary)] bg-[var(--bg-elevated)] rounded-xl px-4 py-3 max-w-xs mx-auto">
-              💡 Kamu tidak bisa menambah dompet karena role kamu adalah <strong>Member</strong>. Hubungi admin keluarga.
+              Kamu tidak bisa menambah dompet karena role kamu adalah <strong>Member</strong>. Hubungi admin keluarga.
             </p>
           )}
 
           {/* Step hints untuk admin */}
           {canManage && (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 max-w-lg mx-auto">
-              {[
-                { icon: "💵", label: "Tunai" },
-                { icon: "🏦", label: "Bank" },
-                { icon: "📱", label: "E-Wallet" },
-                { icon: "🏧", label: "Tabungan" },
-              ].map(t => (
+              {(["cash","bank","ewallet","savings"] as const).map(wType => (
                 <button
-                  key={t.label}
+                  key={wType}
                   onClick={openAdd}
                   className="flex flex-col items-center gap-1.5 p-3 rounded-xl border border-dashed border-[var(--border)] hover:border-brand-primary hover:bg-brand-primary/5 transition-colors group"
                 >
-                  <span className="text-xl">{t.icon}</span>
-                  <span className="text-xs text-[var(--text-secondary)] group-hover:text-brand-primary font-medium transition-colors">{t.label}</span>
+                  <WalletTypeIcon type={wType} size={20} className="text-[var(--text-secondary)] group-hover:text-brand-primary transition-colors" />
+                  <span className="text-xs text-[var(--text-secondary)] group-hover:text-brand-primary font-medium transition-colors">{TYPE_LABEL[wType]}</span>
                 </button>
               ))}
             </div>
@@ -259,10 +249,10 @@ export default function WalletPageClient({ wallets, inactiveWallets, transfers, 
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
                     <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center text-lg"
-                      style={{ backgroundColor: color + "20" }}
+                      className="w-10 h-10 rounded-xl flex items-center justify-center"
+                      style={{ backgroundColor: color + "20", color }}
                     >
-                      {TYPE_ICON[wallet.type]}
+                      <WalletTypeIcon type={wallet.type as IconWalletType} size={20} />
                     </div>
                     <div>
                       <div className="flex items-center gap-1.5">
@@ -270,7 +260,7 @@ export default function WalletPageClient({ wallets, inactiveWallets, transfers, 
                           {wallet.name}
                         </p>
                         {!wallet.is_shared && (
-                          <span className="text-[10px] text-[var(--text-secondary)]" title="Dompet pribadi">🔒</span>
+                          <Lock size={11} className="text-[var(--text-secondary)]" title="Dompet pribadi" />
                         )}
                       </div>
                       <span
@@ -405,10 +395,10 @@ export default function WalletPageClient({ wallets, inactiveWallets, transfers, 
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center gap-3">
                         <div
-                          className="w-10 h-10 rounded-xl flex items-center justify-center text-lg grayscale"
+                          className="w-10 h-10 rounded-xl flex items-center justify-center grayscale text-[var(--text-secondary)]"
                           style={{ backgroundColor: color + "20" }}
                         >
-                          {TYPE_ICON[wallet.type]}
+                          <WalletTypeIcon type={wallet.type as IconWalletType} size={20} />
                         </div>
                         <div>
                           <p className="font-semibold text-[var(--text-primary)] leading-tight">
@@ -480,8 +470,8 @@ export default function WalletPageClient({ wallets, inactiveWallets, transfers, 
               });
               return (
                 <div key={t.id} className="flex items-center gap-3 px-4 py-3">
-                  <div className="w-8 h-8 rounded-lg bg-[var(--bg-elevated)] flex items-center justify-center flex-shrink-0 text-sm">
-                    ↔️
+                  <div className="w-8 h-8 rounded-lg bg-[var(--bg-elevated)] flex items-center justify-center flex-shrink-0 text-[var(--text-secondary)]">
+                    <ArrowRightLeft size={14} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-[var(--text-primary)] truncate">

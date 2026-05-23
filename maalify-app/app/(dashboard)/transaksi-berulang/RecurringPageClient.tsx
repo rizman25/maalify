@@ -7,6 +7,7 @@ import type { RecurringItem, PendingItem } from "./page";
 import RecurringModal from "@/components/transaksi/RecurringModal";
 import { Toast, useToast } from "@/components/ui/Toast";
 import { toggleRecurringActive, confirmRecurring, skipRecurring } from "@/app/actions/recurring";
+import { CategoryIcon, RefreshCw, CheckCircle2 } from "@/lib/icons";
 
 interface Wallet { id: string; name: string; type: string; current_balance: number; }
 interface Category { id: string; name: string; icon: string | null; color: string | null; type: string; }
@@ -27,11 +28,6 @@ const FREQ_LABEL: Record<string, string> = {
   daily:   "Harian",
 };
 
-const FREQ_ICON: Record<string, string> = {
-  monthly: "📅",
-  weekly:  "📆",
-  daily:   "🗓️",
-};
 
 function nextDate(item: RecurringItem): string {
   const today = new Date();
@@ -102,7 +98,7 @@ export default function RecurringPageClient({
     });
     setProcessingKey(null);
     if (result.error) { showToast(result.error, "error"); return; }
-    showToast(`${p.description} — dikonfirmasi ✓`, "success");
+    showToast(`${p.description} — dikonfirmasi`, "success");
     router.refresh();
   }
 
@@ -158,8 +154,9 @@ export default function RecurringPageClient({
         {pendingItems.length > 0 && (
           <div className="space-y-3">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-amber-600 tracking-widest uppercase">
-                ⏳ Menunggu Konfirmasi ({pendingItems.length})
+              <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-600 tracking-widest uppercase">
+                <RefreshCw size={12} />
+                Menunggu Konfirmasi ({pendingItems.length})
               </span>
               <div className="flex-1 h-px bg-amber-200" />
             </div>
@@ -180,10 +177,10 @@ export default function RecurringPageClient({
                   {/* Top row */}
                   <div className="flex items-start gap-3">
                     <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
-                      style={{ backgroundColor: (p.categoryColor ?? "#94A3B8") + "20" }}
+                      className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                      style={{ backgroundColor: (p.categoryColor ?? "#94A3B8") + "20", color: p.categoryColor ?? "#94A3B8" }}
                     >
-                      {p.categoryIcon ?? "💰"}
+                      <CategoryIcon slug={p.categoryIcon} size={18} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2">
@@ -234,7 +231,7 @@ export default function RecurringPageClient({
                       disabled={isProcessing}
                       className="flex-2 flex-1 py-2 text-sm rounded-xl bg-brand-primary text-white font-medium hover:bg-brand-primary/90 transition-colors disabled:opacity-50"
                     >
-                      {processingKey === key ? "Mengkonfirmasi..." : "✓ Konfirmasi"}
+                      {processingKey === key ? "Mengkonfirmasi..." : "Konfirmasi"}
                     </button>
                   </div>
                 </div>
@@ -246,7 +243,9 @@ export default function RecurringPageClient({
         {/* Empty state */}
         {recurring.length === 0 && (
           <div className="flex flex-col items-center justify-center py-20 text-center space-y-4">
-            <div className="w-20 h-20 rounded-3xl bg-[var(--bg-elevated)] flex items-center justify-center text-4xl">🔄</div>
+            <div className="w-20 h-20 rounded-3xl bg-brand-primary/10 text-brand-primary flex items-center justify-center">
+              <RefreshCw size={40} />
+            </div>
             <div>
               <p className="font-semibold text-[var(--text-primary)] text-base">Belum ada transaksi berulang</p>
               <p className="text-sm text-[var(--text-secondary)] mt-1">Set sekali, konfirmasi setiap periode</p>
@@ -275,10 +274,10 @@ export default function RecurringPageClient({
                 <div key={item.id} className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border)] p-4">
                   <div className="flex items-start gap-3">
                     <div
-                      className="w-11 h-11 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
-                      style={{ backgroundColor: (cat?.color ?? "#94A3B8") + "20" }}
+                      className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
+                      style={{ backgroundColor: (cat?.color ?? "#94A3B8") + "20", color: cat?.color ?? "#94A3B8" }}
                     >
-                      {cat?.icon ?? "💰"}
+                      <CategoryIcon slug={cat?.icon} size={20} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2">
@@ -295,7 +294,7 @@ export default function RecurringPageClient({
 
                       <div className="flex items-center gap-2 mt-2 flex-wrap">
                         <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-[var(--bg-elevated)] text-[var(--text-secondary)]">
-                          {FREQ_ICON[item.frequency]} {FREQ_LABEL[item.frequency]}
+                          <RefreshCw size={10} /> {FREQ_LABEL[item.frequency]}
                         </span>
                         <span className="text-[10px] text-[var(--text-secondary)]">
                           Berikutnya: <span className="font-medium text-[var(--text-primary)]">{next}</span>
@@ -345,10 +344,10 @@ export default function RecurringPageClient({
                 <div key={item.id} className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border)] p-4 opacity-60">
                   <div className="flex items-center gap-3">
                     <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0 grayscale"
-                      style={{ backgroundColor: (cat?.color ?? "#94A3B8") + "20" }}
+                      className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 grayscale"
+                      style={{ backgroundColor: (cat?.color ?? "#94A3B8") + "20", color: cat?.color ?? "#94A3B8" }}
                     >
-                      {cat?.icon ?? "💰"}
+                      <CategoryIcon slug={cat?.icon} size={18} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-[var(--text-primary)] truncate">{item.description}</p>

@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import KategoriModal from "@/components/pengaturan/KategoriModal";
 import { Toast, useToast } from "@/components/ui/Toast";
+import { CategoryIcon, Tag } from "@/lib/icons";
 
 interface Category {
   id: string;
@@ -121,7 +122,7 @@ export default function KategoriPageClient({ categories: initialCategories, hous
 
         {customs.length === 0 ? (
           <div className="py-12 text-center">
-            <div className="w-12 h-12 rounded-2xl bg-[var(--bg-elevated)] flex items-center justify-center text-2xl mx-auto mb-3">🏷️</div>
+            <div className="w-12 h-12 rounded-2xl bg-brand-primary/10 text-brand-primary flex items-center justify-center mx-auto mb-3"><Tag size={24} /></div>
             <p className="text-sm text-[var(--text-secondary)]">Belum ada kategori custom</p>
             {canManage && (
               <button
@@ -141,10 +142,10 @@ export default function KategoriPageClient({ categories: initialCategories, hous
                 onClick={() => canManage && setModal({ mode: "edit", cat: c })}
               >
                 <div
-                  className="w-9 h-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
-                  style={{ backgroundColor: (c.color ?? "#94A3B8") + "20" }}
+                  className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                  style={{ backgroundColor: (c.color ?? "#94A3B8") + "20", color: c.color ?? "#94A3B8" }}
                 >
-                  {c.icon ?? "💰"}
+                  <CategoryIcon slug={c.icon} size={18} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-[var(--text-primary)]">{c.name}</p>
@@ -181,10 +182,10 @@ export default function KategoriPageClient({ categories: initialCategories, hous
             defaults.map(c => (
               <div key={c.id} className="flex items-center gap-3 px-4 py-3.5">
                 <div
-                  className="w-9 h-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
-                  style={{ backgroundColor: (c.color ?? "#94A3B8") + "20" }}
+                  className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                  style={{ backgroundColor: (c.color ?? "#94A3B8") + "20", color: c.color ?? "#94A3B8" }}
                 >
-                  {c.icon ?? "💰"}
+                  <CategoryIcon slug={c.icon} size={18} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-[var(--text-primary)]">{c.name}</p>

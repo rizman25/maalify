@@ -4,16 +4,27 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
+import { Wallet, ArrowRightLeft, Users, BarChart2, Target, RefreshCw, Image } from "@/lib/icons";
+import type { LucideProps } from "lucide-react";
 
-const ITEMS = [
-  { key: "hasWallet",           icon: "🏦", label: "Tambah dompet pertama",        href: "/dompet",     cta: "Tambah",   core: true  },
-  { key: "hasTransaction",      icon: "💸", label: "Catat transaksi pertama",       href: "/transaksi",  cta: "Catat",    core: true  },
-  { key: "hasMultipleMembers",  icon: "👨‍👩‍👧", label: "Undang anggota keluarga",       href: "/pengaturan", cta: "Undang",   core: false },
-  { key: "hasBudget",           icon: "📊", label: "Atur anggaran bulanan",         href: "/anggaran",   cta: "Atur",     core: false },
-  { key: "hasGoal",             icon: "🎯", label: "Buat target tabungan",          href: "/tabungan",   cta: "Buat",     core: false },
-  { key: "hasRecurring",        icon: "🔄", label: "Tambah transaksi berulang",     href: "/berulang",   cta: "Tambah",   core: false },
-  { key: "hasAvatar",           icon: "🖼️", label: "Tambah foto profil",           href: "/pengaturan", cta: "Edit",     core: false },
-] as const;
+type ItemIcon = React.ComponentType<LucideProps>;
+
+const ITEMS: {
+  key: string;
+  Icon: ItemIcon;
+  label: string;
+  href: string;
+  cta: string;
+  core: boolean;
+}[] = [
+  { key: "hasWallet",           Icon: Wallet,         label: "Tambah dompet pertama",        href: "/dompet",     cta: "Tambah",   core: true  },
+  { key: "hasTransaction",      Icon: ArrowRightLeft, label: "Catat transaksi pertama",       href: "/transaksi",  cta: "Catat",    core: true  },
+  { key: "hasMultipleMembers",  Icon: Users,          label: "Undang anggota keluarga",       href: "/pengaturan", cta: "Undang",   core: false },
+  { key: "hasBudget",           Icon: BarChart2,      label: "Atur anggaran bulanan",         href: "/anggaran",   cta: "Atur",     core: false },
+  { key: "hasGoal",             Icon: Target,         label: "Buat target tabungan",          href: "/tabungan",   cta: "Buat",     core: false },
+  { key: "hasRecurring",        Icon: RefreshCw,      label: "Tambah transaksi berulang",     href: "/berulang",   cta: "Tambah",   core: false },
+  { key: "hasAvatar",           Icon: Image,          label: "Tambah foto profil",            href: "/pengaturan", cta: "Edit",     core: false },
+];
 
 type StatusMap = Record<string, boolean>;
 
@@ -118,7 +129,7 @@ export default function SetupChecklistWidget() {
             <div className="flex items-center justify-between mb-2">
               <div>
                 <p className="text-sm font-bold text-white">
-                  {allDone ? "🎉 Setup selesai!" : "🚀 Setup Family-mu"}
+                  {allDone ? "Setup selesai!" : "Setup Family-mu"}
                 </p>
                 <p className="text-[11px] text-blue-200">
                   {allDone
@@ -186,7 +197,9 @@ export default function SetupChecklistWidget() {
                       </div>
 
                       {/* Icon */}
-                      <span className="text-lg flex-shrink-0 leading-none">{item.icon}</span>
+                      <div className="flex-shrink-0 text-[var(--text-secondary)]">
+                        <item.Icon size={16} />
+                      </div>
 
                       {/* Label */}
                       <div className="flex-1 min-w-0">
@@ -238,7 +251,7 @@ export default function SetupChecklistWidget() {
                 className="text-xs font-medium w-full text-center transition-colors"
                 style={{ color: "#27AE60" }}
               >
-                🎉 Tutup checklist ini
+                Tutup checklist ini
               </button>
             ) : (
               <>
@@ -274,7 +287,7 @@ export default function SetupChecklistWidget() {
           transition: "right 0.2s ease, background-color 0.3s ease, transform 0.1s ease",
         }}
       >
-        <span className="text-base leading-none">{allDone ? "🎉" : "🚀"}</span>
+        <Target size={14} />
         <span className="text-xs font-semibold whitespace-nowrap">
           {allDone ? "Setup Selesai!" : "Get Started!"}
         </span>

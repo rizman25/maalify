@@ -4,6 +4,9 @@ import { useState } from "react";
 import { formatRupiah } from "@/lib/utils";
 import type { Wallet } from "@/types";
 import { saveTransfer } from "@/app/actions/wallets";
+const TYPE_LABEL: Record<string, string> = {
+  cash: "Tunai", bank: "Bank", savings: "Tabungan", ewallet: "E-Wallet",
+};
 
 interface Props {
   wallets: Wallet[];
@@ -22,9 +25,6 @@ function parseAmount(val: string) {
   return parseFloat(val.replace(/\./g, "").replace(",", ".")) || 0;
 }
 
-const TYPE_ICON: Record<string, string> = {
-  cash: "💵", bank: "🏦", savings: "🏧", ewallet: "📱",
-};
 
 export default function TransferModal({ wallets, householdId, userId, onClose, onSaved }: Props) {
   const today = new Date().toISOString().split("T")[0];
@@ -107,7 +107,7 @@ export default function TransferModal({ wallets, householdId, userId, onClose, o
                 className="w-full px-3 py-2.5 rounded-xl border border-[var(--border)] text-sm text-[var(--text-primary)] bg-[var(--bg-surface)] focus:outline-none focus:ring-2 focus:ring-brand-primary"
               >
                 {wallets.map(w => (
-                  <option key={w.id} value={w.id}>{TYPE_ICON[w.type] ?? "💳"} {w.name}</option>
+                  <option key={w.id} value={w.id}>[{TYPE_LABEL[w.type] ?? w.type}] {w.name}</option>
                 ))}
               </select>
               {fromWallet && (
@@ -133,7 +133,7 @@ export default function TransferModal({ wallets, householdId, userId, onClose, o
                 className="w-full px-3 py-2.5 rounded-xl border border-[var(--border)] text-sm text-[var(--text-primary)] bg-[var(--bg-surface)] focus:outline-none focus:ring-2 focus:ring-brand-primary"
               >
                 {toWallets.map(w => (
-                  <option key={w.id} value={w.id}>{TYPE_ICON[w.type] ?? "💳"} {w.name}</option>
+                  <option key={w.id} value={w.id}>[{TYPE_LABEL[w.type] ?? w.type}] {w.name}</option>
                 ))}
               </select>
               {(() => {

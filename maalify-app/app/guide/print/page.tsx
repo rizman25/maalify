@@ -410,8 +410,8 @@ export default function PanduanPrintPage() {
       {/* ── Toolbar (screen only) ── */}
       <div className="toolbar">
         <div className="toolbar-left">
-          <span className="toolbar-logo">📄 Maalify — Panduan PDF</span>
-          <span className="toolbar-hint">Tekan Ctrl+P (Windows) atau ⌘+P (Mac) → Simpan sebagai PDF</span>
+          <span className="toolbar-logo">Maalify — Panduan PDF</span>
+          <span className="toolbar-hint">Tekan Ctrl+P (Windows) atau Cmd+P (Mac) → Simpan sebagai PDF</span>
         </div>
         <div style={{ display: "flex", gap: "8px" }}>
           <Link href="/guide" className="toolbar-btn-ghost">
@@ -446,9 +446,9 @@ export default function PanduanPrintPage() {
 
               {/* Meta */}
               <div className="cover-meta">
-                <span>📅 Terakhir diperbarui: Mei 2026</span>
-                <span>🌐 maalify.app/panduan</span>
-                <span>📧 Platform keuangan keluarga berbasis AI</span>
+                <span>Terakhir diperbarui: Mei 2026</span>
+                <span>maalify.app/panduan</span>
+                <span>Platform keuangan keluarga berbasis AI</span>
               </div>
             </div>
 
@@ -623,7 +623,7 @@ export default function PanduanPrintPage() {
           </div>
 
           <div className="infobox infobox-info">
-            <span className="infobox-icon">ℹ️</span>
+            <span className="infobox-icon" style={{ fontSize: "0" }}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></span>
             <p>Maalify bisa diinstall di smartphone layaknya aplikasi native melalui fitur PWA (Progressive Web App). Buka di browser HP → menu "Tambahkan ke Layar Utama".</p>
           </div>
         </div>
@@ -648,19 +648,19 @@ export default function PanduanPrintPage() {
 
           <div className="role-cards">
             <div className="role-card role-card-sa">
-              <div className="role-card-icon">👑</div>
+              <div className="role-card-icon" style={{ fontSize: "0" }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#92400E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>
               <span className="role-card-badge badge-sa">Super Admin</span>
               <div className="role-when" style={{ color: "#92400E" }}>Otomatis saat membuat family</div>
               <p>Akses penuh ke seluruh fitur termasuk laporan, hutang, manajemen anggota, dan ringkasan pengeluaran seluruh keluarga.</p>
             </div>
             <div className="role-card role-card-admin">
-              <div className="role-card-icon">🛡️</div>
+              <div className="role-card-icon" style={{ fontSize: "0" }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E40AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
               <span className="role-card-badge badge-admin">Admin</span>
               <div className="role-when" style={{ color: "#1E40AF" }}>Dipromosikan oleh Super Admin</div>
               <p>Mengelola transaksi, anggaran, hutang, dan laporan. Tidak bisa mengubah keanggotaan atau pengaturan family.</p>
             </div>
             <div className="role-card role-card-member">
-              <div className="role-card-icon">👤</div>
+              <div className="role-card-icon" style={{ fontSize: "0" }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#475569" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
               <span className="role-card-badge badge-member">Member</span>
               <div className="role-when" style={{ color: "#475569" }}>Default saat bergabung via undangan</div>
               <p>Mencatat transaksi sendiri, melihat ringkasan keluarga. Tidak akses hutang atau laporan penuh. Cocok untuk anak.</p>
@@ -670,21 +670,21 @@ export default function PanduanPrintPage() {
           <div className="subsection">
             <div className="subsection-title"><span className="subsection-bar" /> Kapan Role Ditetapkan?</div>
             <div className="role-assign role-assign-sa">
-              <span className="role-assign-icon">👑</span>
+              <span className="role-assign-icon" style={{ fontSize: "0" }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#92400E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></span>
               <div>
                 <div className="role-assign-title">Super Admin — Otomatis saat mendaftar &amp; membuat family</div>
                 <p>Diberikan kepada orang yang pertama kali membuat family saat registrasi. Satu family hanya punya satu Super Admin — biasanya kepala keluarga atau orang yang pertama mengajak anggota lain. Role ini tidak bisa dipindahkan.</p>
               </div>
             </div>
             <div className="role-assign role-assign-admin">
-              <span className="role-assign-icon">🛡️</span>
+              <span className="role-assign-icon" style={{ fontSize: "0" }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1E40AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
               <div>
                 <div className="role-assign-title">Admin — Dipromosikan oleh Super Admin</div>
                 <p>Semua anggota baru bergabung sebagai Member. Super Admin bisa mempromosikan Member menjadi Admin melalui Pengaturan → tab Household → ubah role. Cocok untuk pasangan atau anggota dewasa yang ikut aktif mengelola keuangan.</p>
               </div>
             </div>
             <div className="role-assign role-assign-member">
-              <span className="role-assign-icon">👤</span>
+              <span className="role-assign-icon" style={{ fontSize: "0" }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
               <div>
                 <div className="role-assign-title">Member — Default saat bergabung via kode undangan</div>
                 <p>Setiap orang yang bergabung lewat kode undangan atau link WhatsApp otomatis masuk sebagai Member. Cocok untuk anak remaja yang hanya perlu mencatat pengeluaran pribadi tanpa akses ke data keuangan keluarga secara penuh.</p>
@@ -695,21 +695,21 @@ export default function PanduanPrintPage() {
           <div className="subsection">
             <div className="subsection-title"><span className="subsection-bar" /> Privasi Transaksi</div>
             <div className="privacy-box">
-              <div className="privacy-box-title">🔒 Sistem Visibilitas Transaksi</div>
+              <div className="privacy-box-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display:"inline",verticalAlign:"middle",marginRight:4 }}><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Sistem Visibilitas Transaksi</div>
               <p>Setiap transaksi memiliki pengaturan visibilitas yang bisa dipilih saat mencatat:</p>
             </div>
             <div className="visibility-grid">
               <div className="visibility-card">
-                <div className="visibility-card-title">🔒 Pribadi (Default)</div>
+                <div className="visibility-card-title">Pribadi (Default)</div>
                 <p>Hanya terlihat oleh orang yang mencatat transaksi. Anggota lain tidak tahu transaksi ini ada. Super Admin hanya melihat total pengeluaran, bukan detail transaksinya.</p>
               </div>
               <div className="visibility-card">
-                <div className="visibility-card-title">🏠 Bersama</div>
+                <div className="visibility-card-title">Bersama</div>
                 <p>Terlihat oleh semua anggota family. Gunakan untuk pengeluaran keluarga bersama seperti belanja bulanan, tagihan rumah, atau pengeluaran yang perlu diketahui semua anggota.</p>
               </div>
             </div>
             <div className="infobox infobox-tip" style={{ marginTop: 8 }}>
-              <span className="infobox-icon">💡</span>
+              <span className="infobox-icon" style={{ fontSize: "0" }}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="22" x2="14" y2="22"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg></span>
               <p>Default "Pribadi" membuat anggota seperti anak remaja merasa aman menggunakan Maalify — pengeluaran jajan atau keperluan pribadi tidak akan terlihat oleh orang tua, kecuali mereka memilih berbagi.</p>
             </div>
           </div>
@@ -756,52 +756,52 @@ export default function PanduanPrintPage() {
               </thead>
               <tbody>
                 <tr className="group-row"><td colSpan={4}>Dashboard</td></tr>
-                <tr><td>Lihat ringkasan keuangan keluarga</td><td className="center check">✓</td><td className="center check">✓</td><td className="center partial">Data sendiri</td></tr>
-                <tr><td>Lihat hutang jatuh tempo</td><td className="center check">✓</td><td className="center check">✓</td><td className="center dash">—</td></tr>
-                <tr><td>Lihat pengeluaran per anggota (summary)</td><td className="center check">✓</td><td className="center dash">—</td><td className="center dash">—</td></tr>
+                <tr><td>Lihat ringkasan keuangan keluarga</td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center partial">Data sendiri</td></tr>
+                <tr><td>Lihat hutang jatuh tempo</td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center dash">—</td></tr>
+                <tr><td>Lihat pengeluaran per anggota (summary)</td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center dash">—</td><td className="center dash">—</td></tr>
 
                 <tr className="group-row"><td colSpan={4}>Transaksi</td></tr>
-                <tr><td>Lihat semua transaksi</td><td className="center check">✓</td><td className="center check">✓</td><td className="center partial">Transaksi sendiri</td></tr>
-                <tr><td>Tambah transaksi</td><td className="center check">✓</td><td className="center check">✓</td><td className="center check">✓</td></tr>
-                <tr><td>Atur visibilitas (Pribadi / Bersama)</td><td className="center check">✓</td><td className="center check">✓</td><td className="center check">✓</td></tr>
-                <tr><td>Edit / hapus transaksi sendiri</td><td className="center check">✓</td><td className="center check">✓</td><td className="center check">✓</td></tr>
-                <tr><td>Edit / hapus transaksi orang lain</td><td className="center check">✓</td><td className="center check">✓</td><td className="center dash">—</td></tr>
+                <tr><td>Lihat semua transaksi</td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center partial">Transaksi sendiri</td></tr>
+                <tr><td>Tambah transaksi</td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td></tr>
+                <tr><td>Atur visibilitas (Pribadi / Bersama)</td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td></tr>
+                <tr><td>Edit / hapus transaksi sendiri</td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td></tr>
+                <tr><td>Edit / hapus transaksi orang lain</td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center dash">—</td></tr>
 
                 <tr className="group-row"><td colSpan={4}>Dompet</td></tr>
-                <tr><td>Lihat semua dompet</td><td className="center check">✓</td><td className="center check">✓</td><td className="center check">✓</td></tr>
-                <tr><td>Tambah / edit / hapus dompet</td><td className="center check">✓</td><td className="center check">✓</td><td className="center dash">—</td></tr>
-                <tr><td>Transfer antar dompet</td><td className="center check">✓</td><td className="center check">✓</td><td className="center dash">—</td></tr>
+                <tr><td>Lihat semua dompet</td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td></tr>
+                <tr><td>Tambah / edit / hapus dompet</td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center dash">—</td></tr>
+                <tr><td>Transfer antar dompet</td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center dash">—</td></tr>
 
                 <tr className="group-row"><td colSpan={4}>Anggaran</td></tr>
-                <tr><td>Lihat anggaran</td><td className="center check">✓</td><td className="center check">✓</td><td className="center check">✓</td></tr>
-                <tr><td>Buat / edit / hapus anggaran</td><td className="center check">✓</td><td className="center check">✓</td><td className="center dash">—</td></tr>
+                <tr><td>Lihat anggaran</td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td></tr>
+                <tr><td>Buat / edit / hapus anggaran</td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center dash">—</td></tr>
 
                 <tr className="group-row"><td colSpan={4}>Tabungan</td></tr>
-                <tr><td>Lihat target tabungan</td><td className="center check">✓</td><td className="center check">✓</td><td className="center check">✓</td></tr>
-                <tr><td>Buat / edit / hapus target</td><td className="center check">✓</td><td className="center check">✓</td><td className="center dash">—</td></tr>
-                <tr><td>Top-up / tarik tabungan</td><td className="center check">✓</td><td className="center check">✓</td><td className="center dash">—</td></tr>
+                <tr><td>Lihat target tabungan</td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td></tr>
+                <tr><td>Buat / edit / hapus target</td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center dash">—</td></tr>
+                <tr><td>Top-up / tarik tabungan</td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center dash">—</td></tr>
 
                 <tr className="group-row"><td colSpan={4}>Hutang &amp; Piutang</td></tr>
-                <tr><td>Lihat data hutang</td><td className="center check">✓</td><td className="center check">✓</td><td className="center dash">—</td></tr>
-                <tr><td>Tambah / edit / hapus hutang</td><td className="center check">✓</td><td className="center check">✓</td><td className="center dash">—</td></tr>
-                <tr><td>Tandai lunas / catat cicilan</td><td className="center check">✓</td><td className="center check">✓</td><td className="center dash">—</td></tr>
+                <tr><td>Lihat data hutang</td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center dash">—</td></tr>
+                <tr><td>Tambah / edit / hapus hutang</td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center dash">—</td></tr>
+                <tr><td>Tandai lunas / catat cicilan</td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center dash">—</td></tr>
 
                 <tr className="group-row"><td colSpan={4}>Laporan</td></tr>
-                <tr><td>Akses halaman laporan</td><td className="center check">✓</td><td className="center check">✓</td><td className="center dash">—</td></tr>
-                <tr><td>Export PDF / Excel</td><td className="center check">✓</td><td className="center check">✓</td><td className="center dash">—</td></tr>
+                <tr><td>Akses halaman laporan</td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center dash">—</td></tr>
+                <tr><td>Export PDF / Excel</td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center dash">—</td></tr>
 
                 <tr className="group-row"><td colSpan={4}>Pengaturan</td></tr>
-                <tr><td>Edit profil sendiri</td><td className="center check">✓</td><td className="center check">✓</td><td className="center check">✓</td></tr>
-                <tr><td>Undang anggota baru</td><td className="center check">✓</td><td className="center dash">—</td><td className="center dash">—</td></tr>
-                <tr><td>Ubah role anggota</td><td className="center check">✓</td><td className="center dash">—</td><td className="center dash">—</td></tr>
-                <tr><td>Keluarkan anggota dari family</td><td className="center check">✓</td><td className="center dash">—</td><td className="center dash">—</td></tr>
-                <tr><td>Edit nama family</td><td className="center check">✓</td><td className="center dash">—</td><td className="center dash">—</td></tr>
+                <tr><td>Edit profil sendiri</td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td></tr>
+                <tr><td>Undang anggota baru</td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center dash">—</td><td className="center dash">—</td></tr>
+                <tr><td>Ubah role anggota</td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center dash">—</td><td className="center dash">—</td></tr>
+                <tr><td>Keluarkan anggota dari family</td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center dash">—</td><td className="center dash">—</td></tr>
+                <tr><td>Edit nama family</td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center dash">—</td><td className="center dash">—</td></tr>
               </tbody>
             </table>
           </div>
 
           <div className="infobox infobox-warning">
-            <span className="infobox-icon">⚠️</span>
+            <span className="infobox-icon" style={{ fontSize: "0" }}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
             <p>Hanya ada satu <strong>Super Admin</strong> per family. Role ini otomatis diberikan ke pembuat family dan tidak bisa dipindahkan. Untuk mengangkat asisten pengelola, gunakan role <strong>Admin</strong>.</p>
           </div>
         </div>
@@ -869,7 +869,7 @@ export default function PanduanPrintPage() {
                 "Pilih kategori yang sesuai dari daftar",
                 "Pilih dompet sumber/tujuan dana",
                 "Isi deskripsi singkat (contoh: \"Gaji Juli\", \"Makan siang\")",
-                "Atur visibilitas: 🔒 Pribadi atau 🏠 Bersama (default: Pribadi)",
+                "Atur visibilitas: Pribadi atau Bersama (default: Pribadi)",
                 "Atur tanggal transaksi (default hari ini)",
                 "Klik Simpan — saldo dompet diperbarui otomatis",
               ].map((s, i) => (
@@ -896,8 +896,8 @@ export default function PanduanPrintPage() {
             <div className="subsection-title"><span className="subsection-bar" /> Edit & Hapus Transaksi</div>
             <ul className="bullet-list">
               {[
-                "Klik ikon pensil (✏️) untuk membuka form edit",
-                "Klik ikon tempat sampah (🗑️) untuk menghapus — muncul konfirmasi",
+                "Klik ikon pensil untuk membuka form edit",
+                "Klik ikon tempat sampah untuk menghapus — muncul konfirmasi",
                 "Member hanya bisa edit/hapus transaksi milik sendiri",
                 "Admin dan Super Admin bisa edit/hapus transaksi siapapun",
               ].map((item) => (
@@ -907,7 +907,7 @@ export default function PanduanPrintPage() {
           </div>
 
           <div className="infobox infobox-tip">
-            <span className="infobox-icon">💡</span>
+            <span className="infobox-icon" style={{ fontSize: "0" }}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="22" x2="14" y2="22"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg></span>
             <p>Gunakan deskripsi yang konsisten agar mudah dicari. Contoh: selalu awali pengeluaran makan dengan kata "Makan" sehingga filter teks bekerja lebih efektif.</p>
           </div>
         </div>
@@ -952,7 +952,7 @@ export default function PanduanPrintPage() {
                 "Sistem memeriksa transaksi berulang yang jatuh tempo setiap kali seseorang membuka dashboard",
                 "Transaksi dibuat otomatis di latar belakang tanpa interaksi manual",
                 "Transaksi yang sudah dibuat muncul di halaman Transaksi seperti transaksi biasa",
-                "Klik ikon pause (⏸) untuk menonaktifkan sementara tanpa menghapus",
+                "Klik ikon pause untuk menonaktifkan sementara tanpa menghapus",
                 "Klik hapus untuk menghentikan permanen — transaksi yang sudah dibuat tidak ikut terhapus",
               ].map((item) => (
                 <li key={item} className="bullet-item"><span className="bullet-dot" /><span className="bullet-text">{item}</span></li>
@@ -961,7 +961,7 @@ export default function PanduanPrintPage() {
           </div>
 
           <div className="infobox infobox-tip">
-            <span className="infobox-icon">💡</span>
+            <span className="infobox-icon" style={{ fontSize: "0" }}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="22" x2="14" y2="22"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg></span>
             <p>Ideal untuk: gaji bulanan, tagihan listrik/air/internet, cicilan KPR atau kendaraan, iuran sekolah, langganan streaming.</p>
           </div>
 
@@ -1020,7 +1020,7 @@ export default function PanduanPrintPage() {
           </div>
 
           <div className="infobox infobox-warning">
-            <span className="infobox-icon">⚠️</span>
+            <span className="infobox-icon" style={{ fontSize: "0" }}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
             <p>Saldo dompet diperbarui otomatis saat transaksi ditambah, diedit, atau dihapus. Jangan edit saldo secara manual kecuali untuk koreksi saldo awal pertama kali.</p>
           </div>
         </div>
@@ -1049,7 +1049,7 @@ export default function PanduanPrintPage() {
               ))}
             </ol>
             <div className="infobox infobox-tip" style={{ marginTop: 8 }}>
-              <span className="infobox-icon">💡</span>
+              <span className="infobox-icon" style={{ fontSize: "0" }}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="22" x2="14" y2="22"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg></span>
               <p>Gunakan tombol "Salin dari bulan lalu" untuk menyalin anggaran bulan sebelumnya — praktis jika anggaran tidak banyak berubah.</p>
             </div>
           </div>
@@ -1069,7 +1069,7 @@ export default function PanduanPrintPage() {
               ))}
             </ol>
             <div className="infobox infobox-tip" style={{ marginTop: 8 }}>
-              <span className="infobox-icon">💡</span>
+              <span className="infobox-icon" style={{ fontSize: "0" }}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="22" x2="14" y2="22"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg></span>
               <p>Buat goal "Dana Darurat" sebesar 3–6 bulan pengeluaran rutin sebagai prioritas pertama sebelum menabung untuk tujuan lain.</p>
             </div>
           </div>
@@ -1080,7 +1080,7 @@ export default function PanduanPrintPage() {
           </div>
 
           <div className="infobox infobox-warning" style={{ marginBottom: 10 }}>
-            <span className="infobox-icon">⚠️</span>
+            <span className="infobox-icon" style={{ fontSize: "0" }}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
             <p>Fitur ini hanya dapat diakses oleh <strong>Super Admin</strong> dan <strong>Admin</strong>.</p>
           </div>
 
@@ -1220,7 +1220,7 @@ export default function PanduanPrintPage() {
 
           <div className="tips-grid">
             <div className="tips-card">
-              <div className="tips-card-title">⚡ Harian (5 Menit)</div>
+              <div className="tips-card-title">Harian (5 Menit)</div>
               <ul className="bullet-list">
                 {["Catat transaksi di hari yang sama", "Simpan struk sebagai referensi", "Gunakan Tambah Cepat di dashboard"].map(item => (
                   <li key={item} className="bullet-item"><span className="bullet-dot" /><span className="bullet-text" style={{ fontSize: "8.5pt" }}>{item}</span></li>
@@ -1228,7 +1228,7 @@ export default function PanduanPrintPage() {
               </ul>
             </div>
             <div className="tips-card">
-              <div className="tips-card-title">📅 Mingguan (15 Menit)</div>
+              <div className="tips-card-title">Mingguan (15 Menit)</div>
               <ul className="bullet-list">
                 {["Review progress anggaran", "Rekonsiliasi saldo dompet", "Update progress tabungan"].map(item => (
                   <li key={item} className="bullet-item"><span className="bullet-dot" /><span className="bullet-text" style={{ fontSize: "8.5pt" }}>{item}</span></li>
@@ -1236,7 +1236,7 @@ export default function PanduanPrintPage() {
               </ul>
             </div>
             <div className="tips-card">
-              <div className="tips-card-title">📊 Bulanan (30 Menit)</div>
+              <div className="tips-card-title">Bulanan (30 Menit)</div>
               <ul className="bullet-list">
                 {["Review laporan bulan berjalan", "Buat anggaran bulan depan", "Evaluasi savings goal", "Periksa hutang jatuh tempo"].map(item => (
                   <li key={item} className="bullet-item"><span className="bullet-dot" /><span className="bullet-text" style={{ fontSize: "8.5pt" }}>{item}</span></li>
@@ -1272,7 +1272,7 @@ export default function PanduanPrintPage() {
                   ["Salin anggaran bulan lalu", "Halaman Anggaran → \"Salin dari bulan lalu\""],
                   ["Lihat detail goal tabungan", "Klik nama/ikon goal di halaman Tabungan"],
                   ["Filter transaksi per kategori", "Dropdown kategori di atas tabel transaksi"],
-                  ["Cari transaksi global", "Tekan Ctrl+K (Windows) / ⌘+K (Mac) dari mana saja"],
+                  ["Cari transaksi global", "Tekan Ctrl+K (Windows) / Cmd+K (Mac) dari mana saja"],
                 ].map(([a, c]) => (
                   <tr key={a}><td>{a}</td><td>{c}</td></tr>
                 ))}
@@ -1283,7 +1283,7 @@ export default function PanduanPrintPage() {
           {/* Penutup */}
           <div style={{ marginTop: 24, padding: "16px 20px", background: "#F0FDF4", borderRadius: 10, border: "1px solid #BBF7D0" }}>
             <div style={{ fontWeight: 700, color: "#166534", fontSize: "10.5pt", marginBottom: 6 }}>
-              🎉 Selamat Menggunakan Maalify!
+              Selamat Menggunakan Maalify!
             </div>
             <p style={{ color: "#166534", fontSize: "9.5pt", margin: 0, lineHeight: 1.6 }}>
               Panduan ini mencakup semua fitur yang tersedia di Maalify saat ini. Untuk pertanyaan yang belum tercakup atau masalah teknis, kunjungi <strong>maalify.app/panduan</strong> untuk versi online yang selalu diperbarui, atau hubungi tim dukungan melalui halaman kontak.

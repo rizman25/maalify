@@ -9,6 +9,8 @@ import {
 } from "recharts";
 import ExportModal from "@/components/laporan/ExportModal";
 import type { Range, PeriodRow } from "./page";
+import { CategoryIcon } from "@/lib/icons";
+import { Users, User, Star, BarChart2, AlertCircle } from "@/lib/icons";
 
 interface CatItem {
   name: string;
@@ -354,7 +356,10 @@ export default function LaporanPageClient({
         {/* Summary cards — Bersama */}
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-[var(--text-secondary)]">👨‍👩‍👧‍👦 Bersama</span>
+            <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--text-secondary)]">
+              <Users size={14} />
+              Bersama
+            </span>
             <div className="flex-1 h-px bg-[var(--border)]" />
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -373,7 +378,10 @@ export default function LaporanPageClient({
         {/* Summary cards — Pribadi */}
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-[var(--text-secondary)]">🙋 Pribadi</span>
+            <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--text-secondary)]">
+              <User size={14} />
+              Pribadi
+            </span>
             <div className="flex-1 h-px bg-[var(--border)]" />
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -394,19 +402,19 @@ export default function LaporanPageClient({
           <div className="flex flex-wrap gap-2">
             {bestPeriod && bestPeriod.net > 0 && (
               <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-50 border border-green-200 text-xs text-green-700">
-                <span>🏆</span>
+                <Star size={11} />
                 <span>Terbaik: <strong>{bestPeriod.label}</strong> (+Rp {formatRupiah(bestPeriod.net)})</span>
               </div>
             )}
             {avgExpense > 0 && (
               <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--bg-surface)] border border-[var(--border)] text-xs text-[var(--text-secondary)]">
-                <span>📊</span>
+                <BarChart2 size={11} />
                 <span>Rata-rata pengeluaran: <strong>Rp {formatRupiah(Math.round(avgExpense))}/{isDaily ? "hari" : "bln"}</strong></span>
               </div>
             )}
             {worstPeriod && worstPeriod.net < 0 && (
               <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-50 border border-red-200 text-xs text-red-600">
-                <span>⚠️</span>
+                <AlertCircle size={11} />
                 <span>Defisit terbesar: <strong>{worstPeriod.label}</strong> (-Rp {formatRupiah(Math.abs(worstPeriod.net))})</span>
               </div>
             )}
@@ -492,7 +500,7 @@ export default function LaporanPageClient({
                     <div key={c.name}>
                       <div className="flex items-center justify-between mb-1.5">
                         <div className="flex items-center gap-2 min-w-0">
-                          <span className="text-base flex-shrink-0">{c.icon}</span>
+                          <span className="flex-shrink-0" style={{ color: c.color }}><CategoryIcon slug={c.icon} size={16} /></span>
                           <span className="text-sm text-[var(--text-primary)] truncate">{c.name}</span>
                         </div>
                         <div className="flex items-center gap-2 flex-shrink-0 ml-2">
@@ -523,7 +531,7 @@ export default function LaporanPageClient({
                     <div key={c.name}>
                       <div className="flex items-center justify-between mb-1.5">
                         <div className="flex items-center gap-2 min-w-0">
-                          <span className="text-base flex-shrink-0">{c.icon}</span>
+                          <span className="flex-shrink-0" style={{ color: c.color }}><CategoryIcon slug={c.icon} size={16} /></span>
                           <span className="text-sm text-[var(--text-primary)] truncate">{c.name}</span>
                         </div>
                         <div className="flex items-center gap-2 flex-shrink-0 ml-2">
