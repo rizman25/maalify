@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { translateAuthError } from "@/lib/auth-errors";
+import { Toast, useToast } from "@/components/ui/Toast";
 
 const inputCls = "w-full px-3.5 py-2.5 rounded-lg border-[1.5px] border-[#E2E8F0] bg-white text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#1E3A5F] focus:ring-offset-1 focus:border-transparent";
 const labelCls = "block text-xs font-medium text-[#1E293B] mb-1.5";
@@ -19,6 +20,7 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const { toast, showToast, dismissToast } = useToast();
 
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault();
@@ -56,7 +58,18 @@ export default function RegisterPage() {
     });
 
     if (signUpError) {
-      setError(translateAuthError(signUpError.message));
+      const friendlyMsg = translateAuthError(signUpError.message);
+      const rawMsg = signUpError.message.toLowerCase();
+      const isDuplicateEmail =
+        rawMsg.includes("user already registered") ||
+        rawMsg.includes("already been registered") ||
+        rawMsg.includes("email already in use");
+
+      if (isDuplicateEmail) {
+        showToast(friendlyMsg, "error");
+      } else {
+        setError(friendlyMsg);
+      }
       setLoading(false);
       return;
     }
@@ -98,6 +111,7 @@ export default function RegisterPage() {
   }
 
   return (
+    <>
     <div className="bg-white rounded-2xl border border-[#E2E8F0] p-8 shadow-sm">
       <h2 className="text-xl font-semibold text-[#0F172A] mb-1">Buat akun baru</h2>
       <p className="text-xs text-[#64748B] mb-5">Daftar dulu, atur family setelah verifikasi email.</p>
@@ -205,5 +219,8 @@ export default function RegisterPage() {
         </Link>
       </p>
     </div>
+
+    {toast && <Toast message={toast.message} type={toast.type} onDismiss={dismissToast} />}
+    </>
   );
 }
