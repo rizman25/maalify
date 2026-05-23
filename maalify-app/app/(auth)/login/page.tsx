@@ -22,18 +22,7 @@ export default function LoginPage() {
     const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
 
     if (authError) {
-      try {
-        const { data: exists } = await supabase.rpc("check_email_registered", {
-          p_email: email,
-        });
-        if (exists === false) {
-          setError("Email belum terdaftar. Silakan daftar terlebih dahulu.");
-        } else {
-          setError("Password salah. Coba lagi atau klik Lupa Password.");
-        }
-      } catch {
-        setError("Email atau password salah.");
-      }
+      setError("Email atau password yang kamu masukkan tidak cocok. Periksa kembali, atau reset password jika lupa.");
       setLoading(false);
       return;
     }
@@ -122,7 +111,17 @@ export default function LoginPage() {
         </div>
 
         {error && (
-          <p className="text-xs text-red-500 bg-red-50 px-3 py-2 rounded-lg">{error}</p>
+          <div className="flex items-start gap-2 bg-red-50 border border-red-100 px-3 py-2.5 rounded-lg">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 mt-0.5">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <p className="text-xs text-red-600 leading-relaxed">
+              {error}{" "}
+              <Link href="/forgot-password" className="font-medium underline underline-offset-2 hover:text-red-700">
+                Reset password
+              </Link>
+            </p>
+          </div>
         )}
 
         <button
