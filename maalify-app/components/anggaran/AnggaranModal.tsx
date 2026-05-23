@@ -39,7 +39,7 @@ export default function AnggaranModal({
   const [categoryId, setCategoryId] = useState(budget?.category_id ?? availableCategories[0]?.id ?? "");
   const [customName, setCustomName] = useState(budget?.customName ?? "");
   const [amount, setAmount] = useState(budget ? String(budget.budget) : "");
-  const [isRecurring, setIsRecurring] = useState(budget?.isRecurring ?? false);
+  const [isRecurring, setIsRecurring] = useState(budget?.isRecurring ?? true);
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
