@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { formatRupiah } from "@/lib/utils";
+import { saveRecurring, deleteRecurring } from "@/app/actions/recurring";
 import type { RecurringItem } from "@/app/(dashboard)/transaksi-berulang/page";
 
 interface Wallet { id: string; name: string; type: string; current_balance: number; }
@@ -60,42 +60,30 @@ export default function RecurringModal({ item, wallets, categories, householdId,
 
     setError("");
     setLoading(true);
-    const supabase = createClient();
 
-    const payload = {
+    const result = await saveRecurring({
+      recurringId: isEdit ? item!.id : undefined,
+      householdId,
+      userId,
       type,
       amount: parsedAmount,
       description: description.trim(),
-      category_id: categoryId,
-      wallet_id: walletId,
+      categoryId,
+      walletId,
       frequency,
-      start_date: startDate,
-      end_date: endDate || null,
-    };
+      startDate,
+      endDate: endDate || null,
+    });
 
-    if (isEdit && item) {
-      const { error: err } = await supabase
-        .from("recurring_transactions")
-        .update(payload)
-        .eq("id", item.id);
-      if (err) { setError(err.message); setLoading(false); return; }
-    } else {
-      const { error: err } = await supabase.from("recurring_transactions").insert({
-        ...payload,
-        household_id: householdId,
-        created_by: userId,
-        is_active: true,
-      });
-      if (err) { setError(err.message); setLoading(false); return; }
-    }
+    if (result.error) { setError(result.error); setLoading(false); return; }
     onSaved();
   }
 
   async function handleDelete() {
     if (!item) return;
     setLoading(true);
-    const supabase = createClient();
-    await supabase.from("recurring_transactions").delete().eq("id", item.id);
+    const result = await deleteRecurring(item.id);
+    if (result.error) { setError(result.error); setLoading(false); return; }
     onSaved();
   }
 

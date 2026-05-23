@@ -6,6 +6,7 @@ import { formatRupiah } from "@/lib/utils";
 import type { RecurringItem } from "./page";
 import RecurringModal from "@/components/transaksi/RecurringModal";
 import { Toast, useToast } from "@/components/ui/Toast";
+import { toggleRecurringActive } from "@/app/actions/recurring";
 
 interface Wallet { id: string; name: string; type: string; current_balance: number; }
 interface Category { id: string; name: string; icon: string | null; color: string | null; type: string; }
@@ -69,14 +70,16 @@ export default function RecurringPageClient({
 
   async function toggleActive(item: RecurringItem) {
     setTogglingId(item.id);
-    const { createClient } = await import("@/lib/supabase/client");
-    const supabase = createClient();
-    await supabase
-      .from("recurring_transactions")
-      .update({ is_active: !item.is_active })
-      .eq("id", item.id);
+    const result = await toggleRecurringActive(item.id, !item.is_active);
     setTogglingId(null);
-    showToast(item.is_active ? "Transaksi berulang dinonaktifkan" : "Transaksi berulang diaktifkan", "info");
+    if (result.error) {
+      showToast(result.error, "error");
+      return;
+    }
+    showToast(
+      item.is_active ? "Transaksi berulang dinonaktifkan" : "Transaksi berulang diaktifkan",
+      "success"
+    );
     router.refresh();
   }
 
