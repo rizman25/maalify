@@ -53,6 +53,10 @@ export default function WalletPageClient({ wallets, inactiveWallets, transfers, 
   const [deleting, setDeleting] = useState(false);
 
   const totalAset = wallets.reduce((sum, w) => sum + Number(w.current_balance), 0);
+  const totalBersama = wallets.filter(w => w.is_shared).reduce((sum, w) => sum + Number(w.current_balance), 0);
+  const totalPribadi = wallets.filter(w => !w.is_shared).reduce((sum, w) => sum + Number(w.current_balance), 0);
+  const countBersama = wallets.filter(w => w.is_shared).length;
+  const countPribadi = wallets.filter(w => !w.is_shared).length;
 
   function openAdd() {
     setEditTarget(null);
@@ -153,12 +157,35 @@ export default function WalletPageClient({ wallets, inactiveWallets, transfers, 
       </div>
 
       {/* Total Aset */}
-      <div className="bg-brand-primary rounded-xl p-6 text-white">
-        <p className="text-sm opacity-75">Total Aset</p>
-        <p className="font-financial text-3xl font-bold mt-1">
-          Rp {formatRupiah(totalAset)}
-        </p>
-        <p className="text-xs opacity-60 mt-2">{wallets.length} dompet aktif</p>
+      <div className="bg-brand-primary rounded-xl p-5 text-white">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <p className="text-xs opacity-60 uppercase tracking-widest font-medium">Total Aset</p>
+            <p className="font-financial text-3xl font-bold mt-0.5">
+              Rp {formatRupiah(totalAset)}
+            </p>
+          </div>
+          <p className="text-xs opacity-50">{wallets.length} dompet aktif</p>
+        </div>
+        <div className="h-px bg-white/10 mb-4" />
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <div className="flex items-center gap-1.5 mb-1">
+              <span className="text-base">👨‍👩‍👧‍👦</span>
+              <p className="text-xs font-medium opacity-75">Aset Bersama</p>
+            </div>
+            <p className="font-financial text-lg font-bold">Rp {formatRupiah(totalBersama)}</p>
+            <p className="text-[10px] opacity-50 mt-0.5">{countBersama} dompet</p>
+          </div>
+          <div className="border-l border-white/10 pl-4">
+            <div className="flex items-center gap-1.5 mb-1">
+              <span className="text-base">🔒</span>
+              <p className="text-xs font-medium opacity-75">Aset Pribadi</p>
+            </div>
+            <p className="font-financial text-lg font-bold">Rp {formatRupiah(totalPribadi)}</p>
+            <p className="text-[10px] opacity-50 mt-0.5">{countPribadi} dompet</p>
+          </div>
+        </div>
       </div>
 
       {/* Wallet Grid */}
