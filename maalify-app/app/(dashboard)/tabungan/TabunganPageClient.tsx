@@ -319,8 +319,8 @@ function GoalFormModal({ householdId, userId, goal, onClose, onSaved, userRole }
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-[var(--bg-surface)] w-full max-w-md rounded-2xl shadow-2xl max-h-[calc(100vh-2rem)] flex flex-col overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-start justify-center px-4 pt-16 pb-6 bg-black/40">
+      <div className="bg-[var(--bg-surface)] w-full max-w-md rounded-2xl shadow-2xl max-h-[calc(100vh-5rem)] flex flex-col overflow-hidden">
         <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border)] flex-shrink-0">
           <h2 className="font-bold text-[var(--text-primary)]">{isEdit ? "Edit Goal" : "Buat Goal Baru"}</h2>
           <button onClick={onClose} className="p-1 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)]">
@@ -506,8 +506,8 @@ function ContributeModal({ goal, wallets, userId, mode, onClose, onSaved }: {
   const pct = Math.min(100, Math.round((Number(goal.current_amount) / Number(goal.target_amount)) * 100));
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-[var(--bg-surface)] w-full max-w-sm rounded-2xl shadow-2xl max-h-[calc(100vh-2rem)] flex flex-col overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-start justify-center px-4 pt-16 pb-6 bg-black/40">
+      <div className="bg-[var(--bg-surface)] w-full max-w-sm rounded-2xl shadow-2xl max-h-[calc(100vh-5rem)] flex flex-col overflow-hidden">
         <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border)] flex-shrink-0">
           <h2 className="font-bold text-[var(--text-primary)]">{isTopUp ? "Tambah Dana" : "Tarik Dana"}</h2>
           <button onClick={onClose} className="p-1 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)]">
@@ -602,8 +602,8 @@ function DetailModal({ goal, onClose, onTopUp, onWithdraw, onEdit }: {
   const daysLeft = goal.deadline ? Math.ceil((new Date(goal.deadline).getTime() - Date.now()) / 86400000) : null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-[var(--bg-surface)] w-full max-w-sm rounded-2xl shadow-2xl max-h-[calc(100vh-2rem)] flex flex-col overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-start justify-center px-4 pt-16 pb-6 bg-black/40">
+      <div className="bg-[var(--bg-surface)] w-full max-w-sm rounded-2xl shadow-2xl max-h-[calc(100vh-5rem)] flex flex-col overflow-hidden">
         <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border)] flex-shrink-0">
           <h2 className="font-bold text-[var(--text-primary)]">Detail Goal</h2>
           <div className="flex gap-1">
