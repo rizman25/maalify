@@ -232,6 +232,7 @@ export default async function LaporanPage({ searchParams }: Props) {
       categoryIncome={categoryIncome}
       householdId={householdId}
       householdName={household?.name ?? "Keluarga"}
+      userId={user.id}
     />
   );
 }

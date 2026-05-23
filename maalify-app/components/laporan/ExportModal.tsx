@@ -5,11 +5,13 @@ import { formatRupiah } from "@/lib/utils";
 
 interface Props {
   householdId: string;
+  userId: string;
   onClose: () => void;
 }
 
 type TxType  = "all" | "income" | "expense";
 type Format  = "csv" | "pdf" | "excel";
+type Scope   = "bersama" | "pribadi";
 
 type TxRow = {
   date: string;
@@ -37,7 +39,7 @@ function downloadCSV(rows: string[][], filename: string) {
   document.body.removeChild(a); URL.revokeObjectURL(url);
 }
 
-export default function ExportModal({ householdId, onClose }: Props) {
+export default function ExportModal({ householdId, userId, onClose }: Props) {
   const now        = new Date();
   const firstOfMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
   const today      = now.toISOString().split("T")[0];
@@ -46,6 +48,7 @@ export default function ExportModal({ householdId, onClose }: Props) {
   const [to,      setTo]      = useState(today);
   const [txType,  setTxType]  = useState<TxType>("all");
   const [format,  setFormat]  = useState<Format>("csv");
+  const [scope,   setScope]   = useState<Scope>("bersama");
   const [loading, setLoading] = useState(false);
   const [error,   setError]   = useState("");
 
@@ -53,10 +56,31 @@ export default function ExportModal({ householdId, onClose }: Props) {
     const { createClient } = await import("@/lib/supabase/client");
     const supabase = createClient();
 
+    // Ambil wallet IDs sesuai scope
+    let walletQuery = supabase
+      .from("wallets")
+      .select("id")
+      .eq("household_id", householdId)
+      .eq("is_active", true);
+
+    if (scope === "bersama") {
+      walletQuery = walletQuery.eq("is_shared", true);
+    } else {
+      // pribadi: wallet milik user ini saja
+      walletQuery = walletQuery.eq("is_shared", false).eq("created_by", userId);
+    }
+
+    const { data: walletData, error: wErr } = await walletQuery;
+    if (wErr) throw wErr;
+
+    const walletIds = (walletData ?? []).map(w => w.id);
+    if (walletIds.length === 0) return [] as TxRow[];
+
     let query = supabase
       .from("transactions")
       .select("date, type, amount, description, categories(name), wallets(name), users(name)")
       .eq("household_id", householdId)
+      .in("wallet_id", walletIds)
       .gte("date", from)
       .lte("date", to)
       .order("date", { ascending: true })
@@ -74,7 +98,7 @@ export default function ExportModal({ householdId, onClose }: Props) {
     setError(""); setLoading(true);
     try {
       const rows = await fetchRows();
-      const label = from === to ? from : `${from}_sd_${to}`;
+      const label = `${scope}_${from === to ? from : `${from}_sd_${to}`}`;
 
       if (format === "csv") {
         const header = ["Tanggal","Tipe","Jumlah","Kategori","Dompet","Keterangan","Dibuat Oleh"];
@@ -94,7 +118,7 @@ export default function ExportModal({ householdId, onClose }: Props) {
         const { default: autoTable } = await import("jspdf-autotable");
         const doc = new jsPDF();
         doc.setFontSize(14);
-        doc.text("Laporan Transaksi", 14, 16);
+        doc.text(`Laporan Transaksi — ${scope === "bersama" ? "Bersama" : "Pribadi"}`, 14, 16);
         doc.setFontSize(9);
         doc.text(`Periode: ${from} s/d ${to}  |  Diekspor: ${today}`, 14, 23);
 
@@ -172,6 +196,40 @@ export default function ExportModal({ householdId, onClose }: Props) {
 
         <div className="overflow-y-auto flex-1">
         <div className="px-6 py-5 space-y-4">
+          {/* Scope selector */}
+          <div>
+            <label className="block text-xs font-medium text-[var(--text-primary)] mb-2">Data Yang Diekspor</label>
+            <div className="grid grid-cols-2 gap-2">
+              <button type="button" onClick={() => setScope("bersama")}
+                className={["py-3 px-3 rounded-xl border-2 text-left transition-colors flex items-center gap-2",
+                  scope === "bersama" ? "border-brand-primary bg-brand-primary/5" : "border-[var(--border)] hover:border-brand-primary/40"
+                ].join(" ")}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                  className={scope === "bersama" ? "text-brand-primary" : "text-[var(--text-secondary)]"}>
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+                <div>
+                  <p className={["text-sm font-semibold", scope === "bersama" ? "text-brand-primary" : "text-[var(--text-primary)]"].join(" ")}>Bersama</p>
+                  <p className="text-[10px] text-[var(--text-secondary)]">Dompet keluarga</p>
+                </div>
+              </button>
+              <button type="button" onClick={() => setScope("pribadi")}
+                className={["py-3 px-3 rounded-xl border-2 text-left transition-colors flex items-center gap-2",
+                  scope === "pribadi" ? "border-amber-500 bg-amber-50" : "border-[var(--border)] hover:border-amber-400/40"
+                ].join(" ")}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                  className={scope === "pribadi" ? "text-amber-600" : "text-[var(--text-secondary)]"}>
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                <div>
+                  <p className={["text-sm font-semibold", scope === "pribadi" ? "text-amber-600" : "text-[var(--text-primary)]"].join(" ")}>Pribadi</p>
+                  <p className="text-[10px] text-[var(--text-secondary)]">Dompet milikmu</p>
+                </div>
+              </button>
+            </div>
+          </div>
+
           {/* Format selector */}
           <div>
             <label className="block text-xs font-medium text-[var(--text-primary)] mb-2">Format</label>

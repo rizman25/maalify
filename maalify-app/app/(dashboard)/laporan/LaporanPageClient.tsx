@@ -38,6 +38,7 @@ interface Props {
   categoryIncome: CatItem[];
   householdId: string;
   householdName: string;
+  userId: string;
 }
 
 const RANGE_OPTIONS: { value: Range; label: string }[] = [
@@ -78,7 +79,7 @@ export default function LaporanPageClient({
   totalIncome, totalExpense, totalAset,
   bersamaIncome, bersamaExpense, bersamaAset,
   pribadiIncome, pribadiExpense, pribadiAset,
-  categoryExpense, categoryIncome, householdId, householdName,
+  categoryExpense, categoryIncome, householdId, householdName, userId,
 }: Props) {
   const router = useRouter();
   const [exportOpen, setExportOpen] = useState(false);
@@ -592,7 +593,7 @@ export default function LaporanPageClient({
     </div>
 
     {exportOpen && (
-      <ExportModal householdId={householdId} onClose={() => setExportOpen(false)} />
+      <ExportModal householdId={householdId} userId={userId} onClose={() => setExportOpen(false)} />
     )}
     </>
   );
