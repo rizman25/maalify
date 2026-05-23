@@ -70,25 +70,47 @@ export default async function LaporanPage({ searchParams }: Props) {
     ? await supabase.from("households").select("name").eq("id", householdId).single()
     : { data: null };
 
+  // Fetch wallets with is_shared to split Bersama vs Pribadi
+  const { data: allWallets } = await supabase
+    .from("wallets")
+    .select("id, current_balance, is_shared")
+    .eq("household_id", householdId)
+    .eq("is_active", true);
+
+  const privateWalletIds = new Set((allWallets ?? []).filter(w => !w.is_shared).map(w => w.id));
+  const sharedWalletIds  = new Set((allWallets ?? []).filter(w => w.is_shared).map(w => w.id));
+
   const [txRes, walletRes] = await Promise.all([
     supabase.from("transactions")
-      .select("type, amount, date, category_id, categories(name, icon, color)")
+      .select("type, amount, date, wallet_id, category_id, categories(name, icon, color)")
       .eq("household_id", householdId)
       .gte("date", startDate).lt("date", endDate)
       .order("date"),
 
     supabase.from("wallets")
-      .select("name, current_balance, type")
+      .select("name, current_balance, type, is_shared")
       .eq("household_id", householdId)
       .eq("is_active", true),
   ]);
 
   const transactions = txRes.data ?? [];
 
-  // ── Totals ─────────────────────────────────────────────────────────────
+  // ── Totals — semua (untuk chart/periode tetap pakai ini) ───────────────
   const totalIncome  = transactions.filter(t => t.type === "income").reduce((s, t) => s + Number(t.amount), 0);
   const totalExpense = transactions.filter(t => t.type === "expense").reduce((s, t) => s + Number(t.amount), 0);
-  const totalAset    = (walletRes.data ?? []).reduce((s, w) => s + Number(w.current_balance), 0);
+  const totalAset    = (allWallets ?? []).reduce((s, w) => s + Number(w.current_balance), 0);
+
+  // ── Totals — Bersama (shared wallets) ────────────────────────────────
+  const bersamaTx = transactions.filter(t => sharedWalletIds.has(t.wallet_id));
+  const bersamaIncome  = bersamaTx.filter(t => t.type === "income").reduce((s, t) => s + Number(t.amount), 0);
+  const bersamaExpense = bersamaTx.filter(t => t.type === "expense").reduce((s, t) => s + Number(t.amount), 0);
+  const bersamaAset    = (allWallets ?? []).filter(w => w.is_shared).reduce((s, w) => s + Number(w.current_balance), 0);
+
+  // ── Totals — Pribadi (private wallets) ───────────────────────────────
+  const pribadiTx = transactions.filter(t => privateWalletIds.has(t.wallet_id));
+  const pribadiIncome  = pribadiTx.filter(t => t.type === "income").reduce((s, t) => s + Number(t.amount), 0);
+  const pribadiExpense = pribadiTx.filter(t => t.type === "expense").reduce((s, t) => s + Number(t.amount), 0);
+  const pribadiAset    = (allWallets ?? []).filter(w => !w.is_shared).reduce((s, w) => s + Number(w.current_balance), 0);
 
   // ── Period data ─────────────────────────────────────────────────────────
   let periodData: PeriodRow[];
@@ -200,6 +222,12 @@ export default async function LaporanPage({ searchParams }: Props) {
       totalIncome={totalIncome}
       totalExpense={totalExpense}
       totalAset={totalAset}
+      bersamaIncome={bersamaIncome}
+      bersamaExpense={bersamaExpense}
+      bersamaAset={bersamaAset}
+      pribadiIncome={pribadiIncome}
+      pribadiExpense={pribadiExpense}
+      pribadiAset={pribadiAset}
       categoryExpense={categoryExpense}
       categoryIncome={categoryIncome}
       householdId={householdId}

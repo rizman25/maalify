@@ -26,6 +26,12 @@ interface Props {
   totalIncome: number;
   totalExpense: number;
   totalAset: number;
+  bersamaIncome: number;
+  bersamaExpense: number;
+  bersamaAset: number;
+  pribadiIncome: number;
+  pribadiExpense: number;
+  pribadiAset: number;
   categoryExpense: CatItem[];
   categoryIncome: CatItem[];
   householdId: string;
@@ -68,6 +74,8 @@ function downloadCSV(rows: string[][], filename: string) {
 export default function LaporanPageClient({
   range, year, rangeLabel, periodData, isDaily,
   totalIncome, totalExpense, totalAset,
+  bersamaIncome, bersamaExpense, bersamaAset,
+  pribadiIncome, pribadiExpense, pribadiAset,
   categoryExpense, categoryIncome, householdId, householdName,
 }: Props) {
   const router = useRouter();
@@ -343,25 +351,41 @@ export default function LaporanPageClient({
           )}
         </div>
 
-        {/* Summary cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border)] p-4">
-            <p className="text-[10px] font-semibold text-[var(--text-secondary)] tracking-wider uppercase mb-2">Total Pemasukan</p>
-            <p className="font-financial text-lg font-bold text-[var(--color-success)]">Rp {formatRupiah(totalIncome)}</p>
+        {/* Summary cards — Bersama */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-semibold text-[var(--text-secondary)]">👨‍👩‍👧‍👦 Bersama</span>
+            <div className="flex-1 h-px bg-[var(--border)]" />
           </div>
-          <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border)] p-4">
-            <p className="text-[10px] font-semibold text-[var(--text-secondary)] tracking-wider uppercase mb-2">Total Pengeluaran</p>
-            <p className="font-financial text-lg font-bold text-[var(--color-danger)]">Rp {formatRupiah(totalExpense)}</p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <SummaryCard label="Total Pemasukan" value={bersamaIncome} color="success" />
+            <SummaryCard label="Total Pengeluaran" value={bersamaExpense} color="danger" />
+            <SummaryCard
+              label="Selisih"
+              value={bersamaIncome - bersamaExpense}
+              color={(bersamaIncome - bersamaExpense) >= 0 ? "success" : "danger"}
+              signed
+            />
+            <SummaryCard label="Total Aset" value={bersamaAset} color="neutral" />
           </div>
-          <div className={`rounded-2xl border p-4 ${net >= 0 ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200"}`}>
-            <p className="text-[10px] font-semibold text-[var(--text-secondary)] tracking-wider uppercase mb-2">Selisih</p>
-            <p className={`font-financial text-lg font-bold ${net >= 0 ? "text-green-600" : "text-red-500"}`}>
-              {net >= 0 ? "+" : ""}Rp {formatRupiah(Math.abs(net))}
-            </p>
+        </div>
+
+        {/* Summary cards — Pribadi */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-semibold text-[var(--text-secondary)]">🙋 Pribadi</span>
+            <div className="flex-1 h-px bg-[var(--border)]" />
           </div>
-          <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border)] p-4">
-            <p className="text-[10px] font-semibold text-[var(--text-secondary)] tracking-wider uppercase mb-2">Total Aset</p>
-            <p className="font-financial text-lg font-bold text-[var(--text-primary)]">Rp {formatRupiah(totalAset)}</p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <SummaryCard label="Total Pemasukan" value={pribadiIncome} color="success" />
+            <SummaryCard label="Total Pengeluaran" value={pribadiExpense} color="danger" />
+            <SummaryCard
+              label="Selisih"
+              value={pribadiIncome - pribadiExpense}
+              color={(pribadiIncome - pribadiExpense) >= 0 ? "success" : "danger"}
+              signed
+            />
+            <SummaryCard label="Total Aset" value={pribadiAset} color="neutral" />
           </div>
         </div>
 
@@ -563,5 +587,33 @@ export default function LaporanPageClient({
       <ExportModal householdId={householdId} onClose={() => setExportOpen(false)} />
     )}
     </>
+  );
+}
+
+function SummaryCard({
+  label, value, color, signed,
+}: {
+  label: string;
+  value: number;
+  color: "success" | "danger" | "neutral";
+  signed?: boolean;
+}) {
+  const colorClass =
+    color === "success" ? "text-[var(--color-success)]" :
+    color === "danger"  ? "text-[var(--color-danger)]"  :
+    "text-[var(--text-primary)]";
+
+  const borderClass =
+    signed && value < 0 ? "bg-red-50 border-red-200" :
+    signed && value >= 0 ? "bg-green-50 border-green-200" :
+    "bg-[var(--bg-surface)] border-[var(--border)]";
+
+  return (
+    <div className={`rounded-2xl border p-4 ${borderClass}`}>
+      <p className="text-[10px] font-semibold text-[var(--text-secondary)] tracking-wider uppercase mb-2">{label}</p>
+      <p className={`font-financial text-lg font-bold ${colorClass}`}>
+        {signed ? (value >= 0 ? "+" : "") : ""}Rp {formatRupiah(Math.abs(value))}
+      </p>
+    </div>
   );
 }
