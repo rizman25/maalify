@@ -324,10 +324,19 @@ export default function PanduanPageClient() {
 
               <div className="mt-4 p-3.5 bg-[var(--bg-elevated)] rounded-xl border border-[var(--border)]">
                 <p className="text-xs font-semibold text-[var(--text-primary)] mb-2 flex items-center gap-1.5">
-                  <Lock size={13} /> Privasi Transaksi
+                  <Lock size={13} /> Sistem Privasi Bersama / Pribadi
                 </p>
-                <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
-                  Setiap transaksi bisa diatur sebagai <strong>Pribadi</strong> (hanya terlihat oleh yang mencatat) atau <strong>Bersama</strong> (terlihat oleh semua anggota). Default-nya adalah Pribadi — jadi anggota keluarga seperti anak tidak perlu khawatir keuangan pribadinya dilihat orang lain.
+                <p className="text-xs text-[var(--text-secondary)] leading-relaxed mb-2">
+                  Maalify menerapkan sistem privasi <strong>Bersama</strong> dan <strong>Pribadi</strong> di beberapa fitur utama:
+                </p>
+                <ul className="space-y-1.5 text-xs text-[var(--text-secondary)]">
+                  <li className="flex items-start gap-2"><span className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-brand-primary mt-1.5" /><span><strong>Dompet</strong> — Pilih Bersama (terlihat semua anggota) atau Pribadi (hanya pemilik) saat membuat dompet. Default: Bersama.</span></li>
+                  <li className="flex items-start gap-2"><span className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-brand-primary mt-1.5" /><span><strong>Transaksi</strong> — Mengikuti visibilitas dompet yang dipilih. Transaksi di dompet Pribadi hanya terlihat oleh pemiliknya.</span></li>
+                  <li className="flex items-start gap-2"><span className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-brand-primary mt-1.5" /><span><strong>Anggaran</strong> — Toggle kunci di form anggaran untuk memilih Bersama atau Pribadi. Default: Bersama.</span></li>
+                  <li className="flex items-start gap-2"><span className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-brand-primary mt-1.5" /><span><strong>Transaksi Berulang</strong> — Pilih Bersama atau Pribadi saat membuat berulang.</span></li>
+                </ul>
+                <p className="text-xs text-[var(--text-secondary)] mt-2 leading-relaxed">
+                  <strong>Super Admin</strong> selalu dapat melihat semua data termasuk yang bersifat Pribadi milik anggota lain — untuk keperluan rekonsiliasi dan laporan keuangan keluarga.
                 </p>
               </div>
             </SubSection>
@@ -369,13 +378,20 @@ export default function PanduanPageClient() {
                     <RoleRow feature="Edit / hapus transaksi sendiri" sa={true} admin={true} member={true} />
                     <RoleRow feature="Edit / hapus transaksi orang lain" sa={true} admin={true} member={false} />
 
+                    <tr className="bg-[var(--bg-elevated)]/40"><td colSpan={4} className="py-2 pl-5 pr-4 text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-widest">Transaksi Berulang</td></tr>
+                    <RoleRow feature="Lihat berulang Bersama + milik sendiri" sa={true} admin="Bersama + milik sendiri" member={false} />
+                    <RoleRow feature="Lihat semua berulang (termasuk Pribadi anggota lain)" sa={true} admin={false} member={false} />
+                    <RoleRow feature="Tambah / edit / hapus berulang" sa={true} admin={true} member={false} />
+
                     <tr className="bg-[var(--bg-elevated)]/40"><td colSpan={4} className="py-2 pl-5 pr-4 text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-widest">Dompet</td></tr>
-                    <RoleRow feature="Lihat semua dompet" sa={true} admin={true} member={true} />
+                    <RoleRow feature="Lihat dompet Bersama + milik sendiri" sa={true} admin="Bersama + milik sendiri" member="Bersama + milik sendiri" />
+                    <RoleRow feature="Lihat semua dompet (termasuk Pribadi anggota lain)" sa={true} admin={false} member={false} />
                     <RoleRow feature="Tambah / edit / hapus dompet" sa={true} admin={true} member={false} />
                     <RoleRow feature="Transfer antar dompet" sa={true} admin={true} member={false} />
 
                     <tr className="bg-[var(--bg-elevated)]/40"><td colSpan={4} className="py-2 pl-5 pr-4 text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-widest">Anggaran</td></tr>
-                    <RoleRow feature="Lihat anggaran" sa={true} admin={true} member={true} />
+                    <RoleRow feature="Lihat anggaran Bersama + milik sendiri" sa={true} admin="Bersama + milik sendiri" member="Bersama + milik sendiri" />
+                    <RoleRow feature="Lihat semua anggaran (termasuk Pribadi anggota lain)" sa={true} admin={false} member={false} />
                     <RoleRow feature="Buat / edit / hapus anggaran" sa={true} admin={true} member={false} />
 
                     <tr className="bg-[var(--bg-elevated)]/40"><td colSpan={4} className="py-2 pl-5 pr-4 text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-widest">Tabungan</td></tr>
@@ -527,11 +543,27 @@ export default function PanduanPageClient() {
                 "Buka menu Berulang di sidebar",
                 "Klik \"+ Tambah Berulang\"",
                 "Isi nominal, kategori, dompet, dan deskripsi",
+                "Pilih Visibilitas: Bersama (semua anggota bisa lihat) atau Pribadi (hanya kamu dan Super Admin)",
                 "Pilih frekuensi: Harian, Mingguan, Bulanan, atau Tahunan",
                 "Tentukan tanggal mulai",
                 "Pilih apakah ada tanggal berakhir atau tidak",
                 "Klik Simpan",
               ]} />
+            </SubSection>
+
+            <SubSection title="Visibilitas Transaksi Berulang">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)]">
+                  <p className="font-semibold text-[var(--text-primary)] text-sm mb-1">Bersama</p>
+                  <p className="text-xs text-[var(--text-secondary)]">Terlihat oleh semua anggota. Cocok untuk tagihan rumah tangga bersama seperti listrik, air, internet, atau cicilan keluarga.</p>
+                </div>
+                <div className="p-3.5 rounded-xl border border-amber-200 bg-amber-50">
+                  <p className="font-semibold text-amber-800 text-sm mb-1 flex items-center gap-1.5">
+                    <Lock size={13} className="inline" /> Pribadi
+                  </p>
+                  <p className="text-xs text-amber-700">Hanya terlihat oleh kamu dan Super Admin. Cocok untuk langganan personal, cicilan pribadi, atau tagihan yang tidak perlu diketahui anggota lain.</p>
+                </div>
+              </div>
             </SubSection>
 
             <SubSection title="Cara Kerja Otomatisasi">
@@ -579,9 +611,26 @@ export default function PanduanPageClient() {
                 "Isi nama dompet (contoh: \"BCA Tabungan\", \"GoPay\")",
                 "Pilih jenis dompet",
                 "Isi saldo awal (saldo saat ini di rekening/dompet tersebut)",
+                "Pilih visibilitas: Bersama (terlihat semua anggota) atau Pribadi (hanya kamu dan Super Admin). Default: Bersama",
                 "Pilih warna identifikasi",
                 "Klik Simpan",
               ]} />
+            </SubSection>
+
+            <SubSection title="Dompet Bersama vs Pribadi">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)]">
+                  <p className="font-semibold text-[var(--text-primary)] text-sm mb-1">Bersama (Default)</p>
+                  <p className="text-xs text-[var(--text-secondary)]">Terlihat oleh semua anggota family. Cocok untuk rekening keluarga, kas rumah tangga, atau dompet pengeluaran bersama.</p>
+                </div>
+                <div className="p-3.5 rounded-xl border border-amber-200 bg-amber-50">
+                  <p className="font-semibold text-amber-800 text-sm mb-1 flex items-center gap-1.5">
+                    <Lock size={13} className="inline" /> Pribadi
+                  </p>
+                  <p className="text-xs text-amber-700">Hanya terlihat oleh pemilik dompet dan Super Admin. Cocok untuk rekening tabungan personal atau dompet yang tidak ingin dibagikan ke seluruh anggota.</p>
+                </div>
+              </div>
+              <p className="text-xs text-[var(--text-secondary)] mt-2">Transaksi yang dicatat ke dompet Pribadi secara otomatis hanya terlihat oleh pemiliknya — tidak perlu pengaturan tambahan per transaksi.</p>
             </SubSection>
 
             <SubSection title="Transfer Antar Dompet">
@@ -615,8 +664,24 @@ export default function PanduanPageClient() {
                 "Pilih bulan dan tahun yang dituju",
                 "Pilih kategori (hanya kategori tipe pengeluaran yang tersedia)",
                 "Isi nominal batas anggaran",
+                "Pilih Visibilitas: klik ikon kunci di form untuk memilih Bersama atau Pribadi",
                 "Klik Simpan",
               ]} />
+            </SubSection>
+
+            <SubSection title="Anggaran Pribadi vs Bersama">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)]">
+                  <p className="font-semibold text-[var(--text-primary)] text-sm mb-1">Bersama (Default)</p>
+                  <p className="text-xs text-[var(--text-secondary)]">Terlihat oleh semua anggota. Cocok untuk anggaran keluarga seperti makan, transportasi, atau tagihan rumah yang dikelola bersama.</p>
+                </div>
+                <div className="p-3.5 rounded-xl border border-amber-200 bg-amber-50">
+                  <p className="font-semibold text-amber-800 text-sm mb-1 flex items-center gap-1.5">
+                    <Lock size={13} className="inline" /> Pribadi
+                  </p>
+                  <p className="text-xs text-amber-700">Hanya terlihat oleh pemilik anggaran dan Super Admin. Cocok untuk anggaran personal seperti pakaian, hobi, atau kebutuhan individu.</p>
+                </div>
+              </div>
             </SubSection>
 
             <SubSection title="Memahami Progress Bar Anggaran">
@@ -793,16 +858,17 @@ export default function PanduanPageClient() {
               <BulletList items={[
                 <><strong>Export PDF</strong> — Laporan terformat siap cetak, cocok untuk dokumentasi</>,
                 <><strong>Export Excel (.xlsx)</strong> — Data mentah dalam spreadsheet, cocok untuk analisis lanjutan</>,
-                "Pilih rentang tanggal sebelum export untuk membatasi data yang diunduh",
+                <><strong>Scope Bersama / Pribadi</strong> — Pilih ekspor data dari dompet <em>Bersama</em> saja (kas rumah tangga) atau dari dompet <em>Pribadi</em> Anda saja (keuangan personal). Tersedia di tombol Ekspor</>,
+                "Gunakan filter rentang waktu (7 hari, 1 bulan, 3 bulan, 6 bulan, 1 tahun) untuk membatasi periode data",
               ]} />
             </SubSection>
 
-            <SubSection title="Filter Laporan">
+            <SubSection title="Filter & Rentang Laporan">
               <BulletList items={[
-                "Filter berdasarkan rentang tanggal (date range picker)",
-                "Filter berdasarkan jenis transaksi (pemasukan / pengeluaran / semua)",
-                "Filter berdasarkan kategori spesifik",
-                "Filter berdasarkan dompet",
+                "Filter berdasarkan rentang waktu: 7 hari, 1 bulan, 3 bulan, 6 bulan, atau 1 tahun penuh",
+                "Tampilan grafik periode — perbandingan pemasukan dan pengeluaran per hari atau per bulan",
+                "Breakdown kategori pengeluaran — kategori mana yang menyerap paling banyak",
+                "Ringkasan Bersama / Pribadi — total aset, pemasukan, dan pengeluaran dipisah per scope",
               ]} />
             </SubSection>
           </Section>

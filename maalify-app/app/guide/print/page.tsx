@@ -693,24 +693,23 @@ export default function PanduanPrintPage() {
           </div>
 
           <div className="subsection">
-            <div className="subsection-title"><span className="subsection-bar" /> Privasi Transaksi</div>
+            <div className="subsection-title"><span className="subsection-bar" /> Sistem Privasi Bersama / Pribadi</div>
             <div className="privacy-box">
-              <div className="privacy-box-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display:"inline",verticalAlign:"middle",marginRight:4 }}><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Sistem Visibilitas Transaksi</div>
-              <p>Setiap transaksi memiliki pengaturan visibilitas yang bisa dipilih saat mencatat:</p>
+              <div className="privacy-box-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display:"inline",verticalAlign:"middle",marginRight:4 }}><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Privasi Berlaku di Beberapa Fitur</div>
+              <p>Maalify menerapkan sistem Bersama/Pribadi di fitur-fitur berikut:</p>
             </div>
-            <div className="visibility-grid">
-              <div className="visibility-card">
-                <div className="visibility-card-title">Pribadi (Default)</div>
-                <p>Hanya terlihat oleh orang yang mencatat transaksi. Anggota lain tidak tahu transaksi ini ada. Super Admin hanya melihat total pengeluaran, bukan detail transaksinya.</p>
-              </div>
-              <div className="visibility-card">
-                <div className="visibility-card-title">Bersama</div>
-                <p>Terlihat oleh semua anggota family. Gunakan untuk pengeluaran keluarga bersama seperti belanja bulanan, tagihan rumah, atau pengeluaran yang perlu diketahui semua anggota.</p>
-              </div>
-            </div>
+            <ul className="bullet-list" style={{ marginTop: 8 }}>
+              {[
+                ["Dompet", "Pilih Bersama (semua anggota lihat) atau Pribadi (hanya pemilik + Super Admin) saat membuat. Transaksi di dompet Pribadi otomatis hanya terlihat oleh pemiliknya."],
+                ["Anggaran", "Toggle kunci di form anggaran untuk memilih Bersama atau Pribadi. Default: Bersama."],
+                ["Transaksi Berulang", "Pilih Bersama atau Pribadi saat membuat berulang baru."],
+              ].map(([t, d]) => (
+                <li key={t} className="bullet-item"><span className="bullet-dot" /><span className="bullet-text"><strong>{t}</strong> — {d}</span></li>
+              ))}
+            </ul>
             <div className="infobox infobox-tip" style={{ marginTop: 8 }}>
               <span className="infobox-icon" style={{ fontSize: "0" }}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="22" x2="14" y2="22"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg></span>
-              <p>Default "Pribadi" membuat anggota seperti anak remaja merasa aman menggunakan Maalify — pengeluaran jajan atau keperluan pribadi tidak akan terlihat oleh orang tua, kecuali mereka memilih berbagi.</p>
+              <p><strong>Super Admin</strong> selalu dapat melihat semua data termasuk yang Pribadi milik anggota lain — untuk keperluan rekonsiliasi dan laporan keuangan keluarga yang akurat.</p>
             </div>
           </div>
 
@@ -767,13 +766,20 @@ export default function PanduanPrintPage() {
                 <tr><td>Edit / hapus transaksi sendiri</td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td></tr>
                 <tr><td>Edit / hapus transaksi orang lain</td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center dash">—</td></tr>
 
+                <tr className="group-row"><td colSpan={4}>Transaksi Berulang</td></tr>
+                <tr><td>Lihat berulang Bersama + milik sendiri</td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center partial">Bersama + milik sendiri</td><td className="center dash">—</td></tr>
+                <tr><td>Lihat semua berulang (termasuk Pribadi anggota lain)</td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center dash">—</td><td className="center dash">—</td></tr>
+                <tr><td>Tambah / edit / hapus berulang</td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center dash">—</td></tr>
+
                 <tr className="group-row"><td colSpan={4}>Dompet</td></tr>
-                <tr><td>Lihat semua dompet</td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td></tr>
+                <tr><td>Lihat dompet Bersama + milik sendiri</td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center partial">Bersama + milik sendiri</td><td className="center partial">Bersama + milik sendiri</td></tr>
+                <tr><td>Lihat semua dompet (termasuk Pribadi anggota lain)</td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center dash">—</td><td className="center dash">—</td></tr>
                 <tr><td>Tambah / edit / hapus dompet</td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center dash">—</td></tr>
                 <tr><td>Transfer antar dompet</td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center dash">—</td></tr>
 
                 <tr className="group-row"><td colSpan={4}>Anggaran</td></tr>
-                <tr><td>Lihat anggaran</td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td></tr>
+                <tr><td>Lihat anggaran Bersama + milik sendiri</td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center partial">Bersama + milik sendiri</td><td className="center partial">Bersama + milik sendiri</td></tr>
+                <tr><td>Lihat semua anggaran (termasuk Pribadi anggota lain)</td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center dash">—</td><td className="center dash">—</td></tr>
                 <tr><td>Buat / edit / hapus anggaran</td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center check"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></td><td className="center dash">—</td></tr>
 
                 <tr className="group-row"><td colSpan={4}>Tabungan</td></tr>
@@ -935,6 +941,7 @@ export default function PanduanPrintPage() {
                 "Buka menu Berulang di sidebar",
                 "Klik \"+ Tambah Berulang\"",
                 "Isi nominal, kategori, dompet, dan deskripsi",
+                "Pilih Visibilitas: Bersama (semua anggota lihat) atau Pribadi (hanya kamu + Super Admin)",
                 "Pilih frekuensi: Harian, Mingguan, Bulanan, atau Tahunan",
                 "Tentukan tanggal mulai",
                 "Pilih apakah ada tanggal berakhir atau tidak",
@@ -943,6 +950,20 @@ export default function PanduanPrintPage() {
                 <li key={i} className="step-item"><span className="step-num">{i + 1}</span><span className="step-text">{s}</span></li>
               ))}
             </ol>
+          </div>
+
+          <div className="subsection">
+            <div className="subsection-title"><span className="subsection-bar" /> Visibilitas Berulang</div>
+            <div className="visibility-grid">
+              <div className="visibility-card">
+                <div className="visibility-card-title">Bersama</div>
+                <p>Terlihat semua anggota. Untuk tagihan rumah tangga bersama: listrik, air, internet, cicilan keluarga.</p>
+              </div>
+              <div className="visibility-card" style={{ background: "#FFFBEB", borderColor: "#FDE68A" }}>
+                <div className="visibility-card-title" style={{ color: "#92400E" }}>🔒 Pribadi</div>
+                <p style={{ color: "#92400E" }}>Hanya pemilik + Super Admin. Untuk langganan personal, cicilan pribadi, atau tagihan rahasia.</p>
+              </div>
+            </div>
           </div>
 
           <div className="subsection">
@@ -996,12 +1017,27 @@ export default function PanduanPrintPage() {
                 "Isi nama dompet (contoh: \"BCA Tabungan\", \"GoPay\")",
                 "Pilih jenis dompet",
                 "Isi saldo awal (saldo saat ini di rekening/dompet tersebut)",
+                "Pilih visibilitas: Bersama (default) atau Pribadi (hanya kamu + Super Admin)",
                 "Pilih warna identifikasi",
                 "Klik Simpan",
               ].map((s, i) => (
                 <li key={i} className="step-item"><span className="step-num">{i + 1}</span><span className="step-text">{s}</span></li>
               ))}
             </ol>
+          </div>
+
+          <div className="subsection">
+            <div className="subsection-title"><span className="subsection-bar" /> Dompet Bersama vs Pribadi</div>
+            <div className="visibility-grid">
+              <div className="visibility-card">
+                <div className="visibility-card-title">Bersama (Default)</div>
+                <p>Terlihat semua anggota. Cocok untuk rekening keluarga, kas rumah tangga, atau dompet pengeluaran bersama.</p>
+              </div>
+              <div className="visibility-card" style={{ background: "#FFFBEB", borderColor: "#FDE68A" }}>
+                <div className="visibility-card-title" style={{ color: "#92400E" }}>🔒 Pribadi</div>
+                <p style={{ color: "#92400E" }}>Hanya pemilik + Super Admin. Transaksi di dompet ini otomatis hanya terlihat oleh pemiliknya.</p>
+              </div>
+            </div>
           </div>
 
           <div className="subsection">
@@ -1044,10 +1080,20 @@ export default function PanduanPrintPage() {
           <div className="subsection">
             <div className="subsection-title"><span className="subsection-bar" /> Cara Membuat Anggaran</div>
             <ol className="step-list">
-              {["Buka halaman Anggaran", "Klik \"+ Tambah Anggaran\"", "Pilih bulan dan tahun", "Pilih kategori pengeluaran", "Isi nominal batas anggaran", "Klik Simpan"].map((s, i) => (
+              {["Buka halaman Anggaran", "Klik \"+ Tambah Anggaran\"", "Pilih bulan dan tahun", "Pilih kategori pengeluaran", "Isi nominal batas anggaran", "Pilih Visibilitas: klik ikon kunci untuk memilih Bersama atau Pribadi", "Klik Simpan"].map((s, i) => (
                 <li key={i} className="step-item"><span className="step-num">{i + 1}</span><span className="step-text">{s}</span></li>
               ))}
             </ol>
+            <div className="visibility-grid" style={{ marginTop: 8 }}>
+              <div className="visibility-card">
+                <div className="visibility-card-title">Bersama (Default)</div>
+                <p>Terlihat semua anggota. Untuk anggaran keluarga: makan, transportasi, tagihan rumah.</p>
+              </div>
+              <div className="visibility-card" style={{ background: "#FFFBEB", borderColor: "#FDE68A" }}>
+                <div className="visibility-card-title" style={{ color: "#92400E" }}>🔒 Pribadi</div>
+                <p style={{ color: "#92400E" }}>Hanya pemilik + Super Admin. Untuk anggaran personal: pakaian, hobi, kebutuhan individu.</p>
+              </div>
+            </div>
             <div className="infobox infobox-tip" style={{ marginTop: 8 }}>
               <span className="infobox-icon" style={{ fontSize: "0" }}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="22" x2="14" y2="22"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg></span>
               <p>Gunakan tombol "Salin dari bulan lalu" untuk menyalin anggaran bulan sebelumnya — praktis jika anggaran tidak banyak berubah.</p>
@@ -1158,12 +1204,14 @@ export default function PanduanPrintPage() {
             <div className="subsection-title"><span className="subsection-bar" /> Isi Laporan &amp; Ekspor</div>
             <ul className="bullet-list">
               {[
-                "Ringkasan tahunan: total pemasukan, pengeluaran, tabungan bersih, total aset",
+                "Ringkasan tahunan: total pemasukan, pengeluaran, tabungan bersih, dan total aset",
+                "Ringkasan terpisah Bersama vs Pribadi — pantau kas keluarga dan keuangan personal secara terpisah",
                 "Tren bulanan: grafik dan tabel pemasukan/pengeluaran per bulan",
                 "Breakdown kategori: pengeluaran dan pemasukan dikelompokkan per kategori",
                 "Export PDF — laporan terformat siap cetak untuk dokumentasi atau arsip",
                 "Export CSV/Excel — data mentah untuk analisis lanjutan di spreadsheet",
-                "Gunakan filter tahun di pojok kanan atas untuk memilih periode laporan",
+                "Scope Bersama / Pribadi saat ekspor — pilih data dari dompet Bersama saja atau dompet Pribadi saja",
+                "Filter rentang waktu: 7 hari, 1 bulan, 3 bulan, 6 bulan, atau 1 tahun penuh",
               ].map((item) => (
                 <li key={item} className="bullet-item"><span className="bullet-dot" /><span className="bullet-text">{item}</span></li>
               ))}
