@@ -159,7 +159,7 @@ export default function TransaksiModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center px-4 pt-8 pb-4">
+    <div className="fixed inset-0 z-50 flex items-start justify-center px-4 pt-16 pb-6">
       <div className="absolute inset-0 bg-black/40" style={{backdropFilter:"none",WebkitBackdropFilter:"none"}} onClick={onClose} />
       <div className="relative bg-[var(--bg-surface)] rounded-2xl shadow-xl w-full max-w-md max-h-[calc(100vh-5rem)] flex flex-col overflow-hidden">
         {/* Header */}
