@@ -14,6 +14,8 @@ export interface RecurringItem {
   end_date: string | null;
   last_generated: string | null;
   is_active: boolean;
+  is_private: boolean;
+  user_id: string | null;
   created_by: string;
   created_at: string;
   categories: { name: string; icon: string | null; color: string | null } | null;

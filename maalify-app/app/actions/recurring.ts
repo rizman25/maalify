@@ -81,6 +81,7 @@ export async function saveRecurring(payload: {
   frequency: "daily" | "weekly" | "monthly";
   startDate: string;
   endDate: string | null;
+  isPrivate?: boolean;
 }): Promise<{ success?: true; error?: string }> {
   const authSupabase = await createClient();
   const { data: { user } } = await authSupabase.auth.getUser();
@@ -109,6 +110,8 @@ export async function saveRecurring(payload: {
     frequency: payload.frequency,
     start_date: payload.startDate,
     end_date: payload.endDate,
+    is_private: payload.isPrivate ?? false,
+    user_id: payload.isPrivate ? payload.userId : null,
   };
 
   if (payload.recurringId) {

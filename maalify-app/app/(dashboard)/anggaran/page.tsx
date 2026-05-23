@@ -119,7 +119,7 @@ export default async function AnggaranPage({ searchParams }: Props) {
   // Gabungkan budget dengan spending
   type BudgetRow = {
     id: string; name: string | null; amount: number; category_id: string;
-    is_recurring: boolean;
+    is_recurring: boolean; user_id: string | null;
     categories: { name: string; icon: string | null; color: string | null } | null;
   };
   const budgets = ((budgetsRes.data ?? []) as unknown as BudgetRow[]).map(b => {
@@ -134,6 +134,7 @@ export default async function AnggaranPage({ searchParams }: Props) {
       budget: Number(b.amount),
       spent: spendMap.get(b.category_id) ?? 0,
       isRecurring: b.is_recurring ?? false,
+      isPrivate: b.user_id !== null,
     };
   });
 
@@ -147,6 +148,7 @@ export default async function AnggaranPage({ searchParams }: Props) {
       availableCategories={availableCategories}
       allCategories={catsRes.data ?? []}
       householdId={householdId}
+      userId={user.id}
       month={month}
       year={year}
       userRole={userRole}

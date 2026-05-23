@@ -21,6 +21,7 @@ interface BudgetItem {
   budget: number;
   spent: number;
   isRecurring: boolean;
+  isPrivate: boolean;
 }
 
 interface Props {
@@ -28,6 +29,7 @@ interface Props {
   budget?: BudgetItem;
   availableCategories: Category[];
   householdId: string;
+  userId: string;
   month: number;
   year: number;
   onClose: () => void;
@@ -35,12 +37,13 @@ interface Props {
 }
 
 export default function AnggaranModal({
-  mode, budget, availableCategories, householdId, month, year, onClose, onSaved,
+  mode, budget, availableCategories, householdId, userId, month, year, onClose, onSaved,
 }: Props) {
   const [categoryId, setCategoryId] = useState(budget?.category_id ?? availableCategories[0]?.id ?? "");
   const [customName, setCustomName] = useState(budget?.customName ?? "");
   const [amount, setAmount] = useState(budget ? String(budget.budget) : "");
   const [isRecurring, setIsRecurring] = useState(budget?.isRecurring ?? true);
+  const [isPrivate, setIsPrivate] = useState(budget?.isPrivate ?? false);
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -82,11 +85,17 @@ export default function AnggaranModal({
           year,
           period: "monthly",
           is_recurring: isRecurring,
+          user_id: isPrivate ? userId : null,
         });
         if (err) throw err;
       } else if (budget) {
         const { error: err } = await supabase.from("budgets")
-          .update({ amount: amt, name: customName.trim() || null, is_recurring: isRecurring })
+          .update({
+            amount: amt,
+            name: customName.trim() || null,
+            is_recurring: isRecurring,
+            user_id: isPrivate ? userId : null,
+          })
           .eq("id", budget.id);
         if (err) throw err;
       }
@@ -132,35 +141,58 @@ export default function AnggaranModal({
         </div>
 
         <div className="overflow-y-auto flex-1 px-5 py-4 space-y-4">
-          {/* Period badge + Recurring toggle */}
-          <div className="flex items-center justify-between gap-2">
+          {/* Period badge + Recurring toggle + Privacy toggle */}
+          <div className="flex items-center justify-between gap-2 flex-wrap">
             <div className="px-3 py-1 rounded-full bg-[var(--bg-elevated)] text-xs font-medium text-[var(--text-secondary)]">
               {MONTHS[month - 1]} {year}
             </div>
-            <button
-              type="button"
-              onClick={() => setIsRecurring(!isRecurring)}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border-2 transition-colors ${
-                isRecurring
-                  ? "border-brand-primary bg-brand-primary/5 text-brand-primary"
-                  : "border-[var(--border)] text-[var(--text-secondary)] hover:border-brand-primary/40"
-              }`}
-            >
-              <RefreshCw size={14} />
-              <span className="text-xs font-semibold">
-                {isRecurring ? "Berulang" : "Sekali"}
-              </span>
-              {/* mini toggle */}
-              <div
-                className={`relative rounded-full transition-colors flex-shrink-0 ${isRecurring ? "bg-brand-primary" : "bg-[var(--border)]"}`}
-                style={{ width: 28, height: 16 }}
+            <div className="flex items-center gap-2">
+              {/* Recurring toggle */}
+              <button
+                type="button"
+                onClick={() => setIsRecurring(!isRecurring)}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border-2 transition-colors ${
+                  isRecurring
+                    ? "border-brand-primary bg-brand-primary/5 text-brand-primary"
+                    : "border-[var(--border)] text-[var(--text-secondary)] hover:border-brand-primary/40"
+                }`}
               >
-                <span
-                  className="absolute top-0.5 rounded-full bg-white shadow transition-all"
-                  style={{ width: 12, height: 12, left: isRecurring ? 14 : 2 }}
-                />
-              </div>
-            </button>
+                <RefreshCw size={14} />
+                <span className="text-xs font-semibold">
+                  {isRecurring ? "Berulang" : "Sekali"}
+                </span>
+                <div
+                  className={`relative rounded-full transition-colors flex-shrink-0 ${isRecurring ? "bg-brand-primary" : "bg-[var(--border)]"}`}
+                  style={{ width: 28, height: 16 }}
+                >
+                  <span
+                    className="absolute top-0.5 rounded-full bg-white shadow transition-all"
+                    style={{ width: 12, height: 12, left: isRecurring ? 14 : 2 }}
+                  />
+                </div>
+              </button>
+
+              {/* Privacy toggle */}
+              <button
+                type="button"
+                onClick={() => setIsPrivate(!isPrivate)}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border-2 transition-colors ${
+                  isPrivate
+                    ? "border-amber-500 bg-amber-50 text-amber-600"
+                    : "border-[var(--border)] text-[var(--text-secondary)] hover:border-amber-400/40"
+                }`}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  {isPrivate
+                    ? <><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></>
+                    : <><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></>
+                  }
+                </svg>
+                <span className="text-xs font-semibold">
+                  {isPrivate ? "Pribadi" : "Bersama"}
+                </span>
+              </button>
+            </div>
           </div>
 
           {/* Custom name */}

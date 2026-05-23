@@ -45,6 +45,7 @@ export default function RecurringModal({ item, wallets, categories, householdId,
   const [frequency, setFrequency] = useState<"daily" | "weekly" | "monthly">(item?.frequency ?? "monthly");
   const [startDate, setStartDate] = useState(item?.start_date ?? today);
   const [endDate, setEndDate] = useState(item?.end_date ?? "");
+  const [isPrivate, setIsPrivate] = useState(item?.is_private ?? false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showDelete, setShowDelete] = useState(false);
@@ -74,6 +75,7 @@ export default function RecurringModal({ item, wallets, categories, householdId,
       frequency,
       startDate,
       endDate: endDate || null,
+      isPrivate,
     });
 
     if (result.error) { setError(result.error); setLoading(false); return; }
@@ -188,6 +190,37 @@ export default function RecurringModal({ item, wallets, categories, householdId,
                   <p className="text-[10px] text-[var(--text-secondary)] mt-0.5 leading-tight">{f.desc}</p>
                 </button>
               ))}
+            </div>
+          </div>
+
+          {/* Privacy toggle */}
+          <div>
+            <label className="block text-xs font-medium text-[var(--text-primary)] mb-2">Visibilitas</label>
+            <div className="grid grid-cols-2 gap-2">
+              <button type="button" onClick={() => setIsPrivate(false)}
+                className={["py-3 px-3 rounded-xl border-2 text-left transition-colors flex items-center gap-2",
+                  !isPrivate ? "border-brand-primary bg-brand-primary/5" : "border-[var(--border)] hover:border-brand-primary/40"
+                ].join(" ")}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={!isPrivate ? "text-brand-primary" : "text-[var(--text-secondary)]"}>
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+                <div>
+                  <p className={["text-sm font-semibold", !isPrivate ? "text-brand-primary" : "text-[var(--text-primary)]"].join(" ")}>Bersama</p>
+                  <p className="text-[10px] text-[var(--text-secondary)]">Terlihat semua anggota</p>
+                </div>
+              </button>
+              <button type="button" onClick={() => setIsPrivate(true)}
+                className={["py-3 px-3 rounded-xl border-2 text-left transition-colors flex items-center gap-2",
+                  isPrivate ? "border-amber-500 bg-amber-50" : "border-[var(--border)] hover:border-amber-400/40"
+                ].join(" ")}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={isPrivate ? "text-amber-600" : "text-[var(--text-secondary)]"}>
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                <div>
+                  <p className={["text-sm font-semibold", isPrivate ? "text-amber-600" : "text-[var(--text-primary)]"].join(" ")}>Pribadi</p>
+                  <p className="text-[10px] text-[var(--text-secondary)]">Hanya terlihat olehmu</p>
+                </div>
+              </button>
             </div>
           </div>
 
