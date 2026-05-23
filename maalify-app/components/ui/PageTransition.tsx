@@ -30,8 +30,7 @@ export default function PageTransition({ children }: { children: React.ReactNode
     <div
       style={{
         opacity: animating ? 0 : 1,
-        transform: animating ? "translateY(6px)" : "translateY(0)",
-        transition: "opacity 0.18s ease, transform 0.18s ease",
+        transition: "opacity 0.18s ease",
       }}
     >
       {displayed}
