@@ -126,3 +126,62 @@ export async function saveRecurring(payload: {
 
   return { success: true };
 }
+
+export async function confirmRecurring(payload: {
+  recurringId: string;
+  actualDate: string;    // tanggal aktual transaksi (bisa berbeda dari scheduled)
+  scheduledDate: string; // tanggal terjadwal, dipakai untuk update last_generated
+}): Promise<{ success?: true; error?: string }> {
+  const check = await verifyRecurringAccess(payload.recurringId);
+  if (check.error) return { error: check.error };
+
+  const svc = service();
+
+  // Ambil detail recurring transaction
+  const { data: rec } = await svc
+    .from("recurring_transactions")
+    .select("household_id, wallet_id, category_id, type, amount, description, created_by")
+    .eq("id", payload.recurringId)
+    .single();
+
+  if (!rec) return { error: "Transaksi berulang tidak ditemukan." };
+
+  // Buat transaksi dengan tanggal aktual
+  const { error: txErr } = await svc.from("transactions").insert({
+    household_id: rec.household_id,
+    wallet_id: rec.wallet_id,
+    category_id: rec.category_id,
+    user_id: rec.created_by,
+    recurring_id: payload.recurringId,
+    type: rec.type,
+    amount: rec.amount,
+    description: rec.description,
+    date: payload.actualDate,
+  });
+  if (txErr) return { error: txErr.message };
+
+  // Update last_generated ke scheduled date agar siklus berikutnya dihitung dengan benar
+  const { error: upErr } = await svc
+    .from("recurring_transactions")
+    .update({ last_generated: payload.scheduledDate })
+    .eq("id", payload.recurringId);
+  if (upErr) return { error: upErr.message };
+
+  return { success: true };
+}
+
+export async function skipRecurring(payload: {
+  recurringId: string;
+  scheduledDate: string; // tandai periode ini sebagai selesai tanpa buat transaksi
+}): Promise<{ success?: true; error?: string }> {
+  const check = await verifyRecurringAccess(payload.recurringId);
+  if (check.error) return { error: check.error };
+
+  const { error } = await service()
+    .from("recurring_transactions")
+    .update({ last_generated: payload.scheduledDate })
+    .eq("id", payload.recurringId);
+
+  if (error) return { error: error.message };
+  return { success: true };
+}

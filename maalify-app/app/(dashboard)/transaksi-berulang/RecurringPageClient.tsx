@@ -3,22 +3,22 @@
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { formatRupiah } from "@/lib/utils";
-import type { RecurringItem } from "./page";
+import type { RecurringItem, PendingItem } from "./page";
 import RecurringModal from "@/components/transaksi/RecurringModal";
 import { Toast, useToast } from "@/components/ui/Toast";
-import { toggleRecurringActive } from "@/app/actions/recurring";
+import { toggleRecurringActive, confirmRecurring, skipRecurring } from "@/app/actions/recurring";
 
 interface Wallet { id: string; name: string; type: string; current_balance: number; }
 interface Category { id: string; name: string; icon: string | null; color: string | null; type: string; }
 
 interface Props {
   recurring: RecurringItem[];
+  pendingItems: PendingItem[];
   wallets: Wallet[];
   categories: Category[];
   householdId: string;
   userId: string;
   userRole: "super_admin" | "admin" | "member";
-  justGenerated: number;
 }
 
 const FREQ_LABEL: Record<string, string> = {
@@ -52,14 +52,26 @@ function nextDate(item: RecurringItem): string {
   return next.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
 }
 
+function fmtDate(iso: string) {
+  return new Date(iso + "T00:00:00").toLocaleDateString("id-ID", {
+    day: "numeric", month: "short", year: "numeric",
+  });
+}
+
 export default function RecurringPageClient({
-  recurring, wallets, categories, householdId, userId, userRole, justGenerated,
+  recurring, pendingItems, wallets, categories, householdId, userId, userRole,
 }: Props) {
   const router = useRouter();
   const { toast, showToast, dismissToast } = useToast();
   const canManage = userRole !== "member";
   const [modal, setModal] = useState<null | "add" | RecurringItem>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
+
+  // State untuk tanggal aktual per pending item (key: `${recurringId}_${scheduledDate}`)
+  const [actualDates, setActualDates] = useState<Record<string, string>>(() =>
+    Object.fromEntries(pendingItems.map(p => [`${p.recurringId}_${p.scheduledDate}`, p.scheduledDate]))
+  );
+  const [processingKey, setProcessingKey] = useState<string | null>(null);
 
   const handleSaved = useCallback(() => {
     if (modal === "add") showToast("Transaksi berulang berhasil ditambahkan");
@@ -72,14 +84,38 @@ export default function RecurringPageClient({
     setTogglingId(item.id);
     const result = await toggleRecurringActive(item.id, !item.is_active);
     setTogglingId(null);
-    if (result.error) {
-      showToast(result.error, "error");
-      return;
-    }
+    if (result.error) { showToast(result.error, "error"); return; }
     showToast(
       item.is_active ? "Transaksi berulang dinonaktifkan" : "Transaksi berulang diaktifkan",
       "success"
     );
+    router.refresh();
+  }
+
+  async function handleConfirm(p: PendingItem) {
+    const key = `${p.recurringId}_${p.scheduledDate}`;
+    setProcessingKey(key);
+    const result = await confirmRecurring({
+      recurringId: p.recurringId,
+      actualDate: actualDates[key] ?? p.scheduledDate,
+      scheduledDate: p.scheduledDate,
+    });
+    setProcessingKey(null);
+    if (result.error) { showToast(result.error, "error"); return; }
+    showToast(`${p.description} — dikonfirmasi ✓`, "success");
+    router.refresh();
+  }
+
+  async function handleSkip(p: PendingItem) {
+    const key = `${p.recurringId}_${p.scheduledDate}`;
+    setProcessingKey(key + "_skip");
+    const result = await skipRecurring({
+      recurringId: p.recurringId,
+      scheduledDate: p.scheduledDate,
+    });
+    setProcessingKey(null);
+    if (result.error) { showToast(result.error, "error"); return; }
+    showToast(`${p.description} — dilewati`, "success");
     router.refresh();
   }
 
@@ -103,7 +139,7 @@ export default function RecurringPageClient({
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold text-[var(--text-primary)]">Transaksi Berulang</h1>
-            <p className="text-sm text-[var(--text-secondary)]">Otomatis tercatat sesuai jadwal</p>
+            <p className="text-sm text-[var(--text-secondary)]">Konfirmasi dan atur jadwal berulang</p>
           </div>
           {canManage && (
             <button
@@ -118,13 +154,92 @@ export default function RecurringPageClient({
           )}
         </div>
 
-        {/* Auto-generate banner */}
-        {justGenerated > 0 && (
-          <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-green-50 border border-green-200 text-green-800 text-sm">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="20 6 9 17 4 12"/>
-            </svg>
-            <span><strong>{justGenerated} transaksi</strong> berhasil dibuat otomatis dari jadwal berulang.</span>
+        {/* ── Menunggu Konfirmasi ── */}
+        {pendingItems.length > 0 && (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-amber-600 tracking-widest uppercase">
+                ⏳ Menunggu Konfirmasi ({pendingItems.length})
+              </span>
+              <div className="flex-1 h-px bg-amber-200" />
+            </div>
+            <p className="text-xs text-[var(--text-secondary)] -mt-1 px-1">
+              Cek apakah transaksi benar-benar terjadi. Sesuaikan tanggal jika berbeda dari jadwal.
+            </p>
+
+            {pendingItems.map((p) => {
+              const key = `${p.recurringId}_${p.scheduledDate}`;
+              const isProcessing = processingKey === key || processingKey === key + "_skip";
+              const isIncome = p.type === "income";
+
+              return (
+                <div
+                  key={key}
+                  className="bg-[var(--bg-surface)] rounded-2xl border-2 border-amber-200 p-4 space-y-3"
+                >
+                  {/* Top row */}
+                  <div className="flex items-start gap-3">
+                    <div
+                      className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
+                      style={{ backgroundColor: (p.categoryColor ?? "#94A3B8") + "20" }}
+                    >
+                      {p.categoryIcon ?? "💰"}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <p className="font-semibold text-[var(--text-primary)] text-sm">{p.description}</p>
+                          <p className="text-xs text-[var(--text-secondary)] mt-0.5">
+                            {p.categoryName} · {p.walletName}
+                          </p>
+                        </div>
+                        <p className={`font-financial font-bold text-base flex-shrink-0 ${isIncome ? "text-success" : "text-danger"}`}>
+                          {isIncome ? "+" : "-"}Rp {formatRupiah(p.amount)}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1.5 mt-1">
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium">
+                          Dijadwalkan: {fmtDate(p.scheduledDate)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Tanggal aktual */}
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-[var(--text-secondary)]">
+                      Tanggal aktual terjadi
+                    </label>
+                    <input
+                      type="date"
+                      value={actualDates[key] ?? p.scheduledDate}
+                      onChange={e => setActualDates(prev => ({ ...prev, [key]: e.target.value }))}
+                      className="w-full px-3 py-2 rounded-xl border border-[var(--border)] text-sm text-[var(--text-primary)] bg-[var(--bg-card)] focus:outline-none focus:border-brand-primary transition-colors"
+                    />
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleSkip(p)}
+                      disabled={isProcessing}
+                      className="flex-1 py-2 text-sm rounded-xl border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] transition-colors disabled:opacity-50"
+                    >
+                      {processingKey === key + "_skip" ? "Memproses..." : "Tidak Terjadi"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleConfirm(p)}
+                      disabled={isProcessing}
+                      className="flex-2 flex-1 py-2 text-sm rounded-xl bg-brand-primary text-white font-medium hover:bg-brand-primary/90 transition-colors disabled:opacity-50"
+                    >
+                      {processingKey === key ? "Mengkonfirmasi..." : "✓ Konfirmasi"}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
 
@@ -134,7 +249,7 @@ export default function RecurringPageClient({
             <div className="w-20 h-20 rounded-3xl bg-[var(--bg-elevated)] flex items-center justify-center text-4xl">🔄</div>
             <div>
               <p className="font-semibold text-[var(--text-primary)] text-base">Belum ada transaksi berulang</p>
-              <p className="text-sm text-[var(--text-secondary)] mt-1">Set sekali, otomatis tercatat setiap periode</p>
+              <p className="text-sm text-[var(--text-secondary)] mt-1">Set sekali, konfirmasi setiap periode</p>
             </div>
             {canManage && (
               <button onClick={() => setModal("add")} className="px-5 py-2.5 rounded-xl bg-brand-primary text-white text-sm font-medium hover:bg-brand-primary/90">
@@ -159,15 +274,12 @@ export default function RecurringPageClient({
               return (
                 <div key={item.id} className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border)] p-4">
                   <div className="flex items-start gap-3">
-                    {/* Icon */}
                     <div
                       className="w-11 h-11 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
                       style={{ backgroundColor: (cat?.color ?? "#94A3B8") + "20" }}
                     >
                       {cat?.icon ?? "💰"}
                     </div>
-
-                    {/* Info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2">
                         <div>
@@ -181,7 +293,6 @@ export default function RecurringPageClient({
                         </p>
                       </div>
 
-                      {/* Meta row */}
                       <div className="flex items-center gap-2 mt-2 flex-wrap">
                         <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-[var(--bg-elevated)] text-[var(--text-secondary)]">
                           {FREQ_ICON[item.frequency]} {FREQ_LABEL[item.frequency]}
@@ -196,7 +307,6 @@ export default function RecurringPageClient({
                         )}
                       </div>
 
-                      {/* Actions */}
                       {canManage && (
                         <div className="flex items-center gap-2 mt-3">
                           <button
@@ -267,13 +377,13 @@ export default function RecurringPageClient({
           </div>
         )}
 
-        {/* Info box */}
+        {/* Info */}
         {recurring.length > 0 && (
           <div className="flex items-start gap-2 p-3.5 rounded-xl bg-[var(--bg-elevated)] text-xs text-[var(--text-secondary)]">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 mt-0.5">
               <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
             </svg>
-            Transaksi berulang dibuat otomatis setiap kali kamu membuka halaman ini. Maksimal 36 periode per siklus per hari.
+            Transaksi berulang perlu dikonfirmasi secara manual. Sesuaikan tanggal jika pembayaran lebih cepat atau mundur dari jadwal.
           </div>
         )}
       </div>

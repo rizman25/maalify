@@ -1,6 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { generateRecurringTransactions } from "@/lib/generateRecurring";
 import RecurringPageClient from "./RecurringPageClient";
 
 export interface RecurringItem {
@@ -21,6 +20,52 @@ export interface RecurringItem {
   wallets: { name: string } | null;
 }
 
+export interface PendingItem {
+  recurringId: string;
+  description: string;
+  type: "income" | "expense";
+  amount: number;
+  scheduledDate: string;
+  categoryIcon: string | null;
+  categoryColor: string | null;
+  categoryName: string;
+  walletName: string;
+}
+
+function addDate(from: Date, frequency: string): Date {
+  const d = new Date(from);
+  if (frequency === "monthly") d.setMonth(d.getMonth() + 1);
+  else if (frequency === "weekly") d.setDate(d.getDate() + 7);
+  else d.setDate(d.getDate() + 1);
+  return d;
+}
+
+function getPendingDates(item: RecurringItem, today: Date): string[] {
+  const todayStr = today.toISOString().split("T")[0];
+  const startDate = new Date(item.start_date + "T00:00:00");
+  const endDate = item.end_date ? new Date(item.end_date + "T00:00:00") : null;
+
+  let cursor: Date;
+  if (item.last_generated) {
+    cursor = addDate(new Date(item.last_generated + "T00:00:00"), item.frequency);
+  } else {
+    cursor = new Date(startDate);
+  }
+
+  const dates: string[] = [];
+  const MAX = 12;
+
+  while (dates.length < MAX) {
+    const dateStr = cursor.toISOString().split("T")[0];
+    if (dateStr > todayStr) break;
+    if (endDate && cursor > endDate) break;
+    dates.push(dateStr);
+    cursor = addDate(cursor, item.frequency);
+  }
+
+  return dates;
+}
+
 export default async function RecurringPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -35,9 +80,6 @@ export default async function RecurringPage() {
 
   const householdId = membership?.household_id ?? "";
   const userRole = (membership?.role ?? "member") as "super_admin" | "admin" | "member";
-
-  // Auto-generate pending recurring transactions
-  const generated = await generateRecurringTransactions(supabase, householdId);
 
   const [recurringRes, walletsRes, catsRes] = await Promise.all([
     supabase
@@ -62,15 +104,43 @@ export default async function RecurringPage() {
       .order("name"),
   ]);
 
+  const recurring = (recurringRes.data ?? []) as unknown as RecurringItem[];
+  const today = new Date();
+
+  // Hitung pending items (transaksi terjadwal yang belum dikonfirmasi)
+  const pendingItems: PendingItem[] = [];
+  for (const item of recurring) {
+    if (!item.is_active) continue;
+    const dates = getPendingDates(item, today);
+    if (dates.length === 0) continue;
+
+    const cat = Array.isArray(item.categories) ? item.categories[0] : item.categories;
+    const wallet = Array.isArray(item.wallets) ? item.wallets[0] : item.wallets;
+
+    for (const date of dates) {
+      pendingItems.push({
+        recurringId: item.id,
+        description: item.description,
+        type: item.type,
+        amount: item.amount,
+        scheduledDate: date,
+        categoryIcon: (cat as { icon: string | null } | null)?.icon ?? null,
+        categoryColor: (cat as { color: string | null } | null)?.color ?? null,
+        categoryName: (cat as { name: string } | null)?.name ?? "-",
+        walletName: (wallet as { name: string } | null)?.name ?? "-",
+      });
+    }
+  }
+
   return (
     <RecurringPageClient
-      recurring={(recurringRes.data ?? []) as unknown as RecurringItem[]}
+      recurring={recurring}
+      pendingItems={pendingItems}
       wallets={walletsRes.data ?? []}
       categories={catsRes.data ?? []}
       householdId={householdId}
       userId={user.id}
       userRole={userRole}
-      justGenerated={generated}
     />
   );
 }

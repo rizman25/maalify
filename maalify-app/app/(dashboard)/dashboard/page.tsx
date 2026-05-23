@@ -1,7 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { formatRupiah } from "@/lib/utils";
-import { generateRecurringTransactions } from "@/lib/generateRecurring";
 import TrendChart from "@/components/dashboard/TrendChart";
 import CategoryChart from "@/components/dashboard/CategoryChart";
 import QuickAddTransaksi from "@/components/dashboard/QuickAddTransaksi";
@@ -28,11 +27,6 @@ export default async function DashboardPage() {
   const householdId = membership?.household_id ?? "";
   const userRole = (membership?.role ?? "member") as "super_admin" | "admin" | "member";
   const isMember = userRole === "member";
-
-  // Silently generate any pending recurring transactions
-  if (householdId) {
-    generateRecurringTransactions(supabase, householdId).catch(() => {});
-  }
 
   const now = new Date();
   const year = now.getFullYear();
