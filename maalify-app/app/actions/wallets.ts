@@ -136,7 +136,10 @@ export async function saveTransfer(payload: {
     return { error: "Saldo dompet asal tidak cukup (termasuk biaya admin)." };
   }
 
-  // Insert transfer — trigger DB akan otomatis update from_wallet -= amount, to_wallet += amount
+  // Insert transfer — DB trigger (handle_transfer_balance) atomically updates:
+  //   from_wallet: current_balance -= amount + admin_fee
+  //   to_wallet:   current_balance += amount
+  // No manual balance update needed here.
   const { error: txErr } = await svc.from("transfers").insert({
     household_id: payload.householdId,
     from_wallet_id: payload.fromWalletId,
@@ -148,15 +151,6 @@ export async function saveTransfer(payload: {
     user_id: payload.userId,
   });
   if (txErr) return { error: txErr.message };
-
-  // Deduct admin fee dari from_wallet secara manual (tidak ditangani trigger)
-  if (payload.adminFee > 0) {
-    const { error: feeErr } = await svc
-      .from("wallets")
-      .update({ current_balance: Number(fromWallet.current_balance) - payload.amount - payload.adminFee })
-      .eq("id", payload.fromWalletId);
-    if (feeErr) return { error: feeErr.message };
-  }
 
   return { success: true };
 }

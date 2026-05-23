@@ -177,19 +177,9 @@ async function recordPaymentTransaction(params: {
     .update({ transaction_id: txn.id })
     .eq("id", itemId);
 
-  // Deduct wallet balance
-  const { data: wallet } = await svc
-    .from("wallets")
-    .select("current_balance")
-    .eq("id", walletId)
-    .single();
-
-  if (wallet) {
-    await svc
-      .from("wallets")
-      .update({ current_balance: Math.max(0, wallet.current_balance - amount) })
-      .eq("id", walletId);
-  }
+  // NOTE: wallet balance is updated automatically by the DB trigger
+  // trg_update_balance_on_insert on the transactions table.
+  // Do NOT manually update current_balance here — that would double-deduct.
 }
 
 /**
