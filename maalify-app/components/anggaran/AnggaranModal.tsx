@@ -131,11 +131,35 @@ export default function AnggaranModal({
         </div>
 
         <div className="overflow-y-auto flex-1 px-5 py-4 space-y-4">
-          {/* Period badge */}
-          <div className="flex items-center gap-2">
+          {/* Period badge + Recurring toggle */}
+          <div className="flex items-center justify-between gap-2">
             <div className="px-3 py-1 rounded-full bg-[var(--bg-elevated)] text-xs font-medium text-[var(--text-secondary)]">
               {MONTHS[month - 1]} {year}
             </div>
+            <button
+              type="button"
+              onClick={() => setIsRecurring(!isRecurring)}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border-2 transition-colors ${
+                isRecurring
+                  ? "border-brand-primary bg-brand-primary/5 text-brand-primary"
+                  : "border-[var(--border)] text-[var(--text-secondary)] hover:border-brand-primary/40"
+              }`}
+            >
+              <span className="text-sm">🔄</span>
+              <span className="text-xs font-semibold">
+                {isRecurring ? "Berulang" : "Sekali"}
+              </span>
+              {/* mini toggle */}
+              <div
+                className={`relative rounded-full transition-colors flex-shrink-0 ${isRecurring ? "bg-brand-primary" : "bg-[var(--border)]"}`}
+                style={{ width: 28, height: 16 }}
+              >
+                <span
+                  className="absolute top-0.5 rounded-full bg-white shadow transition-all"
+                  style={{ width: 12, height: 12, left: isRecurring ? 14 : 2 }}
+                />
+              </div>
+            </button>
           </div>
 
           {/* Custom name */}
@@ -210,36 +234,6 @@ export default function AnggaranModal({
               <p className="text-xs text-[var(--text-secondary)]">Rp {formatRupiah(Number(amount))}</p>
             )}
           </div>
-
-          {/* Recurring toggle */}
-          <button
-            type="button"
-            onClick={() => setIsRecurring(!isRecurring)}
-            className={`w-full flex items-center justify-between p-3.5 rounded-xl border-2 transition-colors ${
-              isRecurring
-                ? "border-brand-primary bg-brand-primary/5"
-                : "border-[var(--border)] hover:border-[var(--text-secondary)]/30"
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <span className="text-xl">🔄</span>
-              <div className="text-left">
-                <p className={`text-sm font-medium ${isRecurring ? "text-brand-primary" : "text-[var(--text-primary)]"}`}>
-                  {isRecurring ? "Berulang tiap bulan" : "Hanya bulan ini"}
-                </p>
-                <p className="text-xs text-[var(--text-secondary)]">
-                  {isRecurring
-                    ? "Otomatis muncul di bulan berikutnya"
-                    : "Anggaran hanya berlaku bulan ini saja"}
-                </p>
-              </div>
-            </div>
-            <div className={`relative w-10 h-5.5 rounded-full transition-colors flex-shrink-0 ${isRecurring ? "bg-brand-primary" : "bg-[var(--border)]"}`}
-              style={{ width: 40, height: 22 }}>
-              <span className={`absolute top-0.5 w-4.5 h-4.5 rounded-full bg-white shadow transition-transform`}
-                style={{ width: 18, height: 18, left: isRecurring ? 20 : 2 }} />
-            </div>
-          </button>
 
           {/* Current spending info (edit mode) */}
           {mode === "edit" && budget && budget.spent > 0 && (
