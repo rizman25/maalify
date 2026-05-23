@@ -8,18 +8,13 @@ import QuickAddTransaksi from "@/components/dashboard/QuickAddTransaksi";
 import ScanStrukButton from "@/components/dashboard/ScanStrukButton";
 import RecentTransaksiList from "@/components/dashboard/RecentTransaksiList";
 import MemberSpendingSummary from "@/components/dashboard/MemberSpendingSummary";
-import DashboardViewToggle from "@/components/dashboard/DashboardViewToggle";
 import type { MemberSpending } from "@/components/dashboard/MemberSpendingSummary";
 import Link from "next/link";
 
 const BULAN_SHORT = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
 const BULAN_PANJANG = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
 
-export default async function DashboardPage({ searchParams }: { searchParams: Promise<{ view?: string }> }) {
-  const params = await searchParams;
-  const viewMode = params.view === "personal" ? "personal" : "household";
-  const isPersonal = viewMode === "personal";
-
+export default async function DashboardPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
@@ -53,59 +48,41 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   sixMonthsAgo.setDate(1);
   const trendStart = `${sixMonthsAgo.getFullYear()}-${pad(sixMonthsAgo.getMonth() + 1)}-01`;
 
-  // Helper: base transaction query, scoped to household or personal
-  const txBase = () => {
-    const q = supabase.from("transactions").select("type, amount")
-      .eq("household_id", householdId);
-    return isPersonal ? q.eq("user_id", user.id) : q;
-  };
+  const [
+    curMonthRes, prevMonthRes, walletsRes, trendRes, catRes, budgetsRes, debtsRes,
+    recentTxRes, activeWalletsRes, catsRes, goalsRes, memberSpendingRes, membersCountRes, recurringRes,
+    // Personal queries
+    personalCurRes, personalPrevRes, personalWalletsRes,
+  ] = await Promise.all([
+    // ── Household (Bersama) ──
+    supabase.from("transactions").select("type, amount")
+      .eq("household_id", householdId).gte("date", monthStart).lt("date", monthEnd),
 
-  const [curMonthRes, prevMonthRes, walletsRes, trendRes, catRes, budgetsRes, debtsRes, recentTxRes, activeWalletsRes, catsRes, goalsRes, memberSpendingRes, membersCountRes, recurringRes] = await Promise.all([
-    txBase().gte("date", monthStart).lt("date", monthEnd),
+    supabase.from("transactions").select("type, amount")
+      .eq("household_id", householdId).gte("date", prevMonthStart).lt("date", monthStart),
 
-    txBase().gte("date", prevMonthStart).lt("date", monthStart),
+    supabase.from("wallets").select("current_balance")
+      .eq("household_id", householdId).eq("is_active", true),
 
-    // Wallets: personal = private wallets only; household = all active
-    isPersonal
-      ? supabase.from("wallets").select("current_balance")
-          .eq("household_id", householdId).eq("is_active", true).eq("is_shared", false)
-      : supabase.from("wallets").select("current_balance")
-          .eq("household_id", householdId).eq("is_active", true),
+    supabase.from("transactions").select("type, amount, date")
+      .eq("household_id", householdId).gte("date", trendStart).order("date"),
 
-    (() => {
-      const q = supabase.from("transactions").select("type, amount, date")
-        .eq("household_id", householdId).gte("date", trendStart).order("date");
-      return isPersonal ? q.eq("user_id", user.id) : q;
-    })(),
+    supabase.from("transactions").select("amount, categories(name, color)")
+      .eq("household_id", householdId).eq("type", "expense")
+      .gte("date", monthStart).lt("date", monthEnd),
 
-    (() => {
-      const q = supabase.from("transactions")
-        .select("amount, categories(name, color)")
-        .eq("household_id", householdId).eq("type", "expense")
-        .gte("date", monthStart).lt("date", monthEnd);
-      return isPersonal ? q.eq("user_id", user.id) : q;
-    })(),
-
-    supabase.from("budgets")
-      .select("id, amount, category_id, categories(name, color)")
+    supabase.from("budgets").select("id, amount, category_id, categories(name, color)")
       .eq("household_id", householdId).eq("month", month).eq("year", year),
 
-    isMember || isPersonal
+    isMember
       ? Promise.resolve({ data: [] })
-      : supabase.from("debts")
-          .select("id, type, party_name, remaining_amount, due_date, status")
-          .eq("household_id", householdId).eq("status", "active")
-          .order("due_date").limit(5),
+      : supabase.from("debts").select("id, type, party_name, remaining_amount, due_date, status")
+          .eq("household_id", householdId).eq("status", "active").order("due_date").limit(5),
 
-    (() => {
-      const q = supabase.from("transactions")
-        .select("id, type, amount, description, date, visibility, user_id, categories(name, icon, color), wallets(name), users(name)")
-        .eq("household_id", householdId)
-        .order("date", { ascending: false })
-        .order("created_at", { ascending: false })
-        .limit(5);
-      return isPersonal ? q.eq("user_id", user.id) : q;
-    })(),
+    supabase.from("transactions")
+      .select("id, type, amount, description, date, visibility, user_id, categories(name, icon, color), wallets(name), users(name)")
+      .eq("household_id", householdId)
+      .order("date", { ascending: false }).order("created_at", { ascending: false }).limit(5),
 
     supabase.from("wallets").select("id, name, type, current_balance, color, is_active")
       .eq("household_id", householdId).eq("is_active", true).order("name"),
@@ -116,20 +93,30 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
 
     supabase.from("savings_goals")
       .select("id, name, target_amount, current_amount, color, icon, is_completed")
-      .eq("household_id", householdId)
-      .eq("is_completed", false)
-      .order("created_at", { ascending: false })
-      .limit(4),
+      .eq("household_id", householdId).eq("is_completed", false)
+      .order("created_at", { ascending: false }).limit(4),
 
-    // Member spending summary — owners/admins only, household view only
-    !isMember && !isPersonal && householdId
+    !isMember && householdId
       ? supabase.rpc("get_member_spending_summary", { p_household_id: householdId })
       : Promise.resolve({ data: null, error: null }),
 
     supabase.from("household_members").select("id", { count: "exact", head: true }).eq("household_id", householdId),
     supabase.from("recurring_transactions").select("id", { count: "exact", head: true }).eq("household_id", householdId).limit(1),
+
+    // ── Pribadi (personal — filtered by user_id / private wallets) ──
+    supabase.from("transactions").select("type, amount")
+      .eq("household_id", householdId).eq("user_id", user.id)
+      .gte("date", monthStart).lt("date", monthEnd),
+
+    supabase.from("transactions").select("type, amount")
+      .eq("household_id", householdId).eq("user_id", user.id)
+      .gte("date", prevMonthStart).lt("date", monthStart),
+
+    supabase.from("wallets").select("current_balance")
+      .eq("household_id", householdId).eq("is_active", true).eq("is_shared", false),
   ]);
 
+  // ── Household stats ──
   const curIncome  = (curMonthRes.data ?? []).filter(t => t.type === "income").reduce((s,t) => s + Number(t.amount), 0);
   const curExpense = (curMonthRes.data ?? []).filter(t => t.type === "expense").reduce((s,t) => s + Number(t.amount), 0);
   const prevIncome  = (prevMonthRes.data ?? []).filter(t => t.type === "income").reduce((s,t) => s + Number(t.amount), 0);
@@ -137,6 +124,15 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   const totalAset  = (walletsRes.data ?? []).reduce((s, w) => s + Number(w.current_balance), 0);
   const netSavings = curIncome - curExpense;
   const prevNetSavings = prevIncome - prevExpense;
+
+  // ── Personal stats ──
+  const pCurIncome   = (personalCurRes.data ?? []).filter(t => t.type === "income").reduce((s,t) => s + Number(t.amount), 0);
+  const pCurExpense  = (personalCurRes.data ?? []).filter(t => t.type === "expense").reduce((s,t) => s + Number(t.amount), 0);
+  const pPrevIncome  = (personalPrevRes.data ?? []).filter(t => t.type === "income").reduce((s,t) => s + Number(t.amount), 0);
+  const pPrevExpense = (personalPrevRes.data ?? []).filter(t => t.type === "expense").reduce((s,t) => s + Number(t.amount), 0);
+  const pTotalAset   = (personalWalletsRes.data ?? []).reduce((s, w) => s + Number(w.current_balance), 0);
+  const pNetSavings  = pCurIncome - pCurExpense;
+  const pPrevNetSavings = pPrevIncome - pPrevExpense;
   const activeGoals = (goalsRes.data ?? []) as { id: string; name: string; target_amount: number; current_amount: number; color: string; icon: string; is_completed: boolean }[];
 
   const memberSpending: MemberSpending[] = ((memberSpendingRes.data ?? []) as MemberSpending[]).map(m => ({
@@ -222,9 +218,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
             Selamat datang kembali, {firstName} 👋
           </h1>
           <p className="text-sm text-[var(--text-secondary)] mt-1">
-            {isPersonal
-              ? `Ringkasan keuangan pribadimu — ${bulanNama}`
-              : isMember
+            {isMember
               ? `Berikut ringkasan keuangan kamu — ${bulanNama}`
               : `Berikut ringkasan keuangan keluarga ${bulanNama}`}
           </p>
@@ -245,41 +239,62 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
         </div>
       </div>
 
-      {/* View toggle */}
-      <div className="flex items-center gap-3">
-        <DashboardViewToggle current={viewMode} />
-        {isPersonal && (
-          <p className="text-xs text-[var(--text-secondary)]">
-            Menampilkan data transaksi &amp; dompet pribadi kamu saja
-          </p>
-        )}
+      {/* Summary Cards — Bersama */}
+      <div id="tour-summary" className="space-y-3">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-semibold text-[var(--text-secondary)]">👨‍👩‍👧‍👦 Bersama</span>
+          <div className="flex-1 h-px bg-[var(--border)]" />
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <SummaryCard label={isMember ? "SALDO DOMPET SAYA" : "TOTAL SALDO"} value={totalAset} pctChange={null} color="#3B82F6"
+            icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>}
+          />
+          <SummaryCard label="PEMASUKAN" value={curIncome} pctChange={pct(curIncome, prevIncome)}
+            prevLabel={`dari ${BULAN_SHORT[(month === 1 ? 12 : month - 1) - 1]} (Rp ${formatRupiah(prevIncome)})`}
+            color="#27AE60" positive
+            icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>}
+          />
+          <SummaryCard label="PENGELUARAN" value={curExpense} pctChange={pct(curExpense, prevExpense)}
+            prevLabel={`dari ${BULAN_SHORT[(month === 1 ? 12 : month - 1) - 1]} (Rp ${formatRupiah(prevExpense)})`}
+            color="#E74C3C"
+            icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>}
+          />
+          <SummaryCard label="TABUNGAN BERSIH" value={Math.abs(netSavings)}
+            pctChange={pct(Math.abs(netSavings), Math.abs(prevNetSavings))}
+            prevLabel={`dari ${BULAN_SHORT[(month === 1 ? 12 : month - 1) - 1]}`}
+            color={netSavings >= 0 ? "#8B5CF6" : "#E74C3C"} positive surplus={netSavings >= 0}
+            icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2a10 10 0 1 0 10 10H12V2z"/><path d="M12 2a10 10 0 0 1 10 10"/></svg>}
+          />
+        </div>
       </div>
 
-      {/* Summary Cards */}
-      <div id="tour-summary" className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <SummaryCard label={isPersonal ? "SALDO DOMPET PRIBADI" : isMember ? "SALDO DOMPET SAYA" : "TOTAL SALDO"} value={totalAset} pctChange={null} color="#3B82F6"
-          icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>}
-        />
-        <SummaryCard label="PEMASUKAN BULAN INI" value={curIncome} pctChange={pct(curIncome, prevIncome)}
-          prevLabel={`dari ${BULAN_SHORT[(month === 1 ? 12 : month - 1) - 1]} (Rp ${formatRupiah(prevIncome)})`}
-          color="#27AE60" positive
-          icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>}
-        />
-        <SummaryCard label="PENGELUARAN BULAN INI" value={curExpense} pctChange={pct(curExpense, prevExpense)}
-          prevLabel={`dari ${BULAN_SHORT[(month === 1 ? 12 : month - 1) - 1]} (Rp ${formatRupiah(prevExpense)})`}
-          color="#E74C3C"
-          icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>}
-        />
-        <SummaryCard
-          label="TABUNGAN BERSIH"
-          value={Math.abs(netSavings)}
-          pctChange={pct(Math.abs(netSavings), Math.abs(prevNetSavings))}
-          prevLabel={`dari ${BULAN_SHORT[(month === 1 ? 12 : month - 1) - 1]}`}
-          color={netSavings >= 0 ? "#8B5CF6" : "#E74C3C"}
-          positive
-          surplus={netSavings >= 0}
-          icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2a10 10 0 1 0 10 10H12V2z"/><path d="M12 2a10 10 0 0 1 10 10"/></svg>}
-        />
+      {/* Summary Cards — Pribadi */}
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-semibold text-[var(--text-secondary)]">🙋 Pribadi</span>
+          <div className="flex-1 h-px bg-[var(--border)]" />
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <SummaryCard label="SALDO DOMPET PRIBADI" value={pTotalAset} pctChange={null} color="#3B82F6"
+            icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>}
+          />
+          <SummaryCard label="PEMASUKAN SAYA" value={pCurIncome} pctChange={pct(pCurIncome, pPrevIncome)}
+            prevLabel={`dari ${BULAN_SHORT[(month === 1 ? 12 : month - 1) - 1]} (Rp ${formatRupiah(pPrevIncome)})`}
+            color="#27AE60" positive
+            icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>}
+          />
+          <SummaryCard label="PENGELUARAN SAYA" value={pCurExpense} pctChange={pct(pCurExpense, pPrevExpense)}
+            prevLabel={`dari ${BULAN_SHORT[(month === 1 ? 12 : month - 1) - 1]} (Rp ${formatRupiah(pPrevExpense)})`}
+            color="#E74C3C"
+            icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>}
+          />
+          <SummaryCard label="TABUNGAN BERSIH SAYA" value={Math.abs(pNetSavings)}
+            pctChange={pct(Math.abs(pNetSavings), Math.abs(pPrevNetSavings))}
+            prevLabel={`dari ${BULAN_SHORT[(month === 1 ? 12 : month - 1) - 1]}`}
+            color={pNetSavings >= 0 ? "#8B5CF6" : "#E74C3C"} positive surplus={pNetSavings >= 0}
+            icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2a10 10 0 1 0 10 10H12V2z"/><path d="M12 2a10 10 0 0 1 10 10"/></svg>}
+          />
+        </div>
       </div>
 
       {/* Charts */}
