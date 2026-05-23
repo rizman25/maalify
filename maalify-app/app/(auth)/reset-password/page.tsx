@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { translateAuthError } from "@/lib/auth-errors";
 
 const inputCls = "w-full px-3.5 py-2.5 rounded-lg border-[1.5px] border-[#E2E8F0] bg-white text-sm text-[#0F172A] placeholder:text-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#1E3A5F] focus:ring-offset-1 focus:border-transparent";
 const labelCls = "block text-xs font-medium text-[#1E293B] mb-1.5";
@@ -36,7 +37,7 @@ export default function ResetPasswordPage() {
     const { error: updateErr } = await supabase.auth.updateUser({ password });
 
     if (updateErr) {
-      setError(updateErr.message);
+      setError(translateAuthError(updateErr.message));
       setLoading(false);
       return;
     }
