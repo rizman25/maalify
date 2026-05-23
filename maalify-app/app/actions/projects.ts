@@ -192,6 +192,59 @@ async function recordPaymentTransaction(params: {
   }
 }
 
+/**
+ * Backfill: for any paid item with no transaction_id yet, create the expense
+ * transaction and deduct the project wallet. Safe to call multiple times —
+ * it only processes items where transaction_id IS NULL.
+ */
+export async function syncProjectPaidItems(
+  projectId: string
+): Promise<{ synced: number; error?: string }> {
+  const authSupabase = await createClient();
+  const { data: { user } } = await authSupabase.auth.getUser();
+  if (!user) return { synced: 0, error: "Sesi tidak valid." };
+
+  const svc = service();
+
+  const { data: project } = await svc
+    .from("projects")
+    .select("id, wallet_id, household_id")
+    .eq("id", projectId)
+    .single();
+
+  if (!project || !project.wallet_id) return { synced: 0 };
+
+  // Only items that are paid but have no transaction yet
+  const { data: items } = await svc
+    .from("project_items")
+    .select("id, name, planned_amount, actual_amount, paid_at")
+    .eq("project_id", projectId)
+    .eq("is_paid", true)
+    .is("transaction_id", null);
+
+  if (!items || items.length === 0) return { synced: 0 };
+
+  let synced = 0;
+  for (const item of items) {
+    const amount = item.actual_amount ?? item.planned_amount;
+    const date = item.paid_at ?? new Date().toISOString().split("T")[0];
+    await recordPaymentTransaction({
+      svc,
+      projectId,
+      householdId: project.household_id,
+      walletId: project.wallet_id,
+      userId: user.id,
+      itemId: item.id,
+      itemName: item.name,
+      amount,
+      date,
+    });
+    synced++;
+  }
+
+  return { synced };
+}
+
 export async function deleteProjectItem(itemId: string): Promise<{ success?: true; error?: string }> {
   const authSupabase = await createClient();
   const { data: { user } } = await authSupabase.auth.getUser();

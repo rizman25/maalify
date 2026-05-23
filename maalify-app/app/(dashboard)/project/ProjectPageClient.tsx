@@ -7,6 +7,7 @@ import type { Project, ProjectItem, ProjectStatus } from "@/types";
 import ProjectModal from "@/components/project/ProjectModal";
 import ProjectItemModal from "@/components/project/ProjectItemModal";
 import KontribusiModal from "@/components/project/KontribusiModal";
+import { syncProjectPaidItems } from "@/app/actions/projects";
 
 interface Wallet {
   id: string;
@@ -107,6 +108,11 @@ export default function ProjectPageClient({
       .order("created_at");
     setProjectItems(data ?? []);
     setLoadingItems(false);
+
+    // Backfill: deduct wallet for any paid items that have no transaction yet
+    syncProjectPaidItems(projectId).then(({ synced }) => {
+      if (synced > 0) router.refresh();
+    });
   }
 
   async function openDetail(project: Project) {
