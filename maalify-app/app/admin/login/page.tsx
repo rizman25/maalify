@@ -1,17 +1,23 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-const ADMIN_EMAILS = ["riza.developer25@gmail.com"];
-
-export default function AdminLoginPage() {
+function AdminLoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Show "access denied" if redirected back from /admin with ?denied=1
+  useEffect(() => {
+    if (searchParams.get("denied") === "1") {
+      setError("Akses ditolak. Akun ini tidak memiliki hak admin.");
+    }
+  }, [searchParams]);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -19,21 +25,15 @@ export default function AdminLoginPage() {
     setLoading(true);
 
     const supabase = createClient();
-    const { data, error: authError } = await supabase.auth.signInWithPassword({ email, password });
+    const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
 
-    if (authError || !data.user) {
+    if (authError) {
       setError("Email atau password salah.");
       setLoading(false);
       return;
     }
 
-    if (!ADMIN_EMAILS.includes(data.user.email ?? "")) {
-      await supabase.auth.signOut();
-      setError("Akses ditolak. Akun ini bukan admin.");
-      setLoading(false);
-      return;
-    }
-
+    // Let the server component decide access — it will redirect back with ?denied=1 if not admin
     router.push("/admin");
     router.refresh();
   }
@@ -133,5 +133,13 @@ export default function AdminLoginPage() {
 
       </div>
     </div>
+  );
+}
+
+export default function AdminLoginPage() {
+  return (
+    <Suspense>
+      <AdminLoginForm />
+    </Suspense>
   );
 }
