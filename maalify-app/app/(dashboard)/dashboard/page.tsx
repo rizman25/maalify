@@ -48,11 +48,21 @@ export default async function DashboardPage() {
   sixMonthsAgo.setDate(1);
   const trendStart = `${sixMonthsAgo.getFullYear()}-${pad(sixMonthsAgo.getMonth() + 1)}-01`;
 
+  // Fetch private wallets first so we can filter personal transactions by wallet_id
+  const { data: privateWalletsData } = await supabase
+    .from("wallets")
+    .select("id, current_balance")
+    .eq("household_id", householdId)
+    .eq("is_active", true)
+    .eq("is_shared", false);
+
+  const privateWalletIds = (privateWalletsData ?? []).map(w => w.id);
+
   const [
     curMonthRes, prevMonthRes, walletsRes, trendRes, catRes, budgetsRes, debtsRes,
     recentTxRes, activeWalletsRes, catsRes, goalsRes, memberSpendingRes, membersCountRes, recurringRes,
-    // Personal queries
-    personalCurRes, personalPrevRes, personalWalletsRes,
+    // Personal queries — filtered by private wallet IDs (is_shared = false)
+    personalCurRes, personalPrevRes,
   ] = await Promise.all([
     // ── Household (Bersama) ──
     supabase.from("transactions").select("type, amount")
@@ -103,17 +113,20 @@ export default async function DashboardPage() {
     supabase.from("household_members").select("id", { count: "exact", head: true }).eq("household_id", householdId),
     supabase.from("recurring_transactions").select("id", { count: "exact", head: true }).eq("household_id", householdId).limit(1),
 
-    // ── Pribadi (personal — filtered by user_id / private wallets) ──
-    supabase.from("transactions").select("type, amount")
-      .eq("household_id", householdId).eq("user_id", user.id)
-      .gte("date", monthStart).lt("date", monthEnd),
+    // ── Pribadi — transactions from private wallets (is_shared = false) ──
+    privateWalletIds.length > 0
+      ? supabase.from("transactions").select("type, amount")
+          .eq("household_id", householdId)
+          .in("wallet_id", privateWalletIds)
+          .gte("date", monthStart).lt("date", monthEnd)
+      : Promise.resolve({ data: [] }),
 
-    supabase.from("transactions").select("type, amount")
-      .eq("household_id", householdId).eq("user_id", user.id)
-      .gte("date", prevMonthStart).lt("date", monthStart),
-
-    supabase.from("wallets").select("current_balance")
-      .eq("household_id", householdId).eq("is_active", true).eq("is_shared", false),
+    privateWalletIds.length > 0
+      ? supabase.from("transactions").select("type, amount")
+          .eq("household_id", householdId)
+          .in("wallet_id", privateWalletIds)
+          .gte("date", prevMonthStart).lt("date", monthStart)
+      : Promise.resolve({ data: [] }),
   ]);
 
   // ── Household stats ──
@@ -130,7 +143,7 @@ export default async function DashboardPage() {
   const pCurExpense  = (personalCurRes.data ?? []).filter(t => t.type === "expense").reduce((s,t) => s + Number(t.amount), 0);
   const pPrevIncome  = (personalPrevRes.data ?? []).filter(t => t.type === "income").reduce((s,t) => s + Number(t.amount), 0);
   const pPrevExpense = (personalPrevRes.data ?? []).filter(t => t.type === "expense").reduce((s,t) => s + Number(t.amount), 0);
-  const pTotalAset   = (personalWalletsRes.data ?? []).reduce((s, w) => s + Number(w.current_balance), 0);
+  const pTotalAset   = (privateWalletsData ?? []).reduce((s, w) => s + Number(w.current_balance), 0);
   const pNetSavings  = pCurIncome - pCurExpense;
   const pPrevNetSavings = pPrevIncome - pPrevExpense;
   const activeGoals = (goalsRes.data ?? []) as { id: string; name: string; target_amount: number; current_amount: number; color: string; icon: string; is_completed: boolean }[];

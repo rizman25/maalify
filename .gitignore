@@ -10,3 +10,5 @@ maalify-app/.next/
 maalify-app/node_modules/
 maalify-app/.env.local
 maalify-app/.env*.local
+
+.vercel
