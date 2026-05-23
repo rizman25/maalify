@@ -90,9 +90,10 @@ const CATEGORY_ICON_MAP: Record<string, React.ComponentType<LucideProps>> = {
   music:          Music,
   camera:         Camera,
   // Expense — savings & investment
-  "piggy-bank":   PiggyBank,
-  "bar-chart-2":  BarChart2,
-  target:         Target,
+  "piggy-bank":     PiggyBank,
+  "bar-chart-2":    BarChart2,
+  "trending-down":  TrendingDown,
+  target:           Target,
   // Home & services
   home:           Home,
   wrench:         Wrench,
