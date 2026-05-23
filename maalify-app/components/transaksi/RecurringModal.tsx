@@ -100,7 +100,7 @@ export default function RecurringModal({ item, wallets, categories, householdId,
   }
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center p-4">
+    <div className="fixed inset-0 z-50 flex items-start justify-center px-4 pt-8 pb-4">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
       <div className="relative bg-[var(--bg-surface)] rounded-2xl shadow-xl w-full max-w-md max-h-[calc(100vh-5rem)] flex flex-col overflow-hidden">
         <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)] flex-shrink-0">

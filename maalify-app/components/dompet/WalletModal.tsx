@@ -116,7 +116,7 @@ export default function WalletModal({ wallet, householdId, userId, onClose, onSa
   }
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center p-4">
+    <div className="fixed inset-0 z-50 flex items-start justify-center px-4 pt-8 pb-4">
       {/* Overlay */}
       <div
         className="absolute inset-0 bg-black/40"
