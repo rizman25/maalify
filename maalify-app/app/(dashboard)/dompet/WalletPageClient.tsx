@@ -8,6 +8,7 @@ import WalletModal from "@/components/dompet/WalletModal";
 import TransferModal from "@/components/dompet/TransferModal";
 import { Toast, useToast } from "@/components/ui/Toast";
 import type { TransferRecord } from "./page";
+import { deleteWallet, deactivateWallet, activateWallet } from "@/app/actions/wallets";
 
 const TYPE_LABEL: Record<WalletType, string> = {
   cash: "Tunai",
@@ -76,14 +77,12 @@ export default function WalletPageClient({ wallets, inactiveWallets, transfers, 
   async function handleDeactivate(walletId: string) {
     const walletName = wallets.find(w => w.id === walletId)?.name ?? "Dompet";
     setActivating(walletId);
-    const { createClient } = await import("@/lib/supabase/client");
-    const supabase = createClient();
-    const { error } = await supabase.from("wallets").update({ is_active: false }).eq("id", walletId);
+    const result = await deactivateWallet(walletId);
     setActivating(null);
-    if (error) {
-      showToast("Gagal menonaktifkan dompet.", "error");
+    if (result.error) {
+      showToast(result.error, "error");
     } else {
-      showToast(`"${walletName}" berhasil dinonaktifkan.`, "info");
+      showToast(`"${walletName}" berhasil dinonaktifkan.`, "success");
       router.refresh();
     }
   }
@@ -91,15 +90,13 @@ export default function WalletPageClient({ wallets, inactiveWallets, transfers, 
   async function handleDelete(walletId: string) {
     const walletName = wallets.find(w => w.id === walletId)?.name ?? "Dompet";
     setDeleting(true);
-    const { createClient } = await import("@/lib/supabase/client");
-    const supabase = createClient();
-    const { error } = await supabase.from("wallets").delete().eq("id", walletId);
+    const result = await deleteWallet(walletId);
     setDeleting(false);
     setConfirmDelete(null);
-    if (error) {
-      showToast("Gagal menghapus dompet.", "error");
+    if (result.error) {
+      showToast(result.error, "error");
     } else {
-      showToast(`"${walletName}" berhasil dihapus.`, "error");
+      showToast(`"${walletName}" berhasil dihapus.`, "success");
       router.refresh();
     }
   }
@@ -107,12 +104,10 @@ export default function WalletPageClient({ wallets, inactiveWallets, transfers, 
   async function handleActivate(walletId: string) {
     const walletName = inactiveWallets.find(w => w.id === walletId)?.name ?? "Dompet";
     setActivating(walletId);
-    const { createClient } = await import("@/lib/supabase/client");
-    const supabase = createClient();
-    const { error } = await supabase.from("wallets").update({ is_active: true }).eq("id", walletId);
+    const result = await activateWallet(walletId);
     setActivating(null);
-    if (error) {
-      showToast("Gagal mengaktifkan dompet.", "error");
+    if (result.error) {
+      showToast(result.error, "error");
     } else {
       showToast(`"${walletName}" berhasil diaktifkan.`, "success");
       router.refresh();
@@ -168,21 +163,60 @@ export default function WalletPageClient({ wallets, inactiveWallets, transfers, 
 
       {/* Wallet Grid */}
       {wallets.length === 0 ? (
-        <div className="bg-[var(--bg-surface)] rounded-xl border border-[var(--border)] p-16 text-center">
-          <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-[var(--bg-elevated)] flex items-center justify-center text-2xl">
+        <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border)] px-6 py-14 text-center space-y-4">
+          {/* Illustration */}
+          <div className="w-20 h-20 mx-auto rounded-2xl bg-brand-primary/8 flex items-center justify-center text-4xl">
             🏦
           </div>
-          <p className="font-medium text-[var(--text-primary)]">Belum ada dompet</p>
-          <p className="text-sm text-[var(--text-secondary)] mt-1">
-            Tambahkan dompet pertama untuk mulai mencatat keuangan
-          </p>
+
+          <div className="space-y-1.5">
+            <p className="text-base font-bold text-[var(--text-primary)]">
+              Belum ada dompet
+            </p>
+            <p className="text-sm text-[var(--text-secondary)] max-w-xs mx-auto leading-relaxed">
+              {canManage
+                ? "Tambahkan dompet pertama — tunai, bank, e-wallet, atau tabungan — untuk mulai mencatat keuangan keluarga."
+                : "Belum ada dompet yang ditambahkan. Minta admin atau super admin keluarga untuk menambahkan dompet."}
+            </p>
+          </div>
+
+          {canManage ? (
+            <div className="flex flex-col sm:flex-row gap-2 justify-center pt-1">
+              <button
+                onClick={openAdd}
+                className="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-brand-primary text-white text-sm font-semibold rounded-xl hover:opacity-90 transition-opacity"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                Tambah Dompet Sekarang
+              </button>
+            </div>
+          ) : (
+            <p className="text-xs text-[var(--text-secondary)] bg-[var(--bg-elevated)] rounded-xl px-4 py-3 max-w-xs mx-auto">
+              💡 Kamu tidak bisa menambah dompet karena role kamu adalah <strong>Member</strong>. Hubungi admin keluarga.
+            </p>
+          )}
+
+          {/* Step hints untuk admin */}
           {canManage && (
-            <button
-              onClick={openAdd}
-              className="mt-4 px-5 py-2.5 bg-brand-primary text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity"
-            >
-              Tambah Dompet Pertama
-            </button>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 max-w-lg mx-auto">
+              {[
+                { icon: "💵", label: "Tunai" },
+                { icon: "🏦", label: "Bank" },
+                { icon: "📱", label: "E-Wallet" },
+                { icon: "🏧", label: "Tabungan" },
+              ].map(t => (
+                <button
+                  key={t.label}
+                  onClick={openAdd}
+                  className="flex flex-col items-center gap-1.5 p-3 rounded-xl border border-dashed border-[var(--border)] hover:border-brand-primary hover:bg-brand-primary/5 transition-colors group"
+                >
+                  <span className="text-xl">{t.icon}</span>
+                  <span className="text-xs text-[var(--text-secondary)] group-hover:text-brand-primary font-medium transition-colors">{t.label}</span>
+                </button>
+              ))}
+            </div>
           )}
         </div>
       ) : (

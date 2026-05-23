@@ -82,6 +82,7 @@ export default async function DashboardLayout({
       goalsRes,
       recurringRes,
       readsRes,
+      userNotifsRes,
     ] = await Promise.all([
       // Debt — admin/super_admin only
       userRole !== "member"
@@ -134,6 +135,15 @@ export default async function DashboardLayout({
         .select("notification_key")
         .eq("user_id", userId)
         .gte("read_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()),
+
+      // Personal user notifications (role changes, etc.) — last 7 days
+      supabase
+        .from("user_notifications")
+        .select("id, title, message, type, href")
+        .eq("user_id", userId)
+        .gte("created_at", new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
+        .order("created_at", { ascending: false })
+        .limit(10),
     ]);
 
     // Build set of read keys
@@ -219,6 +229,19 @@ export default async function DashboardLayout({
           ? recurringToday[0].description
           : `${recurringToday.length} transaksi berulang dijadwalkan hari ini`,
         href: "/transaksi-berulang",
+        urgency: "medium",
+      });
+    }
+
+    // ── Personal user notifications (role changes, etc.) ─────────────────
+    for (const n of userNotifsRes.data ?? []) {
+      const notifId = `user-notif-${n.id}`;
+      allNotifications.push({
+        id: notifId,
+        type: "role_change" as AppNotification["type"],
+        title: n.title,
+        message: n.message,
+        href: n.href ?? "/pengaturan",
         urgency: "medium",
       });
     }

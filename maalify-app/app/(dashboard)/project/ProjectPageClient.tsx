@@ -143,6 +143,7 @@ export default function ProjectPageClient({
     const statusInfo = PROJECT_STATUS_LABELS[proj.status] ?? PROJECT_STATUS_LABELS.planning;
     const totalPlanned = projectItems.reduce((s, i) => s + i.planned_amount, 0);
     const totalPaid = projectItems.filter(i => i.is_paid).reduce((s, i) => s + (i.actual_amount ?? i.planned_amount), 0);
+    const spentPct = proj.target_amount > 0 ? Math.min((totalPaid / proj.target_amount) * 100, 100) : 0;
     const unpaidItems = projectItems.filter(i => !i.is_paid);
     const paidItems = projectItems.filter(i => i.is_paid);
 
@@ -228,21 +229,37 @@ export default function ProjectPageClient({
                   </p>
                 </div>
               </div>
-              <div className="w-full h-3 bg-[var(--bg-elevated)] rounded-full overflow-hidden">
+              <div className="w-full h-3 bg-[var(--bg-elevated)] rounded-full overflow-hidden relative">
+                {/* Collected / funded bar */}
                 <div
-                  className="h-full rounded-full bg-brand-accent transition-all duration-500"
+                  className="absolute inset-y-0 left-0 rounded-full bg-brand-accent transition-all duration-500"
                   style={{ width: `${pct}%` }}
                 />
+                {/* Spent / paid bar — overlaid in amber */}
+                {spentPct > 0 && (
+                  <div
+                    className="absolute inset-y-0 left-0 rounded-full bg-warning transition-all duration-500"
+                    style={{ width: `${spentPct}%` }}
+                  />
+                )}
               </div>
               <div className="flex justify-between text-xs text-[var(--text-secondary)]">
-                <span>{pct.toFixed(1)}% tercapai</span>
+                <span className="flex items-center gap-2">
+                  <span>{pct.toFixed(1)}% tercapai</span>
+                  {spentPct > 0 && (
+                    <span className="flex items-center gap-1 text-warning font-medium">
+                      <span className="w-2 h-2 rounded-full bg-warning inline-block" />
+                      {spentPct.toFixed(1)}% terpakai
+                    </span>
+                  )}
+                </span>
                 <span>Target: {formatDate(proj.target_date)}</span>
               </div>
             </div>
           </div>
 
           {/* Summary chips */}
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-3">
             <div className="bg-[var(--bg-surface)] rounded-xl border border-[var(--border)] p-3 text-center">
               <p className="text-xs text-[var(--text-secondary)]">Total Item</p>
               <p className="font-semibold text-[var(--text-primary)] text-lg">{projectItems.length}</p>
@@ -254,6 +271,10 @@ export default function ProjectPageClient({
             <div className="bg-[var(--bg-surface)] rounded-xl border border-[var(--border)] p-3 text-center">
               <p className="text-xs text-[var(--text-secondary)]">Total Anggaran</p>
               <p className="font-financial font-semibold text-[var(--text-primary)] text-sm">Rp {formatRupiah(totalPlanned)}</p>
+            </div>
+            <div className="bg-[var(--bg-surface)] rounded-xl border border-success/20 p-3 text-center">
+              <p className="text-xs text-[var(--text-secondary)]">Total Terbayar</p>
+              <p className="font-financial font-semibold text-success text-sm">Rp {formatRupiah(totalPaid)}</p>
             </div>
           </div>
 

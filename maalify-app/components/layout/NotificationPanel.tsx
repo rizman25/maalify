@@ -17,6 +17,7 @@ const ICON: Record<AppNotification["type"], string> = {
   budget_near:      "🟡",
   savings_goal_due: "🎯",
   recurring_due:    "🔁",
+  role_change:      "👑",
 };
 
 export default function NotificationPanel({ notifications, onClose }: Props) {

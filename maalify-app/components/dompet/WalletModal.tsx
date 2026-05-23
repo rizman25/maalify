@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Wallet, WalletType } from "@/types";
+import { updateWallet, deactivateWallet } from "@/app/actions/wallets";
+import { formatRupiah } from "@/lib/utils";
 
 const WALLET_TYPES: { value: WalletType; label: string; icon: string }[] = [
   { value: "cash", label: "Tunai", icon: "💵" },
@@ -39,6 +41,10 @@ export default function WalletModal({ wallet, householdId, userId, onClose, onSa
   const [initialBalance, setInitialBalance] = useState(
     isEdit ? String(wallet.initial_balance) : "0"
   );
+  // Edit mode: saldo saat ini yang bisa diubah
+  const [currentBalance, setCurrentBalance] = useState(
+    isEdit ? String(wallet.current_balance) : "0"
+  );
   const [color, setColor] = useState(wallet?.color ?? TYPE_DEFAULT_COLOR["cash"]);
   const [isShared, setIsShared] = useState(wallet?.is_shared ?? true);
   const [loading, setLoading] = useState(false);
@@ -53,33 +59,27 @@ export default function WalletModal({ wallet, householdId, userId, onClose, onSa
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!name.trim()) {
-      setError("Nama dompet wajib diisi.");
-      return;
-    }
-
-    const balance = parseFloat(initialBalance.replace(/\./g, "").replace(",", ".")) || 0;
-    if (balance < 0) {
-      setError("Saldo awal tidak boleh negatif.");
-      return;
-    }
+    if (!name.trim()) { setError("Nama dompet wajib diisi."); return; }
 
     setError("");
     setLoading(true);
-    const supabase = createClient();
 
     if (isEdit) {
-      const { error: err } = await supabase
-        .from("wallets")
-        .update({ name: name.trim(), color, is_shared: isShared })
-        .eq("id", wallet.id);
+      const newBalance = parseFloat(currentBalance.replace(/\./g, "").replace(",", ".")) || 0;
+      if (newBalance < 0) { setError("Saldo tidak boleh negatif."); setLoading(false); return; }
 
-      if (err) {
-        setError(err.message);
-        setLoading(false);
-        return;
-      }
+      const result = await updateWallet(wallet.id, {
+        name: name.trim(),
+        color,
+        is_shared: isShared,
+        current_balance: newBalance,
+      });
+      if (result.error) { setError(result.error); setLoading(false); return; }
     } else {
+      const balance = parseFloat(initialBalance.replace(/\./g, "").replace(",", ".")) || 0;
+      if (balance < 0) { setError("Saldo awal tidak boleh negatif."); setLoading(false); return; }
+
+      const supabase = createClient();
       const { error: err } = await supabase.from("wallets").insert({
         household_id: householdId,
         name: name.trim(),
@@ -91,12 +91,7 @@ export default function WalletModal({ wallet, householdId, userId, onClose, onSa
         is_shared: isShared,
         created_by: userId,
       });
-
-      if (err) {
-        setError(err.message);
-        setLoading(false);
-        return;
-      }
+      if (err) { setError(err.message); setLoading(false); return; }
     }
 
     onSaved();
@@ -105,8 +100,8 @@ export default function WalletModal({ wallet, householdId, userId, onClose, onSa
   async function handleDeactivate() {
     if (!wallet) return;
     setLoading(true);
-    const supabase = createClient();
-    await supabase.from("wallets").update({ is_active: false }).eq("id", wallet.id);
+    const result = await deactivateWallet(wallet.id);
+    if (result.error) { setError(result.error); setLoading(false); return; }
     onSaved();
   }
 
@@ -157,6 +152,38 @@ export default function WalletModal({ wallet, householdId, userId, onClose, onSa
               className="w-full px-3.5 py-2.5 rounded-lg border border-[var(--border)] text-sm text-[var(--text-primary)] bg-[var(--bg-surface)] placeholder:text-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-brand-primary"
             />
           </div>
+
+          {/* Saldo — edit: koreksi saldo saat ini | tambah: saldo awal */}
+          {isEdit ? (
+            <div>
+              <label className="block text-xs font-medium text-[var(--text-primary)] mb-1.5">
+                Saldo Saat Ini
+              </label>
+              <div className="relative">
+                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-[var(--text-secondary)] font-medium">Rp</span>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={currentBalance === "0" ? "" : formatInput(currentBalance)}
+                  onChange={e => {
+                    const raw = e.target.value.replace(/\./g, "");
+                    setCurrentBalance(raw || "0");
+                  }}
+                  placeholder="0"
+                  className="w-full pl-10 pr-3.5 py-2.5 rounded-lg border border-[var(--border)] text-sm font-financial font-semibold text-[var(--text-primary)] bg-[var(--bg-surface)] focus:outline-none focus:ring-2 focus:ring-brand-primary"
+                />
+              </div>
+              {parseFloat(currentBalance.replace(/\./g,"").replace(",",".")) > 0 && (
+                <p className="text-xs text-[var(--text-secondary)] mt-1">
+                  Rp {formatRupiah(parseFloat(currentBalance.replace(/\./g,"").replace(",",".")))}
+                </p>
+              )}
+              <p className="text-[10px] text-[var(--text-secondary)] mt-1.5 flex items-center gap-1">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                Ini koreksi manual — tidak mencatat transaksi baru
+              </p>
+            </div>
+          ) : null}
 
           {/* Jenis — hanya saat tambah */}
           {!isEdit && (

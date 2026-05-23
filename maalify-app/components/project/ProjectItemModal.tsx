@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { formatRupiah } from "@/lib/utils";
+import { saveProjectItem, deleteProjectItem } from "@/app/actions/projects";
 import type { ProjectItem } from "@/types";
 
 interface Props {
@@ -45,40 +45,27 @@ export default function ProjectItemModal({ projectId, item, userId, onClose, onS
 
     setError("");
     setLoading(true);
-    const supabase = createClient();
 
-    const payload = {
+    const result = await saveProjectItem({
+      projectId,
+      itemId: isEdit ? item!.id : undefined,
       name: name.trim(),
-      planned_amount: parsedPlanned,
-      is_paid: isPaid,
-      actual_amount: isPaid && parsedActual > 0 ? parsedActual : null,
-      paid_at: isPaid ? paidAt : null,
-    };
+      plannedAmount: parsedPlanned,
+      isPaid,
+      actualAmount: isPaid && parsedActual > 0 ? parsedActual : null,
+      paidAt: isPaid ? paidAt : null,
+      userId,
+    });
 
-    if (isEdit && item) {
-      const { error: err } = await supabase
-        .from("project_items")
-        .update(payload)
-        .eq("id", item.id);
-      if (err) { setError(err.message); setLoading(false); return; }
-    } else {
-      const { error: err } = await supabase.from("project_items").insert({
-        ...payload,
-        project_id: projectId,
-        created_by: userId,
-        sort_order: 0,
-      });
-      if (err) { setError(err.message); setLoading(false); return; }
-    }
-
+    if (result.error) { setError(result.error); setLoading(false); return; }
     onSaved();
   }
 
   async function handleDelete() {
     if (!item) return;
     setLoading(true);
-    const supabase = createClient();
-    await supabase.from("project_items").delete().eq("id", item.id);
+    const result = await deleteProjectItem(item.id);
+    if (result.error) { setError(result.error); setLoading(false); return; }
     onSaved();
   }
 
@@ -154,9 +141,20 @@ export default function ProjectItemModal({ projectId, item, userId, onClose, onS
           {isPaid && (
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-medium text-[var(--text-primary)] mb-1.5">
-                  Jumlah Aktual <span className="text-[var(--text-secondary)] font-normal">(opsional)</span>
-                </label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-medium text-[var(--text-primary)]">
+                    Jumlah Aktual <span className="text-[var(--text-secondary)] font-normal">(opsional)</span>
+                  </label>
+                  {parsedPlanned > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setActualAmount(plannedAmount)}
+                      className="text-[10px] font-semibold text-brand-primary bg-brand-primary/8 hover:bg-brand-primary/15 px-2 py-1 rounded-lg transition-colors"
+                    >
+                      ✓ Sesuai Rencana
+                    </button>
+                  )}
+                </div>
                 <div className="relative">
                   <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-[var(--text-secondary)] font-medium">Rp</span>
                   <input

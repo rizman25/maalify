@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { formatRupiah } from "@/lib/utils";
 import type { Wallet, Category, TransactionWithCategory } from "@/types";
 import TransaksiModal from "@/components/transaksi/TransaksiModal";
@@ -109,32 +110,59 @@ export default function TransaksiPageClient({
       <div className="flex items-center justify-between gap-3">
         <h1 className="text-2xl font-bold text-[var(--text-primary)] shrink-0">Transaksi</h1>
         <div className="flex items-center gap-2">
-          {/* Scan: icon only on mobile, with label on sm+ */}
-          <button
-            id="tour-scan"
-            onClick={() => setScanOpen(true)}
-            disabled={wallets.length === 0}
-            className="flex items-center gap-1.5 px-2.5 py-2.5 sm:px-3 border border-[var(--border)] bg-[var(--bg-surface)] text-[var(--text-secondary)] text-sm font-medium rounded-lg hover:bg-[var(--bg-elevated)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-            title={wallets.length === 0 ? "Tambahkan dompet dulu" : "Scan struk/kuitansi"}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-              <circle cx="12" cy="13" r="4"/>
-            </svg>
-            <span className="hidden sm:inline whitespace-nowrap">Scan Struk</span>
-          </button>
-          <button
-            id="tour-catat"
-            onClick={openAdd}
-            disabled={wallets.length === 0}
-            className="flex items-center gap-1.5 px-3 py-2.5 bg-brand-primary text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
-            title={wallets.length === 0 ? "Tambahkan dompet dulu" : ""}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-            Catat Transaksi
-          </button>
+          {/* Scan Struk */}
+          {wallets.length === 0 ? (
+            <Link
+              id="tour-scan"
+              href="/dompet"
+              className="flex items-center gap-1.5 px-2.5 py-2.5 sm:px-3 border border-amber-300 bg-amber-50 text-amber-700 text-sm font-medium rounded-lg hover:bg-amber-100 transition-colors"
+              title="Tambahkan dompet dulu di halaman Dompet"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                <circle cx="12" cy="13" r="4"/>
+              </svg>
+              <span className="hidden sm:inline whitespace-nowrap">Scan Struk</span>
+            </Link>
+          ) : (
+            <button
+              id="tour-scan"
+              onClick={() => setScanOpen(true)}
+              className="flex items-center gap-1.5 px-2.5 py-2.5 sm:px-3 border border-[var(--border)] bg-[var(--bg-surface)] text-[var(--text-secondary)] text-sm font-medium rounded-lg hover:bg-[var(--bg-elevated)] transition-colors"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                <circle cx="12" cy="13" r="4"/>
+              </svg>
+              <span className="hidden sm:inline whitespace-nowrap">Scan Struk</span>
+            </button>
+          )}
+
+          {/* Catat Transaksi */}
+          {wallets.length === 0 ? (
+            <Link
+              id="tour-catat"
+              href="/dompet"
+              className="flex items-center gap-1.5 px-3 py-2.5 bg-amber-500 text-white text-sm font-semibold rounded-lg hover:bg-amber-600 transition-colors whitespace-nowrap"
+              title="Tambahkan dompet dulu di halaman Dompet"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              Tambah Dompet Dulu
+            </Link>
+          ) : (
+            <button
+              id="tour-catat"
+              onClick={openAdd}
+              className="flex items-center gap-1.5 px-3 py-2.5 bg-brand-primary text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity whitespace-nowrap"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              Catat Transaksi
+            </button>
+          )}
         </div>
       </div>
 
@@ -264,11 +292,22 @@ export default function TransaksiPageClient({
         </div>
       </div>
 
-      {/* No wallet warning */}
+      {/* No wallet — inline callout */}
       {wallets.length === 0 && (
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
-          Tambahkan dompet terlebih dahulu sebelum mencatat transaksi.{" "}
-          <a href="/dompet" className="font-semibold underline">Ke halaman Dompet →</a>
+        <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl p-4">
+          <span className="text-xl flex-shrink-0 mt-0.5">⚠️</span>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-amber-900">Belum ada dompet</p>
+            <p className="text-xs text-amber-700 mt-0.5 leading-relaxed">
+              Kamu perlu menambahkan minimal satu dompet sebelum bisa mencatat transaksi.
+            </p>
+          </div>
+          <Link
+            href="/dompet"
+            className="flex-shrink-0 px-3 py-1.5 bg-amber-500 text-white text-xs font-semibold rounded-lg hover:bg-amber-600 transition-colors whitespace-nowrap"
+          >
+            Buat Dompet →
+          </Link>
         </div>
       )}
 

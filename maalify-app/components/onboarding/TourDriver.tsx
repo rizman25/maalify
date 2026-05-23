@@ -20,12 +20,30 @@ import "driver.js/dist/driver.css";
 const DONE_KEY = "maalify-tour-done";
 const STEP_KEY = "maalify-tour-step";
 
-/** Coba selector desktop dulu, kalau tidak ada pakai mobile */
-function resolveEl(desktopId: string, mobileId: string): string {
-  if (typeof document !== "undefined" && document.getElementById(desktopId)) {
-    return `#${desktopId}`;
+/**
+ * Coba selector desktop dulu (cek apakah element TERLIHAT / visible).
+ * Kalau tersembunyi (hidden via CSS), pakai mobile selector.
+ * Return { el, side } — side berbeda untuk sidebar vs bottom nav.
+ */
+function resolveEl(
+  desktopId: string,
+  mobileId: string
+): { el: string; desktopSide: "right"; mobileSide: "top" } {
+  if (typeof document !== "undefined") {
+    const el = document.getElementById(desktopId);
+    // offsetParent === null berarti element hidden/display:none
+    if (el && el.offsetParent !== null) {
+      return { el: `#${desktopId}`, desktopSide: "right", mobileSide: "top" };
+    }
   }
-  return `#${mobileId}`;
+  return { el: `#${mobileId}`, desktopSide: "right", mobileSide: "top" };
+}
+
+/** Tentukan apakah elemen yang terpilih adalah versi desktop atau mobile */
+function isDesktopEl(desktopId: string): boolean {
+  if (typeof document === "undefined") return false;
+  const el = document.getElementById(desktopId);
+  return !!(el && el.offsetParent !== null);
 }
 
 export default function TourDriver() {
@@ -40,7 +58,9 @@ export default function TourDriver() {
 
     // ── HALAMAN DASHBOARD (global step 0, 1, 2) ──────────────────────────
     if (pathname === "/dashboard" && savedStep < 3) {
-      const navTransaksi = resolveEl("tour-nav-transaksi", "tour-bottom-transaksi");
+      const navTransaksiRes = resolveEl("tour-nav-transaksi", "tour-bottom-transaksi");
+      const navTransaksi = navTransaksiRes.el;
+      const navTransaksiSide = isDesktopEl("tour-nav-transaksi") ? "right" : "top";
 
       const driverObj = driver({
         showProgress: true,
@@ -83,7 +103,7 @@ export default function TourDriver() {
               title: "📝 Menu Transaksi",
               description:
                 "Yuk kita catat transaksi pertama kamu! Tap <b>Lanjut</b> untuk melihat fitur pencatatan.",
-              side: "right",
+              side: navTransaksiSide,
               align: "center",
             },
           },
@@ -109,9 +129,17 @@ export default function TourDriver() {
 
     // ── HALAMAN TRANSAKSI (global step 3–7) ──────────────────────────────
     if (pathname === "/transaksi" && savedStep >= 3) {
-      const navDompet   = resolveEl("tour-nav-dompet",   "tour-bottom-dompet");
-      const navAnggaran = resolveEl("tour-nav-anggaran",  "tour-bottom-anggaran");
-      const navHutang   = resolveEl("tour-nav-hutang",    "tour-bottom-menu");
+      const navDompetRes   = resolveEl("tour-nav-dompet",   "tour-bottom-dompet");
+      const navAnggaranRes = resolveEl("tour-nav-anggaran",  "tour-bottom-anggaran");
+      const navHutangRes   = resolveEl("tour-nav-hutang",    "tour-bottom-menu");
+
+      const navDompet   = navDompetRes.el;
+      const navAnggaran = navAnggaranRes.el;
+      const navHutang   = navHutangRes.el;
+
+      const navDompetSide   = isDesktopEl("tour-nav-dompet")   ? "right" : "top";
+      const navAnggaranSide = isDesktopEl("tour-nav-anggaran") ? "right" : "top";
+      const navHutangSide   = isDesktopEl("tour-nav-hutang")   ? "right" : "top";
 
       const driverObj = driver({
         showProgress: true,
@@ -157,7 +185,7 @@ export default function TourDriver() {
               title: "👛 Dompet",
               description:
                 "Kelola semua rekening, dompet digital, dan kas tunai. Saldo otomatis terupdate tiap transaksi.",
-              side: "right",
+              side: navDompetSide,
               align: "center",
             },
           },
@@ -167,7 +195,7 @@ export default function TourDriver() {
               title: "📊 Anggaran",
               description:
                 "Tetapkan batas pengeluaran per kategori setiap bulan. Dapat notifikasi kalau mendekati batas.",
-              side: "right",
+              side: navAnggaranSide,
               align: "center",
             },
           },
@@ -177,7 +205,7 @@ export default function TourDriver() {
               title: "🤝 Hutang & Piutang",
               description:
                 "Lacak semua pinjam-meminjam. Catat jatuh tempo dan progres pembayaran dengan mudah.",
-              side: navHutang.includes("menu") ? "top" : "right",
+              side: navHutangSide,
               align: "center",
             },
           },

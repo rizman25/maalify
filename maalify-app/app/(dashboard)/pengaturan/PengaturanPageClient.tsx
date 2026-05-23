@@ -3,6 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { formatRupiah } from "@/lib/utils";
+import { changeMemberRole, removeMember } from "@/app/actions/members";
 
 interface Profile { id: string; name: string; email: string; avatar_url: string | null; phone: string | null; }
 interface Household { id: string; name: string; description: string | null; invite_code: string; }
@@ -145,6 +146,12 @@ export default function PengaturanPageClient({ profile, household, members, cate
   const [memberAction, setMemberAction] = useState<{ id: string; action: MemberActionType } | null>(null);
   const [memberLoading, setMemberLoading] = useState(false);
   const [memberMsg, setMemberMsg] = useState("");
+  const [memberSuccess, setMemberSuccess] = useState("");
+
+  function showSuccessToast(msg: string) {
+    setMemberSuccess(msg);
+    setTimeout(() => setMemberSuccess(""), 4000);
+  }
 
   // Feedback state
   const [feedbackType, setFeedbackType] = useState<"saran" | "kritik" | "bug">("saran");
@@ -341,39 +348,56 @@ export default function PengaturanPageClient({ profile, household, members, cate
     if (!memberAction) return;
     setMemberLoading(true);
     setMemberMsg("");
-    try {
-      const { createClient } = await import("@/lib/supabase/client");
-      const supabase = createClient();
 
-      if (memberAction.action === "remove" || memberAction.action === "leave") {
+    try {
+      // ── Keluar dari household (self-leave) ─────────────────────────────────
+      if (memberAction.action === "leave") {
+        const { createClient } = await import("@/lib/supabase/client");
+        const supabase = createClient();
         const { error } = await supabase
           .from("household_members")
           .delete()
           .eq("id", memberAction.id);
         if (error) throw error;
-
-        if (memberAction.action === "leave") {
-          await supabase.auth.signOut();
-          router.push("/login");
-          return;
-        }
-      } else {
-        const roleMap: Record<string, string> = {
-          promote: "admin",
-          promote_super: "super_admin",
-          demote: "member",
-          demote_admin: "admin",
-        };
-        const newRole = roleMap[memberAction.action];
-        const { error } = await supabase
-          .from("household_members")
-          .update({ role: newRole })
-          .eq("id", memberAction.id);
-        if (error) throw error;
+        await supabase.auth.signOut();
+        router.push("/login");
+        return;
       }
+
+      // ── Hapus anggota lain ────────────────────────────────────────────────
+      if (memberAction.action === "remove") {
+        const result = await removeMember(memberAction.id);
+        if (result.error) { setMemberMsg(result.error); return; }
+
+        // Cari nama anggota yang dihapus
+        const removed = members.find(m => m.id === memberAction.id);
+        const removedName = removed?.user?.name ?? "Anggota";
+
+        setMemberAction(null);
+        router.refresh();
+        showSuccessToast(`${removedName} telah dikeluarkan dari Family.`);
+        return;
+      }
+
+      // ── Ubah role ─────────────────────────────────────────────────────────
+      const roleMap: Record<string, string> = {
+        promote:       "admin",
+        promote_super: "super_admin",
+        demote:        "member",
+        demote_admin:  "admin",
+      };
+      const newRole = roleMap[memberAction.action];
+      if (!newRole) { setMemberMsg("Aksi tidak dikenali."); return; }
+
+      const result = await changeMemberRole(memberAction.id, newRole, profile.name);
+      if (result.error) { setMemberMsg(result.error); return; }
 
       setMemberAction(null);
       router.refresh();
+      showSuccessToast(
+        `✅ Berhasil! ${result.targetName} sekarang menjadi ${result.roleLabelNew} di Family ini.`
+      );
+
     } catch (e: unknown) {
       setMemberMsg(e instanceof Error ? e.message : "Gagal memproses");
     } finally {
@@ -703,6 +727,12 @@ export default function PengaturanPageClient({ profile, household, members, cate
                 <p className="font-semibold text-[var(--text-primary)]">Anggota ({members.length})</p>
               </div>
 
+              {memberSuccess && (
+                <div className="px-5 py-3 bg-green-50 border-b border-green-100 flex items-center gap-2">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  <p className="text-xs text-green-700 font-medium">{memberSuccess}</p>
+                </div>
+              )}
               {memberMsg && (
                 <div className="px-5 py-3 bg-red-50 border-b border-red-100">
                   <p className="text-xs text-red-600">{memberMsg}</p>
