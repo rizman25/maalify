@@ -13,11 +13,6 @@ const WALLET_TYPES: { value: WalletType; label: string; icon: string }[] = [
   { value: "ewallet", label: "E-Wallet", icon: "📱" },
 ];
 
-const PRESET_COLORS = [
-  "#1E3A5F", "#27AE60", "#F59E0B", "#8B5CF6",
-  "#E74C3C", "#2471A3", "#16A085", "#D35400",
-];
-
 const TYPE_DEFAULT_COLOR: Record<WalletType, string> = {
   cash: "#27AE60",
   bank: "#1E3A5F",
@@ -45,7 +40,7 @@ export default function WalletModal({ wallet, householdId, userId, onClose, onSa
   const [currentBalance, setCurrentBalance] = useState(
     isEdit ? String(wallet.current_balance) : "0"
   );
-  const [color, setColor] = useState(wallet?.color ?? TYPE_DEFAULT_COLOR["cash"]);
+  const [color, setColor] = useState(TYPE_DEFAULT_COLOR[wallet?.type ?? "cash"]);
   const [isShared, setIsShared] = useState(wallet?.is_shared ?? true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -236,30 +231,6 @@ export default function WalletModal({ wallet, householdId, userId, onClose, onSa
               </div>
             </div>
           )}
-
-          {/* Warna */}
-          <div>
-            <label className="block text-xs font-medium text-[var(--text-primary)] mb-2">
-              Warna
-            </label>
-            <div className="flex gap-2 flex-wrap">
-              {PRESET_COLORS.map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => setColor(c)}
-                  className="w-8 h-8 rounded-full transition-transform hover:scale-110 flex items-center justify-center"
-                  style={{ backgroundColor: c }}
-                >
-                  {color === c && (
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
 
           {/* Privasi Dompet */}
           <div>
