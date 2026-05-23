@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { formatRupiah } from "@/lib/utils";
 import type { Wallet } from "@/types";
+import { saveTransfer } from "@/app/actions/wallets";
 
 interface Props {
   wallets: Wallet[];
@@ -32,16 +32,18 @@ export default function TransferModal({ wallets, householdId, userId, onClose, o
   const [fromId, setFromId] = useState(wallets[0]?.id ?? "");
   const [toId, setToId] = useState(wallets[1]?.id ?? wallets[0]?.id ?? "");
   const [amount, setAmount] = useState("");
+  const [adminFee, setAdminFee] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState(today);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const parsedAmount = parseAmount(amount);
+  const parsedFee = parseAmount(adminFee);
+  const totalDeduct = parsedAmount + parsedFee;
+
   const fromWallet = wallets.find(w => w.id === fromId);
   const toWallets = wallets.filter(w => w.id !== fromId);
-
-  // Auto-fix toId jika sama dengan fromId
   const effectiveToId = toId === fromId ? (toWallets[0]?.id ?? "") : toId;
 
   async function handleSubmit(e: React.FormEvent) {
@@ -49,26 +51,26 @@ export default function TransferModal({ wallets, householdId, userId, onClose, o
     if (parsedAmount <= 0) { setError("Jumlah harus lebih dari 0."); return; }
     if (!fromId || !effectiveToId) { setError("Pilih dompet asal dan tujuan."); return; }
     if (fromId === effectiveToId) { setError("Dompet asal dan tujuan tidak boleh sama."); return; }
-    if (fromWallet && parsedAmount > Number(fromWallet.current_balance)) {
-      setError(`Saldo ${fromWallet.name} tidak cukup (Rp ${formatRupiah(Number(fromWallet.current_balance))}).`);
+    if (fromWallet && totalDeduct > Number(fromWallet.current_balance)) {
+      setError(`Saldo ${fromWallet.name} tidak cukup. Dibutuhkan Rp ${formatRupiah(totalDeduct)} (termasuk biaya admin).`);
       return;
     }
 
     setError("");
     setLoading(true);
-    const supabase = createClient();
 
-    const { error: err } = await supabase.from("transfers").insert({
-      household_id: householdId,
-      from_wallet_id: fromId,
-      to_wallet_id: effectiveToId,
+    const result = await saveTransfer({
+      householdId,
+      fromWalletId: fromId,
+      toWalletId: effectiveToId,
       amount: parsedAmount,
-      description: description.trim() || null,
+      adminFee: parsedFee,
+      description: description || undefined,
       date,
-      user_id: userId,
+      userId,
     });
 
-    if (err) { setError(err.message); setLoading(false); return; }
+    if (result.error) { setError(result.error); setLoading(false); return; }
     onSaved();
   }
 
@@ -89,9 +91,8 @@ export default function TransferModal({ wallets, householdId, userId, onClose, o
         <div className="overflow-y-auto flex-1">
         <form onSubmit={handleSubmit} className="px-6 py-5 space-y-5">
 
-          {/* From → To visual */}
+          {/* From → To */}
           <div className="flex items-center gap-3">
-            {/* From */}
             <div className="flex-1">
               <label className="block text-xs font-medium text-[var(--text-primary)] mb-1.5">Dari Dompet</label>
               <select
@@ -106,9 +107,7 @@ export default function TransferModal({ wallets, householdId, userId, onClose, o
                 className="w-full px-3 py-2.5 rounded-xl border border-[var(--border)] text-sm text-[var(--text-primary)] bg-[var(--bg-surface)] focus:outline-none focus:ring-2 focus:ring-brand-primary"
               >
                 {wallets.map(w => (
-                  <option key={w.id} value={w.id}>
-                    {TYPE_ICON[w.type] ?? "💳"} {w.name}
-                  </option>
+                  <option key={w.id} value={w.id}>{TYPE_ICON[w.type] ?? "💳"} {w.name}</option>
                 ))}
               </select>
               {fromWallet && (
@@ -118,7 +117,6 @@ export default function TransferModal({ wallets, householdId, userId, onClose, o
               )}
             </div>
 
-            {/* Arrow */}
             <div className="flex-shrink-0 pt-5">
               <div className="w-8 h-8 rounded-full bg-[var(--bg-elevated)] flex items-center justify-center text-[var(--text-secondary)]">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -127,7 +125,6 @@ export default function TransferModal({ wallets, householdId, userId, onClose, o
               </div>
             </div>
 
-            {/* To */}
             <div className="flex-1">
               <label className="block text-xs font-medium text-[var(--text-primary)] mb-1.5">Ke Dompet</label>
               <select
@@ -136,9 +133,7 @@ export default function TransferModal({ wallets, householdId, userId, onClose, o
                 className="w-full px-3 py-2.5 rounded-xl border border-[var(--border)] text-sm text-[var(--text-primary)] bg-[var(--bg-surface)] focus:outline-none focus:ring-2 focus:ring-brand-primary"
               >
                 {toWallets.map(w => (
-                  <option key={w.id} value={w.id}>
-                    {TYPE_ICON[w.type] ?? "💳"} {w.name}
-                  </option>
+                  <option key={w.id} value={w.id}>{TYPE_ICON[w.type] ?? "💳"} {w.name}</option>
                 ))}
               </select>
               {(() => {
@@ -157,11 +152,9 @@ export default function TransferModal({ wallets, householdId, userId, onClose, o
             <div className="flex items-center justify-between mb-1.5">
               <label className="text-xs font-medium text-[var(--text-primary)]">Jumlah Transfer</label>
               {fromWallet && (
-                <button
-                  type="button"
-                  onClick={() => setAmount(String(Math.round(Number(fromWallet.current_balance))))}
-                  className="text-[10px] text-brand-primary hover:underline"
-                >
+                <button type="button"
+                  onClick={() => setAmount(String(Math.round(Number(fromWallet.current_balance) - parsedFee)))}
+                  className="text-[10px] text-brand-primary hover:underline">
                   Semua ({formatRupiah(Number(fromWallet.current_balance))})
                 </button>
               )}
@@ -178,10 +171,38 @@ export default function TransferModal({ wallets, householdId, userId, onClose, o
                 className="w-full pl-10 pr-3.5 py-3 rounded-xl border border-[var(--border)] text-lg text-[var(--text-primary)] bg-[var(--bg-surface)] font-financial font-semibold focus:outline-none focus:ring-2 focus:ring-brand-primary"
               />
             </div>
-            {parsedAmount > 0 && fromWallet && parsedAmount > Number(fromWallet.current_balance) && (
-              <p className="text-xs text-danger mt-1">Melebihi saldo {fromWallet.name}</p>
+          </div>
+
+          {/* Admin Fee */}
+          <div>
+            <label className="block text-xs font-medium text-[var(--text-primary)] mb-1.5">
+              Biaya Admin <span className="text-[var(--text-secondary)] font-normal">(opsional)</span>
+            </label>
+            <div className="relative">
+              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-[var(--text-secondary)] font-medium">Rp</span>
+              <input
+                type="text"
+                inputMode="numeric"
+                value={formatAmountInput(adminFee)}
+                onChange={(e) => setAdminFee(e.target.value.replace(/\./g, ""))}
+                placeholder="0"
+                className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-[var(--border)] text-sm text-[var(--text-primary)] bg-[var(--bg-surface)] font-financial focus:outline-none focus:ring-2 focus:ring-brand-primary"
+              />
+            </div>
+            {parsedFee > 0 && (
+              <p className="text-[10px] text-[var(--text-secondary)] mt-1">
+                Dipotong dari dompet asal — tidak masuk ke dompet tujuan
+              </p>
             )}
           </div>
+
+          {/* Summary total deduction */}
+          {parsedAmount > 0 && parsedFee > 0 && (
+            <div className="flex items-center justify-between px-3 py-2.5 rounded-xl bg-[var(--bg-elevated)] text-sm">
+              <span className="text-[var(--text-secondary)] text-xs">Total keluar dari {fromWallet?.name ?? "dompet asal"}</span>
+              <span className="font-financial font-semibold text-[var(--text-primary)]">Rp {formatRupiah(totalDeduct)}</span>
+            </div>
+          )}
 
           {/* Date */}
           <div>
@@ -215,27 +236,23 @@ export default function TransferModal({ wallets, householdId, userId, onClose, o
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 mt-0.5">
               <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
             </svg>
-            Transfer tidak mempengaruhi total aset. Saldo akan berpindah antar dompet secara otomatis.
+            Transfer tidak mempengaruhi total aset. Biaya admin akan mengurangi saldo dompet asal.
           </div>
 
-          {error && (
-            <p className="text-xs text-danger bg-red-50 px-3 py-2 rounded-lg">{error}</p>
-          )}
+          {error && <p className="text-xs text-danger bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
 
           <div className="flex gap-3">
-            <button type="button" onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-[var(--border)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] transition-colors">
+            <button type="button" onClick={onClose}
+              className="flex-1 py-2.5 rounded-xl border border-[var(--border)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] transition-colors">
               Batal
             </button>
-            <button
-              type="submit"
-              disabled={loading || wallets.length < 2}
-              className="flex-1 py-2.5 rounded-xl bg-brand-primary text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
-            >
+            <button type="submit" disabled={loading || wallets.length < 2}
+              className="flex-1 py-2.5 rounded-xl bg-brand-primary text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50">
               {loading ? "Memproses..." : "Transfer"}
             </button>
           </div>
         </form>
-      </div>
+        </div>
       </div>
     </div>
   );

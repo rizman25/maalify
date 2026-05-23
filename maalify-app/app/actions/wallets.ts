@@ -42,17 +42,122 @@ async function verifyWalletAccess(walletId: string) {
 
 export async function updateWallet(
   walletId: string,
-  payload: { name: string; color: string; is_shared: boolean; current_balance: number }
+  payload: {
+    name: string;
+    color: string;
+    is_shared: boolean;
+    current_balance: number;
+    old_balance: number;
+    reason?: string;
+  }
 ): Promise<{ success?: true; error?: string }> {
   const check = await verifyWalletAccess(walletId);
   if (check.error) return { error: check.error };
 
-  const { error } = await service()
+  const svc = service();
+
+  const { error } = await svc
     .from("wallets")
-    .update({ name: payload.name, color: payload.color, is_shared: payload.is_shared, current_balance: payload.current_balance })
+    .update({
+      name: payload.name,
+      color: payload.color,
+      is_shared: payload.is_shared,
+      current_balance: payload.current_balance,
+    })
     .eq("id", walletId);
 
   if (error) return { error: error.message };
+
+  // Catat ke history
+  await svc.from("wallet_edit_history").insert({
+    wallet_id: walletId,
+    user_id: check.userId,
+    old_balance: payload.old_balance,
+    new_balance: payload.current_balance,
+    reason: payload.reason?.trim() || null,
+  });
+
+  return { success: true };
+}
+
+export async function getWalletHistory(walletId: string): Promise<{
+  data?: { id: string; old_balance: number; new_balance: number; reason: string | null; edited_at: string; users: { name: string } | null }[];
+  error?: string;
+}> {
+  const check = await verifyWalletAccess(walletId);
+  if (check.error) return { error: check.error };
+
+  const { data, error } = await service()
+    .from("wallet_edit_history")
+    .select("id, old_balance, new_balance, reason, edited_at, users(name)")
+    .eq("wallet_id", walletId)
+    .order("edited_at", { ascending: false })
+    .limit(20);
+
+  if (error) return { error: error.message };
+  return { data: data as typeof data & { users: { name: string } | null }[] };
+}
+
+export async function saveTransfer(payload: {
+  householdId: string;
+  fromWalletId: string;
+  toWalletId: string;
+  amount: number;
+  adminFee: number;
+  description?: string;
+  date: string;
+  userId: string;
+}): Promise<{ success?: true; error?: string }> {
+  const authSupabase = await createClient();
+  const { data: { user } } = await authSupabase.auth.getUser();
+  if (!user) return { error: "Sesi tidak valid." };
+
+  const svc = service();
+
+  // Verifikasi membership
+  const { data: mem } = await svc
+    .from("household_members")
+    .select("role")
+    .eq("user_id", user.id)
+    .eq("household_id", payload.householdId)
+    .single();
+  if (!mem) return { error: "Tidak memiliki akses." };
+
+  // Cek saldo cukup (amount + admin_fee)
+  const { data: fromWallet } = await svc
+    .from("wallets")
+    .select("current_balance")
+    .eq("id", payload.fromWalletId)
+    .single();
+  if (!fromWallet) return { error: "Dompet asal tidak ditemukan." };
+
+  const totalDeduct = payload.amount + payload.adminFee;
+  if (Number(fromWallet.current_balance) < totalDeduct) {
+    return { error: "Saldo dompet asal tidak cukup (termasuk biaya admin)." };
+  }
+
+  // Insert transfer — trigger DB akan otomatis update from_wallet -= amount, to_wallet += amount
+  const { error: txErr } = await svc.from("transfers").insert({
+    household_id: payload.householdId,
+    from_wallet_id: payload.fromWalletId,
+    to_wallet_id: payload.toWalletId,
+    amount: payload.amount,
+    admin_fee: payload.adminFee,
+    description: payload.description?.trim() || null,
+    date: payload.date,
+    user_id: payload.userId,
+  });
+  if (txErr) return { error: txErr.message };
+
+  // Deduct admin fee dari from_wallet secara manual (tidak ditangani trigger)
+  if (payload.adminFee > 0) {
+    const { error: feeErr } = await svc
+      .from("wallets")
+      .update({ current_balance: Number(fromWallet.current_balance) - payload.amount - payload.adminFee })
+      .eq("id", payload.fromWalletId);
+    if (feeErr) return { error: feeErr.message };
+  }
+
   return { success: true };
 }
 
