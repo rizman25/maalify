@@ -8,13 +8,18 @@ import QuickAddTransaksi from "@/components/dashboard/QuickAddTransaksi";
 import ScanStrukButton from "@/components/dashboard/ScanStrukButton";
 import RecentTransaksiList from "@/components/dashboard/RecentTransaksiList";
 import MemberSpendingSummary from "@/components/dashboard/MemberSpendingSummary";
+import DashboardViewToggle from "@/components/dashboard/DashboardViewToggle";
 import type { MemberSpending } from "@/components/dashboard/MemberSpendingSummary";
 import Link from "next/link";
 
 const BULAN_SHORT = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
 const BULAN_PANJANG = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
 
-export default async function DashboardPage() {
+export default async function DashboardPage({ searchParams }: { searchParams: Promise<{ view?: string }> }) {
+  const params = await searchParams;
+  const viewMode = params.view === "personal" ? "personal" : "household";
+  const isPersonal = viewMode === "personal";
+
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
@@ -48,41 +53,59 @@ export default async function DashboardPage() {
   sixMonthsAgo.setDate(1);
   const trendStart = `${sixMonthsAgo.getFullYear()}-${pad(sixMonthsAgo.getMonth() + 1)}-01`;
 
+  // Helper: base transaction query, scoped to household or personal
+  const txBase = () => {
+    const q = supabase.from("transactions").select("type, amount")
+      .eq("household_id", householdId);
+    return isPersonal ? q.eq("user_id", user.id) : q;
+  };
+
   const [curMonthRes, prevMonthRes, walletsRes, trendRes, catRes, budgetsRes, debtsRes, recentTxRes, activeWalletsRes, catsRes, goalsRes, memberSpendingRes, membersCountRes, recurringRes] = await Promise.all([
-    supabase.from("transactions").select("type, amount")
-      .eq("household_id", householdId).gte("date", monthStart).lt("date", monthEnd),
+    txBase().gte("date", monthStart).lt("date", monthEnd),
 
-    supabase.from("transactions").select("type, amount")
-      .eq("household_id", householdId).gte("date", prevMonthStart).lt("date", monthStart),
+    txBase().gte("date", prevMonthStart).lt("date", monthStart),
 
-    supabase.from("wallets").select("current_balance")
-      .eq("household_id", householdId).eq("is_active", true),
+    // Wallets: personal = private wallets only; household = all active
+    isPersonal
+      ? supabase.from("wallets").select("current_balance")
+          .eq("household_id", householdId).eq("is_active", true).eq("is_shared", false)
+      : supabase.from("wallets").select("current_balance")
+          .eq("household_id", householdId).eq("is_active", true),
 
-    supabase.from("transactions").select("type, amount, date")
-      .eq("household_id", householdId).gte("date", trendStart).order("date"),
+    (() => {
+      const q = supabase.from("transactions").select("type, amount, date")
+        .eq("household_id", householdId).gte("date", trendStart).order("date");
+      return isPersonal ? q.eq("user_id", user.id) : q;
+    })(),
 
-    supabase.from("transactions")
-      .select("amount, categories(name, color)")
-      .eq("household_id", householdId).eq("type", "expense")
-      .gte("date", monthStart).lt("date", monthEnd),
+    (() => {
+      const q = supabase.from("transactions")
+        .select("amount, categories(name, color)")
+        .eq("household_id", householdId).eq("type", "expense")
+        .gte("date", monthStart).lt("date", monthEnd);
+      return isPersonal ? q.eq("user_id", user.id) : q;
+    })(),
 
     supabase.from("budgets")
       .select("id, amount, category_id, categories(name, color)")
       .eq("household_id", householdId).eq("month", month).eq("year", year),
 
-    isMember
+    isMember || isPersonal
       ? Promise.resolve({ data: [] })
       : supabase.from("debts")
           .select("id, type, party_name, remaining_amount, due_date, status")
           .eq("household_id", householdId).eq("status", "active")
           .order("due_date").limit(5),
 
-    supabase.from("transactions")
-      .select("id, type, amount, description, date, visibility, user_id, categories(name, icon, color), wallets(name), users(name)")
-      .eq("household_id", householdId)
-      .order("date", { ascending: false })
-      .order("created_at", { ascending: false })
-      .limit(5),
+    (() => {
+      const q = supabase.from("transactions")
+        .select("id, type, amount, description, date, visibility, user_id, categories(name, icon, color), wallets(name), users(name)")
+        .eq("household_id", householdId)
+        .order("date", { ascending: false })
+        .order("created_at", { ascending: false })
+        .limit(5);
+      return isPersonal ? q.eq("user_id", user.id) : q;
+    })(),
 
     supabase.from("wallets").select("id, name, type, current_balance, color, is_active")
       .eq("household_id", householdId).eq("is_active", true).order("name"),
@@ -98,12 +121,11 @@ export default async function DashboardPage() {
       .order("created_at", { ascending: false })
       .limit(4),
 
-    // Member spending summary — owners/admins only via SECURITY DEFINER RPC
-    !isMember && householdId
+    // Member spending summary — owners/admins only, household view only
+    !isMember && !isPersonal && householdId
       ? supabase.rpc("get_member_spending_summary", { p_household_id: householdId })
       : Promise.resolve({ data: null, error: null }),
 
-    // Setup checklist queries
     supabase.from("household_members").select("id", { count: "exact", head: true }).eq("household_id", householdId),
     supabase.from("recurring_transactions").select("id", { count: "exact", head: true }).eq("household_id", householdId).limit(1),
   ]);
@@ -200,7 +222,9 @@ export default async function DashboardPage() {
             Selamat datang kembali, {firstName} 👋
           </h1>
           <p className="text-sm text-[var(--text-secondary)] mt-1">
-            {isMember
+            {isPersonal
+              ? `Ringkasan keuangan pribadimu — ${bulanNama}`
+              : isMember
               ? `Berikut ringkasan keuangan kamu — ${bulanNama}`
               : `Berikut ringkasan keuangan keluarga ${bulanNama}`}
           </p>
@@ -221,9 +245,19 @@ export default async function DashboardPage() {
         </div>
       </div>
 
+      {/* View toggle */}
+      <div className="flex items-center gap-3">
+        <DashboardViewToggle current={viewMode} />
+        {isPersonal && (
+          <p className="text-xs text-[var(--text-secondary)]">
+            Menampilkan data transaksi &amp; dompet pribadi kamu saja
+          </p>
+        )}
+      </div>
+
       {/* Summary Cards */}
       <div id="tour-summary" className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <SummaryCard label={isMember ? "SALDO DOMPET SAYA" : "TOTAL SALDO"} value={totalAset} pctChange={null} color="#3B82F6"
+        <SummaryCard label={isPersonal ? "SALDO DOMPET PRIBADI" : isMember ? "SALDO DOMPET SAYA" : "TOTAL SALDO"} value={totalAset} pctChange={null} color="#3B82F6"
           icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>}
         />
         <SummaryCard label="PEMASUKAN BULAN INI" value={curIncome} pctChange={pct(curIncome, prevIncome)}
