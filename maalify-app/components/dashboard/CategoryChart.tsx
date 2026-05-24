@@ -1,7 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { PieChart, Pie, Cell, ResponsiveContainer, Sector } from "recharts";
+import { PieChart, Pie as PieBase, Cell, ResponsiveContainer, Sector } from "recharts";
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const Pie = PieBase as any;
 import { formatRupiah } from "@/lib/utils";
 
 interface CategoryItem {
@@ -58,7 +61,7 @@ export default function CategoryChart({ data, total }: { data: CategoryItem[]; t
               stroke="var(--bg-surface)"
               activeIndex={activeIndex ?? -1}
               activeShape={renderActiveShape}
-              onMouseEnter={(_, index) => setActiveIndex(index)}
+              onMouseEnter={(_: unknown, index: number) => setActiveIndex(index)}
               onMouseLeave={() => setActiveIndex(null)}
             >
               {enriched.map((entry, i) => (

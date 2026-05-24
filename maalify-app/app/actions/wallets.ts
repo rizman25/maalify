@@ -95,7 +95,7 @@ export async function getWalletHistory(walletId: string): Promise<{
     .limit(20);
 
   if (error) return { error: error.message };
-  return { data: data as typeof data & { users: { name: string } | null }[] };
+  return { data: data as unknown as { id: string; old_balance: number; new_balance: number; reason: string | null; edited_at: string; users: { name: string } | null }[] };
 }
 
 export async function saveTransfer(payload: {

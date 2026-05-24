@@ -228,8 +228,8 @@ export default async function AdminPage() {
       dailyTxData={dailyTxData}
       topHouseholds={topHouseholds}
       recentUsers={(recentUsersRes.data ?? []) as { id: string; name: string; email: string; phone: string | null; created_at: string }[]}
-      loginHistory={(loginHistoryRes.data ?? []) as { id: string; created_at: string; ip_address: string; user_agent: string; users: { id: string; name: string; email: string } | null }[]}
-      feedbackList={(feedbackRes.data ?? []) as { id: string; type: string; message: string; rating: number | null; image_url: string | null; created_at: string; users: { id: string; name: string; email: string } | null }[]}
+      loginHistory={(loginHistoryRes.data ?? []) as unknown as { id: string; created_at: string; ip_address: string; user_agent: string; users: { id: string; name: string; email: string } | null }[]}
+      feedbackList={(feedbackRes.data ?? []) as unknown as { id: string; type: string; message: string; rating: number | null; image_url: string | null; created_at: string; users: { id: string; name: string; email: string } | null }[]}
       generatedAt={new Date().toISOString()}
     />
   );

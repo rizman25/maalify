@@ -264,7 +264,7 @@ export default function WalletPageClient({ wallets, inactiveWallets, transfers, 
                           {wallet.name}
                         </p>
                         {!wallet.is_shared && (
-                          <Lock size={11} className="text-[var(--text-secondary)]" title="Dompet pribadi" />
+                          <Lock size={11} className="text-[var(--text-secondary)]" aria-label="Dompet pribadi" />
                         )}
                       </div>
                       <span
