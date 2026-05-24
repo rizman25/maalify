@@ -4,6 +4,7 @@ import { useState } from "react";
 import LogoutButton from "./LogoutButton";
 import NotificationPanel from "./NotificationPanel";
 import ThemeToggle from "@/components/ui/ThemeToggle";
+import InstallModal from "@/components/ui/InstallModal";
 import type { AppNotification } from "@/types";
 import { loadNotifPrefs } from "@/app/(dashboard)/pengaturan/PengaturanPageClient";
 
@@ -20,6 +21,7 @@ interface TopbarProps {
 
 export default function Topbar({ householdName, userName, avatarUrl, darkMode, onToggleDark, onMenuClick, onSearchClick, notifications }: TopbarProps) {
   const [panelOpen, setPanelOpen] = useState(false);
+  const [installOpen, setInstallOpen] = useState(false);
 
   const initials = userName
     .split(" ")
@@ -34,6 +36,7 @@ export default function Topbar({ householdName, userName, avatarUrl, darkMode, o
   const badgeCount = visibleNotifications.length;
 
   return (
+    <>
     <header className="h-14 flex-shrink-0 bg-[var(--bg-surface)] border-b border-[var(--border)] px-4 flex items-center justify-between gap-3">
       {/* Left: logo (mobile) + household name */}
       <div className="flex items-center gap-3 min-w-0">
@@ -53,6 +56,20 @@ export default function Topbar({ householdName, userName, avatarUrl, darkMode, o
       <div className="flex items-center gap-2 flex-shrink-0">
         {/* Dark mode toggle */}
         <ThemeToggle dark={darkMode} onToggle={onToggleDark} size="sm" />
+
+        {/* Install app button */}
+        <button
+          onClick={() => setInstallOpen(true)}
+          className="p-2 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] transition-colors"
+          aria-label="Install Aplikasi"
+          title="Install Aplikasi"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+        </button>
 
         {/* Search button */}
         <button
@@ -121,5 +138,8 @@ export default function Topbar({ householdName, userName, avatarUrl, darkMode, o
         <LogoutButton />
       </div>
     </header>
+
+    {installOpen && <InstallModal onClose={() => setInstallOpen(false)} />}
+    </>
   );
 }
