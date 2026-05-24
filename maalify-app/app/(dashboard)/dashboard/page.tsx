@@ -168,7 +168,7 @@ export default async function DashboardPage() {
     const key = `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
     trendMap.set(key, { income: 0, expense: 0 });
   }
-  for (const tx of (trendRes.data ?? []).filter(t => !privateWalletSet.has(t.wallet_id))) {
+  for (const tx of (trendRes.data ?? [])) {
     const key = tx.date.substring(0, 7);
     if (trendMap.has(key)) {
       const e = trendMap.get(key)!;
@@ -182,7 +182,7 @@ export default async function DashboardPage() {
 
   // Category donut
   const catMap = new Map<string, { name: string; color: string; amount: number }>();
-  for (const row of (catRes.data ?? []).filter(r => !privateWalletSet.has(r.wallet_id))) {
+  for (const row of (catRes.data ?? [])) {
     const cats = row.categories as { name: string; color: string } | { name: string; color: string }[] | null;
     const cat = Array.isArray(cats) ? cats[0] : cats;
     if (!cat) continue;
@@ -330,7 +330,7 @@ export default async function DashboardPage() {
           {categoryData.length === 0 ? (
             <div className="h-48 flex items-center justify-center text-sm text-[var(--text-secondary)]">Belum ada pengeluaran</div>
           ) : (
-            <CategoryChart data={categoryData} total={curExpense} />
+            <CategoryChart data={categoryData} total={curExpense + pCurExpense} />
           )}
         </div>
       </div>
