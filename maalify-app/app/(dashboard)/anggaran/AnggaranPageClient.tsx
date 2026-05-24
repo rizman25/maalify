@@ -296,6 +296,7 @@ export default function AnggaranPageClient({
           mode={modalMode}
           budget={editBudget}
           availableCategories={availableCategories}
+          allCategories={allCategories}
           householdId={householdId}
           userId={userId}
           month={month}

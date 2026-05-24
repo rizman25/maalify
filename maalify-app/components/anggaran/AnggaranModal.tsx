@@ -28,6 +28,7 @@ interface Props {
   mode: "add" | "edit";
   budget?: BudgetItem;
   availableCategories: Category[];
+  allCategories: Category[];
   householdId: string;
   userId: string;
   month: number;
@@ -37,9 +38,17 @@ interface Props {
 }
 
 export default function AnggaranModal({
-  mode, budget, availableCategories, householdId, userId, month, year, onClose, onSaved,
+  mode, budget, availableCategories, allCategories, householdId, userId, month, year, onClose, onSaved,
 }: Props) {
   const [categoryId, setCategoryId] = useState(budget?.category_id ?? availableCategories[0]?.id ?? "");
+
+  // In edit mode: current category + all unbudgeted categories (so user can switch)
+  const editCategories: Category[] = mode === "edit" && budget
+    ? [
+        ...(allCategories.filter(c => c.id === budget.category_id)),
+        ...availableCategories.filter(c => c.id !== budget.category_id),
+      ]
+    : availableCategories;
   const [customName, setCustomName] = useState(budget?.customName ?? "");
   const [amount, setAmount] = useState(budget ? String(budget.budget) : "");
   const [isRecurring, setIsRecurring] = useState(budget?.isRecurring ?? true);
@@ -91,6 +100,7 @@ export default function AnggaranModal({
       } else if (budget) {
         const { error: err } = await supabase.from("budgets")
           .update({
+            category_id: categoryId,
             amount: amt,
             name: customName.trim() || null,
             is_recurring: isRecurring,
@@ -210,44 +220,31 @@ export default function AnggaranModal({
             />
           </div>
 
-          {/* Category (add only) */}
-          {mode === "add" && (
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium text-[var(--text-secondary)]">Kategori</label>
-              {availableCategories.length === 0 ? (
-                <p className="text-sm text-[var(--text-secondary)] italic">Semua kategori sudah memiliki anggaran bulan ini.</p>
-              ) : (
-                <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
-                  {availableCategories.map((cat) => (
-                    <button
-                      key={cat.id}
-                      type="button"
-                      onClick={() => setCategoryId(cat.id)}
-                      className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-sm text-left transition-all ${
-                        categoryId === cat.id
-                          ? "border-brand-primary bg-brand-primary/5 text-[var(--text-primary)] font-medium"
-                          : "border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--text-secondary)]"
-                      }`}
-                    >
-                      <span className="text-[var(--text-secondary)]"><CategoryIcon slug={cat.icon} size={16} /></span>
-                      <span className="truncate">{cat.name}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Category display (edit mode) */}
-          {mode === "edit" && budget && (
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-[var(--bg-elevated)]">
-              <span className="text-[var(--text-secondary)]"><CategoryIcon slug={budget.icon} size={22} /></span>
-              <div>
-                <p className="font-medium text-[var(--text-primary)] text-sm">{budget.name}</p>
-                <p className="text-xs text-[var(--text-secondary)]">Kategori pengeluaran</p>
+          {/* Category picker — both add and edit mode */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-[var(--text-secondary)]">Kategori</label>
+            {mode === "add" && availableCategories.length === 0 ? (
+              <p className="text-sm text-[var(--text-secondary)] italic">Semua kategori sudah memiliki anggaran bulan ini.</p>
+            ) : (
+              <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
+                {(mode === "edit" ? editCategories : availableCategories).map((cat) => (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => setCategoryId(cat.id)}
+                    className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-sm text-left transition-all ${
+                      categoryId === cat.id
+                        ? "border-brand-primary bg-brand-primary/5 text-[var(--text-primary)] font-medium"
+                        : "border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--text-secondary)]"
+                    }`}
+                  >
+                    <span style={{ color: cat.color ?? undefined }}><CategoryIcon slug={cat.icon} size={16} /></span>
+                    <span className="truncate">{cat.name}</span>
+                  </button>
+                ))}
               </div>
-            </div>
-          )}
+            )}
+          </div>
 
           {/* Amount */}
           <div className="space-y-1.5">
