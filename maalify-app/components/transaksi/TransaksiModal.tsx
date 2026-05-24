@@ -146,6 +146,15 @@ export default function TransaksiModal({
           // attachment upload failed — transaction still saved, non-critical
         }
       }
+
+      // Cek budget & kirim push jika mendekati/melebihi limit (fire-and-forget)
+      if (type === "expense" && categoryId) {
+        fetch("/api/push/check-budget", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ householdId, categoryId }),
+        }).catch(() => {});
+      }
     }
 
     onSaved();

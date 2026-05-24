@@ -61,3 +61,45 @@ self.addEventListener("fetch", (event) => {
     );
   }
 });
+
+// ── Push Notification Handler ──────────────────────────────
+self.addEventListener("push", (event) => {
+  if (!event.data) return;
+
+  let payload;
+  try {
+    payload = event.data.json();
+  } catch {
+    payload = { title: "Maalify", body: event.data.text(), url: "/" };
+  }
+
+  const { title = "Maalify", body = "", icon, url = "/" } = payload;
+
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body,
+      icon: icon || "/icons/icon-192.svg",
+      badge: "/icons/icon-192.svg",
+      data: { url },
+      vibrate: [200, 100, 200],
+    })
+  );
+});
+
+// Klik notifikasi → buka/fokus tab aplikasi
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = event.notification.data?.url || "/";
+
+  event.waitUntil(
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then((list) => {
+      for (const client of list) {
+        if (client.url.includes(self.location.origin) && "focus" in client) {
+          client.navigate(url);
+          return client.focus();
+        }
+      }
+      return clients.openWindow(url);
+    })
+  );
+});

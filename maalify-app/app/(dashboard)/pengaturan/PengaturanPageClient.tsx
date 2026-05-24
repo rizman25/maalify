@@ -6,6 +6,7 @@ import { useRefresh } from "@/hooks/useRefresh";
 import { formatRupiah } from "@/lib/utils";
 import { changeMemberRole, removeMember } from "@/app/actions/members";
 import { Star } from "@/lib/icons";
+import { usePushSubscription } from "@/hooks/usePushSubscription";
 
 // ─── Notification preferences ────────────────────────────────────────────────
 const NOTIF_PREFS_KEY = "maalify_notif_prefs";
@@ -356,6 +357,7 @@ export default function PengaturanPageClient({ profile, household, members, cate
 
   // Notification preferences state
   const [notifPrefs, setNotifPrefs] = useState<NotifPrefs>(() => loadNotifPrefs());
+  const { state: pushState, subscribe: pushSubscribe, unsubscribe: pushUnsubscribe } = usePushSubscription();
 
   function toggleNotif(key: string) {
     setNotifPrefs(prev => {
@@ -1074,6 +1076,53 @@ export default function PengaturanPageClient({ profile, household, members, cate
         {/* ─── NOTIFIKASI ─── */}
         {tab === "notifikasi" && (
           <div className="space-y-4">
+
+            {/* Push Notification Permission Card */}
+            <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border)] p-5">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-brand-primary/10 text-brand-primary flex items-center justify-center flex-shrink-0">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                      <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-[var(--text-primary)] text-sm">Push Notification</p>
+                    <p className="text-xs text-[var(--text-secondary)] mt-0.5">
+                      {pushState === "subscribed" && "Notifikasi aktif di perangkat ini"}
+                      {pushState === "unsubscribed" && "Aktifkan untuk terima notifikasi saat app ditutup"}
+                      {pushState === "denied" && "Izin notifikasi diblokir di browser"}
+                      {pushState === "unsupported" && "Browser ini tidak mendukung push notification"}
+                      {pushState === "loading" && "Memeriksa status..."}
+                    </p>
+                    {pushState === "denied" && (
+                      <p className="text-xs text-amber-600 mt-1">Buka pengaturan browser → izinkan notifikasi untuk situs ini</p>
+                    )}
+                  </div>
+                </div>
+                {(pushState === "subscribed" || pushState === "unsubscribed") && (
+                  <button
+                    type="button"
+                    onClick={() => pushState === "subscribed" ? pushUnsubscribe() : pushSubscribe()}
+                    className={[
+                      "relative inline-flex w-11 h-6 rounded-full transition-colors duration-200 focus:outline-none flex-shrink-0 mt-0.5",
+                      pushState === "subscribed" ? "bg-green-500" : "bg-[var(--border)]",
+                    ].join(" ")}
+                    aria-label={pushState === "subscribed" ? "Matikan push notification" : "Aktifkan push notification"}
+                  >
+                    <span className={[
+                      "absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200",
+                      pushState === "subscribed" ? "translate-x-5" : "translate-x-0",
+                    ].join(" ")} />
+                  </button>
+                )}
+                {pushState === "loading" && (
+                  <div className="w-5 h-5 rounded-full border-2 border-brand-primary border-t-transparent animate-spin flex-shrink-0 mt-1" />
+                )}
+              </div>
+            </div>
+
             <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border)] overflow-hidden">
               <div className="px-5 py-4 border-b border-[var(--border)]">
                 <p className="font-semibold text-[var(--text-primary)]">Pengaturan Notifikasi</p>
@@ -1114,7 +1163,7 @@ export default function PengaturanPageClient({ profile, household, members, cate
 
               <div className="px-5 py-3 bg-[var(--bg-elevated)] border-t border-[var(--border)]">
                 <p className="text-[10px] text-[var(--text-secondary)]">
-                  Preferensi disimpan di perangkat ini. Notifikasi akan muncul di panel notifikasi saat kamu membuka aplikasi.
+                  Preferensi ini mengontrol notifikasi di panel dalam aplikasi. Aktifkan Push Notification di atas agar notifikasi muncul meski app ditutup.
                 </p>
               </div>
             </div>
