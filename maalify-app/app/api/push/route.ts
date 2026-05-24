@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { isRateLimited, WINDOW } from "@/lib/pushRateLimit";
 
 // POST /api/push  → simpan/perbarui subscription
 export async function POST(req: NextRequest) {
@@ -7,6 +8,11 @@ export async function POST(req: NextRequest) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    // Rate limit: 1 subscribe per 30 detik per user
+    if (isRateLimited(`sub:${user.id}`, WINDOW.SUBSCRIBE)) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+    }
 
     const { subscription } = await req.json() as {
       subscription: PushSubscriptionJSON;

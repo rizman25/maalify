@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { sendPushToUser } from "@/lib/push";
 import { formatRupiah } from "@/lib/utils";
+import { isRateLimited, WINDOW } from "@/lib/pushRateLimit";
 
 function addDate(from: Date, frequency: string): Date {
   const d = new Date(from);
@@ -120,6 +121,12 @@ export async function POST(req: NextRequest) {
       body = topDaysOverdue > 0
         ? `Tertunggak hingga ${topDaysOverdue} hari — segera konfirmasi`
         : `Segera konfirmasi di halaman Transaksi Berulang`;
+    }
+
+    // Rate limit: 1 notif per user per 4 jam (client sudah throttle 8 jam, ini server-side guard)
+    const rlKey = `recurring:${user.id}`;
+    if (isRateLimited(rlKey, WINDOW.RECURRING)) {
+      return NextResponse.json({ ok: true, pending: totalPending, rateLimited: true });
     }
 
     await sendPushToUser(user.id, {

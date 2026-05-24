@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { sendPushToUser } from "@/lib/push";
 import { formatRupiah } from "@/lib/utils";
+import { isRateLimited, WINDOW } from "@/lib/pushRateLimit";
 
 /**
  * POST /api/push/check-budget
@@ -57,19 +58,25 @@ export async function POST(req: NextRequest) {
     const pct = budget > 0 ? (spent / budget) * 100 : 0;
 
     if (pct > 100) {
-      // Budget melebihi batas
-      await sendPushToUser(user.id, {
-        title: "⚠️ Anggaran Melebihi Batas!",
-        body: `${catName}: Rp ${formatRupiah(spent)} dari Rp ${formatRupiah(budget)} (+Rp ${formatRupiah(spent - budget)})`,
-        url: "/anggaran",
-      });
+      // Budget melebihi batas — rate limit: 1 notif per (user, category) per 2 jam
+      const rlKey = `budget:${user.id}:${categoryId}:over`;
+      if (!isRateLimited(rlKey, WINDOW.BUDGET_EXCEEDED)) {
+        await sendPushToUser(user.id, {
+          title: "⚠️ Anggaran Melebihi Batas!",
+          body: `${catName}: Rp ${formatRupiah(spent)} dari Rp ${formatRupiah(budget)} (+Rp ${formatRupiah(spent - budget)})`,
+          url: "/anggaran",
+        });
+      }
     } else if (pct >= 80) {
-      // Budget hampir habis
-      await sendPushToUser(user.id, {
-        title: "🔔 Anggaran Hampir Habis",
-        body: `${catName}: ${pct.toFixed(0)}% terpakai (Rp ${formatRupiah(spent)} dari Rp ${formatRupiah(budget)})`,
-        url: "/anggaran",
-      });
+      // Budget hampir habis — rate limit: 1 notif per (user, category) per 4 jam
+      const rlKey = `budget:${user.id}:${categoryId}:warn`;
+      if (!isRateLimited(rlKey, WINDOW.BUDGET_WARNING)) {
+        await sendPushToUser(user.id, {
+          title: "🔔 Anggaran Hampir Habis",
+          body: `${catName}: ${pct.toFixed(0)}% terpakai (Rp ${formatRupiah(spent)} dari Rp ${formatRupiah(budget)})`,
+          url: "/anggaran",
+        });
+      }
     }
 
     return NextResponse.json({ ok: true });
