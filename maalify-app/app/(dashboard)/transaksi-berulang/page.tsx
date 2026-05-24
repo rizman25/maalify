@@ -32,6 +32,7 @@ export interface PendingItem {
   categoryColor: string | null;
   categoryName: string;
   walletName: string;
+  is_private: boolean;
 }
 
 function addDate(from: Date, frequency: string): Date {
@@ -86,7 +87,7 @@ export default async function RecurringPage() {
   const [recurringRes, walletsRes, catsRes] = await Promise.all([
     supabase
       .from("recurring_transactions")
-      .select("id, wallet_id, category_id, type, amount, description, frequency, start_date, end_date, last_generated, is_active, created_by, created_at, categories(name, icon, color), wallets(name)")
+      .select("id, wallet_id, category_id, type, amount, description, frequency, start_date, end_date, last_generated, is_active, is_private, user_id, created_by, created_at, categories(name, icon, color), wallets(name)")
       .eq("household_id", householdId)
       .order("is_active", { ascending: false })
       .order("created_at", { ascending: false }),
@@ -130,6 +131,7 @@ export default async function RecurringPage() {
         categoryColor: (cat as { color: string | null } | null)?.color ?? null,
         categoryName: (cat as { name: string } | null)?.name ?? "-",
         walletName: (wallet as { name: string } | null)?.name ?? "-",
+        is_private: item.is_private ?? false,
       });
     }
   }
