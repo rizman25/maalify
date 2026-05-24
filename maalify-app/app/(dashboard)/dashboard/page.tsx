@@ -39,10 +39,10 @@ export default async function DashboardPage() {
   const monthEnd = month === 12 ? `${year + 1}-01-01` : `${year}-${pad(month + 1)}-01`;
   const prevMonthStart = month === 1 ? `${year - 1}-12-01` : `${year}-${pad(month - 1)}-01`;
 
-  const sixMonthsAgo = new Date(now);
-  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
-  sixMonthsAgo.setDate(1);
-  const trendStart = `${sixMonthsAgo.getFullYear()}-${pad(sixMonthsAgo.getMonth() + 1)}-01`;
+  const twelveMonthsAgo = new Date(now);
+  twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 11);
+  twelveMonthsAgo.setDate(1);
+  const trendStart = `${twelveMonthsAgo.getFullYear()}-${pad(twelveMonthsAgo.getMonth() + 1)}-01`;
 
   // Fetch private wallets first so we can filter personal transactions by wallet_id
   const { data: privateWalletsData } = await supabase
@@ -165,9 +165,9 @@ export default async function DashboardPage() {
     return ((cur - prev) / prev * 100).toFixed(1);
   }
 
-  // Trend 6 bulan
+  // Trend 12 bulan (client bisa slice sesuai pilihan dropdown)
   const trendMap = new Map<string, { income: number; expense: number }>();
-  for (let i = 5; i >= 0; i--) {
+  for (let i = 11; i >= 0; i--) {
     const d = new Date(now); d.setDate(1); d.setMonth(d.getMonth() - i);
     const key = `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
     trendMap.set(key, { income: 0, expense: 0 });
@@ -336,16 +336,6 @@ export default async function DashboardPage() {
       {/* Charts */}
       {/* Trend — full width */}
       <div className="bg-[var(--bg-surface)] rounded-xl border border-[var(--border)] p-5">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <p className="font-semibold text-[var(--text-primary)]">Arus Kas</p>
-            <p className="text-xs text-[var(--text-secondary)] mt-0.5">6 bulan terakhir</p>
-          </div>
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--bg-elevated)] text-xs text-[var(--text-secondary)]">
-            <span>Bulanan</span>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-          </div>
-        </div>
         <TrendChart data={trendData} />
       </div>
 
