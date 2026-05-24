@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useRefresh } from "@/hooks/useRefresh";
 import TransaksiModal from "@/components/transaksi/TransaksiModal";
 import type { Wallet, Category } from "@/types";
 
@@ -15,6 +16,7 @@ interface Props {
 export default function QuickAddTransaksi({ wallets, categories, householdId, userId }: Props) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
+  const { refresh } = useRefresh();
 
   return (
     <>
@@ -38,7 +40,7 @@ export default function QuickAddTransaksi({ wallets, categories, householdId, us
           onClose={() => setOpen(false)}
           onSaved={() => {
             setOpen(false);
-            router.refresh();
+            refresh();
           }}
         />
       )}

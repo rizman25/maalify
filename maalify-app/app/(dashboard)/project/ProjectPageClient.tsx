@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useRefresh } from "@/hooks/useRefresh";
 import { formatRupiah } from "@/lib/utils";
 import type { Project, ProjectItem, ProjectStatus } from "@/types";
 import { Plane, Home, Target, Receipt, Car, HeartPulse, Package, ShoppingCart } from "@/lib/icons";
@@ -79,6 +80,7 @@ export default function ProjectPageClient({
   projects, wallets, householdId, userId, userRole,
 }: Props) {
   const router = useRouter();
+  const { refresh } = useRefresh();
   const canManage = userRole !== "member";
   const [view, setView] = useState<View>("list");
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
@@ -89,7 +91,7 @@ export default function ProjectPageClient({
 
   const handleSaved = useCallback(() => {
     setModal(null);
-    router.refresh();
+    refresh();
   }, [router]);
 
   const handleItemSaved = useCallback(async () => {
@@ -114,7 +116,7 @@ export default function ProjectPageClient({
 
     // Backfill: deduct wallet for any paid items that have no transaction yet
     syncProjectPaidItems(projectId).then(({ synced }) => {
-      if (synced > 0) router.refresh();
+      if (synced > 0) refresh();
     });
   }
 
@@ -366,7 +368,7 @@ export default function ProjectPageClient({
             onClose={() => setModal(null)}
             onSaved={() => {
               setModal(null);
-              router.refresh();
+              refresh();
               goBack();
             }}
           />
@@ -389,7 +391,7 @@ export default function ProjectPageClient({
             onClose={() => setModal(null)}
             onSaved={() => {
               setModal(null);
-              router.refresh();
+              refresh();
               if (selectedProject) loadItems(selectedProject.id);
             }}
           />

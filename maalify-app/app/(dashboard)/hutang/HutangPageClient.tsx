@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useRefresh } from "@/hooks/useRefresh";
 import { formatRupiah } from "@/lib/utils";
 import HutangModal from "@/components/hutang/HutangModal";
 import BayarModal from "@/components/hutang/BayarModal";
@@ -40,6 +41,7 @@ type ModalState = { kind: "add" } | { kind: "edit"; debt: DebtItem } | { kind: "
 
 export default function HutangPageClient({ debts, wallets, householdId, userId }: Props) {
   const router = useRouter();
+  const { refresh } = useRefresh();
   const { toast, showToast, dismissToast } = useToast();
   const [tab, setTab] = useState<Tab>("payable");
   const [modal, setModal] = useState<ModalState>(null);
@@ -49,7 +51,7 @@ export default function HutangPageClient({ debts, wallets, householdId, userId }
     else if (modal?.kind === "edit") showToast("Hutang berhasil diperbarui");
     else if (modal?.kind === "bayar") showToast("Pembayaran berhasil dicatat");
     setModal(null);
-    router.refresh();
+    refresh();
   }, [router, modal]);
 
   const filtered = debts.filter(d => d.type === tab);

@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useRefresh } from "@/hooks/useRefresh";
 import { formatRupiah } from "@/lib/utils";
 import type { RecurringItem, PendingItem } from "./page";
 import RecurringModal from "@/components/transaksi/RecurringModal";
@@ -58,6 +59,7 @@ export default function RecurringPageClient({
   recurring, pendingItems, wallets, categories, householdId, userId, userRole,
 }: Props) {
   const router = useRouter();
+  const { refresh } = useRefresh();
   const { toast, showToast, dismissToast } = useToast();
   const canManage = userRole !== "member";
   const [modal, setModal] = useState<null | "add" | RecurringItem>(null);
@@ -73,7 +75,7 @@ export default function RecurringPageClient({
     if (modal === "add") showToast("Transaksi berulang berhasil ditambahkan");
     else if (modal) showToast("Transaksi berulang berhasil diperbarui");
     setModal(null);
-    router.refresh();
+    refresh();
   }, [router, modal]);
 
   async function toggleActive(item: RecurringItem) {
@@ -85,7 +87,7 @@ export default function RecurringPageClient({
       item.is_active ? "Transaksi berulang dinonaktifkan" : "Transaksi berulang diaktifkan",
       "success"
     );
-    router.refresh();
+    refresh();
   }
 
   async function handleConfirm(p: PendingItem) {
@@ -99,7 +101,7 @@ export default function RecurringPageClient({
     setProcessingKey(null);
     if (result.error) { showToast(result.error, "error"); return; }
     showToast(`${p.description} — dikonfirmasi`, "success");
-    router.refresh();
+    refresh();
   }
 
   async function handleSkip(p: PendingItem) {
@@ -112,7 +114,7 @@ export default function RecurringPageClient({
     setProcessingKey(null);
     if (result.error) { showToast(result.error, "error"); return; }
     showToast(`${p.description} — dilewati`, "success");
-    router.refresh();
+    refresh();
   }
 
   const active = recurring.filter(r => r.is_active);

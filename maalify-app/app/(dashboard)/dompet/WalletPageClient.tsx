@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useRefresh } from "@/hooks/useRefresh";
 import { formatRupiah } from "@/lib/utils";
 import type { Wallet, WalletType } from "@/types";
 import WalletModal from "@/components/dompet/WalletModal";
@@ -40,6 +41,7 @@ interface Props {
 export default function WalletPageClient({ wallets, inactiveWallets, transfers, householdId, userId, userRole }: Props) {
   const canManage = userRole !== "member";
   const router = useRouter();
+  const { refresh } = useRefresh();
   const { toast, showToast, dismissToast } = useToast();
   const [modalOpen, setModalOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<Wallet | null>(null);
@@ -72,7 +74,7 @@ export default function WalletPageClient({ wallets, inactiveWallets, transfers, 
 
   function handleSaved() {
     handleClose();
-    router.refresh();
+    refresh();
   }
 
   async function handleDeactivate(walletId: string) {
@@ -84,7 +86,7 @@ export default function WalletPageClient({ wallets, inactiveWallets, transfers, 
       showToast(result.error, "error");
     } else {
       showToast(`"${walletName}" berhasil dinonaktifkan.`, "success");
-      router.refresh();
+      refresh();
     }
   }
 
@@ -98,7 +100,7 @@ export default function WalletPageClient({ wallets, inactiveWallets, transfers, 
       showToast(result.error, "error");
     } else {
       showToast(`"${walletName}" berhasil dihapus.`, "success");
-      router.refresh();
+      refresh();
     }
   }
 
@@ -111,7 +113,7 @@ export default function WalletPageClient({ wallets, inactiveWallets, transfers, 
       showToast(result.error, "error");
     } else {
       showToast(`"${walletName}" berhasil diaktifkan.`, "success");
-      router.refresh();
+      refresh();
     }
   }
 
@@ -509,7 +511,7 @@ export default function WalletPageClient({ wallets, inactiveWallets, transfers, 
           householdId={householdId}
           userId={userId}
           onClose={() => setTransferOpen(false)}
-          onSaved={() => { setTransferOpen(false); router.refresh(); }}
+          onSaved={() => { setTransferOpen(false); refresh(); }}
         />
       )}
 

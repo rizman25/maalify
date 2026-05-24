@@ -5,6 +5,7 @@ import PwaRegister from "./pwa-register";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import NavigationProgress from "@/components/ui/NavigationProgress";
+import { PageLoadingProvider } from "@/context/PageLoadingContext";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta-sans",
@@ -66,8 +67,10 @@ export default function RootLayout({
           — jika ada className di <html>, React akan overwrite-nya saat hydration
           dan menghapus class 'dark' yang diset anti-FOUC script. */}
       <body className={`${plusJakartaSans.variable} ${jetbrainsMono.variable} min-h-full flex flex-col`}>
-        <NavigationProgress />
-        {children}
+        <PageLoadingProvider>
+          <NavigationProgress />
+          {children}
+        </PageLoadingProvider>
         <PwaRegister />
         <Analytics />
         <SpeedInsights />

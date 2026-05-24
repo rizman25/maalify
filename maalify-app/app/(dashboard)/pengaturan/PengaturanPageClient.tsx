@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useRefresh } from "@/hooks/useRefresh";
 import { formatRupiah } from "@/lib/utils";
 import { changeMemberRole, removeMember } from "@/app/actions/members";
 import { Star } from "@/lib/icons";
@@ -107,6 +108,7 @@ type Tab = "profil" | "household" | "aktivitas" | "keamanan" | "notifikasi";
 
 export default function PengaturanPageClient({ profile, household, members, categories, activity, householdId, userId, userRole }: Props) {
   const router = useRouter();
+  const { refresh } = useRefresh();
   const [tab, setTab] = useState<Tab>("profil");
 
   // Join household state (for users with no household)
@@ -139,7 +141,7 @@ export default function PengaturanPageClient({ profile, household, members, cate
       });
 
       if (insertErr) { setJoinError(insertErr.message); setJoinLoading(false); return; }
-      router.refresh();
+      refresh();
     } catch { setJoinError("Gagal bergabung."); }
     finally { setJoinLoading(false); }
   }
@@ -205,7 +207,7 @@ export default function PengaturanPageClient({ profile, household, members, cate
       if (updateErr) throw updateErr;
 
       setAvatarPreview(avatarUrl);
-      router.refresh();
+      refresh();
     } catch (err: unknown) {
       setAvatarError(err instanceof Error ? err.message : "Gagal upload foto");
     } finally {
@@ -345,7 +347,7 @@ export default function PengaturanPageClient({ profile, household, members, cate
         });
       if (joinErr) throw joinErr;
       router.push("/dashboard");
-      router.refresh();
+      refresh();
     } catch (e: unknown) {
       setSwitchError(e instanceof Error ? e.message : "Gagal pindah family.");
       setSwitchLoading(false);
@@ -371,7 +373,7 @@ export default function PengaturanPageClient({ profile, household, members, cate
   const [passErr, setPassErr] = useState("");
 
   const handleSaved = useCallback(() => {
-    router.refresh();
+    refresh();
   }, [router]);
 
   async function saveProfile() {
@@ -392,7 +394,7 @@ export default function PengaturanPageClient({ profile, household, members, cate
         .eq("id", userId);
       if (error) throw error;
       setProfileMsg("Profil berhasil disimpan");
-      router.refresh();
+      refresh();
     } catch { setProfileMsg("Gagal menyimpan"); }
     finally { setSavingProfile(false); }
   }
@@ -409,7 +411,7 @@ export default function PengaturanPageClient({ profile, household, members, cate
         .eq("id", householdId);
       if (error) throw error;
       setHhMsg("Family berhasil disimpan");
-      router.refresh();
+      refresh();
     } catch { setHhMsg("Gagal menyimpan"); }
     finally { setSavingHh(false); }
   }
@@ -466,7 +468,7 @@ export default function PengaturanPageClient({ profile, household, members, cate
         const removedName = removed?.user?.name ?? "Anggota";
 
         setMemberAction(null);
-        router.refresh();
+        refresh();
         showSuccessToast(`${removedName} telah dikeluarkan dari Family.`);
         return;
       }
@@ -485,7 +487,7 @@ export default function PengaturanPageClient({ profile, household, members, cate
       if (result.error) { setMemberMsg(result.error); return; }
 
       setMemberAction(null);
-      router.refresh();
+      refresh();
       showSuccessToast(
         `Berhasil! ${result.targetName} sekarang menjadi ${result.roleLabelNew} di Family ini.`
       );

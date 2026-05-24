@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useRefresh } from "@/hooks/useRefresh";
 import KategoriModal from "@/components/pengaturan/KategoriModal";
 import { Toast, useToast } from "@/components/ui/Toast";
 import { CategoryIcon, Tag } from "@/lib/icons";
@@ -26,6 +27,7 @@ type Filter = "all" | "expense" | "income";
 
 export default function KategoriPageClient({ categories: initialCategories, householdId, userRole }: Props) {
   const router = useRouter();
+  const { refresh } = useRefresh();
   const { toast, showToast, dismissToast } = useToast();
   const [categories, setCategories] = useState(initialCategories);
   const [filter, setFilter] = useState<Filter>("all");
@@ -37,7 +39,7 @@ export default function KategoriPageClient({ categories: initialCategories, hous
     if (modal?.mode === "add") showToast("Kategori berhasil ditambahkan");
     else if (modal?.mode === "edit") showToast("Kategori berhasil diperbarui");
     setModal(null);
-    router.refresh();
+    refresh();
   }, [router, modal]);
 
   const filtered = categories.filter(c =>

@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { useRefresh } from "@/hooks/useRefresh";
 import Link from "next/link";
 import { formatRupiah } from "@/lib/utils";
 import type { Wallet, Category, TransactionWithCategory } from "@/types";
@@ -31,6 +32,7 @@ export default function TransaksiPageClient({
   transactions, wallets, categories, householdId, userId, month, year,
 }: Props) {
   const router = useRouter();
+  const { refresh } = useRefresh();
   const { toast, showToast, dismissToast } = useToast();
   const [filterType, setFilterType] = useState<FilterType>("all");
   const [filterWallet, setFilterWallet] = useState("all");
@@ -88,7 +90,7 @@ export default function TransaksiPageClient({
     const isEdit = editTarget !== null;
     handleClose();
     showToast(isEdit ? "Transaksi berhasil diperbarui" : "Transaksi berhasil dicatat");
-    router.refresh();
+    refresh();
   }
 
   function formatTanggal(dateStr: string) {
@@ -404,7 +406,7 @@ export default function TransaksiPageClient({
           householdId={householdId}
           userId={userId}
           onClose={() => setScanOpen(false)}
-          onSaved={() => { setScanOpen(false); showToast("Transaksi dari struk berhasil disimpan"); router.refresh(); }}
+          onSaved={() => { setScanOpen(false); showToast("Transaksi dari struk berhasil disimpan"); refresh(); }}
         />
       )}
 

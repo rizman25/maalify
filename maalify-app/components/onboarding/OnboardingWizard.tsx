@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useRefresh } from "@/hooks/useRefresh";
 import { formatRupiah } from "@/lib/utils";
 import { WalletTypeIcon, Receipt, BarChart2, Users, CheckCircle2 } from "@/lib/icons";
 
@@ -34,6 +35,7 @@ const STORAGE_KEY = "maalify_onboarding_skipped";
 
 export default function OnboardingWizard({ householdId, userId, userName }: Props) {
   const router = useRouter();
+  const { refresh } = useRefresh();
   const [step, setStep] = useState<Step>(1);
   const [visible, setVisible] = useState(false);
 
@@ -88,7 +90,7 @@ export default function OnboardingWizard({ householdId, userId, userName }: Prop
 
       if (err) throw err;
       setStep(3);
-      router.refresh();
+      refresh();
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Terjadi kesalahan");
     } finally {
