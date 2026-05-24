@@ -77,6 +77,23 @@ export default function TrendChart({ data }: { data: DataPoint[] }) {
   const sliced = data.slice(-parseInt(period));
   const enriched = sliced.map(d => ({ ...d, net: d.income - d.expense }));
 
+  // MoM badge: bandingkan net bulan terakhir vs bulan sebelumnya
+  const momChip = (() => {
+    const last = enriched[enriched.length - 1];
+    const prev = enriched[enriched.length - 2];
+    if (!last || !prev) return null;
+    const currNet = last.net;
+    const prevNet = prev.net;
+    // Butuh data di salah satu bulan agar perbandingan bermakna
+    if (prevNet === 0 && currNet === 0) return null;
+    if (prevNet === 0) return null; // tidak bisa hitung % dari 0
+    const pct = ((currNet - prevNet) / Math.abs(prevNet)) * 100;
+    // Cap tampilan agar tidak terlalu ekstrem
+    const display = Math.min(Math.abs(pct), 999).toFixed(0);
+    const improved = currNet > prevNet; // net naik = lebih baik
+    return { display, improved, raw: pct };
+  })();
+
   // Tutup dropdown kalau klik di luar
   useEffect(() => {
     function handler(e: MouseEvent) {
@@ -94,7 +111,19 @@ export default function TrendChart({ data }: { data: DataPoint[] }) {
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="font-semibold text-[var(--text-primary)]">Arus Kas</p>
-          <p className="text-xs text-[var(--text-secondary)] mt-0.5">{selected.subtitle}</p>
+          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+            <p className="text-xs text-[var(--text-secondary)]">{selected.subtitle}</p>
+            {momChip && (
+              <span className={[
+                "inline-flex items-center gap-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded-full leading-none",
+                momChip.improved
+                  ? "bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400"
+                  : "bg-red-50 text-red-500 dark:bg-red-900/30 dark:text-red-400",
+              ].join(" ")}>
+                {momChip.improved ? "↑" : "↓"} {momChip.display}% vs bln lalu
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Dropdown */}
