@@ -9,17 +9,19 @@ import { WalletTypeIcon, Users, Lock } from "@/lib/icons";
 import type { WalletType as IconWalletType } from "@/lib/icons";
 
 const WALLET_TYPES: { value: WalletType; label: string }[] = [
-  { value: "cash",    label: "Tunai"    },
-  { value: "bank",    label: "Bank"     },
-  { value: "savings", label: "Tabungan" },
-  { value: "ewallet", label: "E-Wallet" },
+  { value: "cash",        label: "Tunai"        },
+  { value: "bank",        label: "Bank"         },
+  { value: "savings",     label: "Tabungan"     },
+  { value: "ewallet",     label: "E-Wallet"     },
+  { value: "credit_card", label: "Kartu Kredit" },
 ];
 
 const TYPE_DEFAULT_COLOR: Record<WalletType, string> = {
-  cash:    "#27AE60",
-  bank:    "#1E3A5F",
-  savings: "#F59E0B",
-  ewallet: "#8B5CF6",
+  cash:        "#27AE60",
+  bank:        "#1E3A5F",
+  savings:     "#F59E0B",
+  ewallet:     "#8B5CF6",
+  credit_card: "#EF4444",
 };
 
 type HistoryItem = {

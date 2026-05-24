@@ -22,7 +22,7 @@ interface Props {
 }
 
 const WALLET_TYPE_LABEL: Record<string, string> = {
-  cash: "Tunai", bank: "Bank", savings: "Tabungan", ewallet: "E-Wallet",
+  cash: "Tunai", bank: "Bank", savings: "Tabungan", ewallet: "E-Wallet", credit_card: "Kartu Kredit",
 };
 
 export default function GlobalSearch({ open, onClose }: Props) {

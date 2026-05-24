@@ -11,21 +11,23 @@ interface Props {
   userName: string;
 }
 
-type WalletType = "cash" | "bank" | "ewallet" | "savings";
+type WalletType = "cash" | "bank" | "ewallet" | "savings" | "credit_card";
 type Step = 1 | 2 | 3;
 
 const WALLET_TYPES: { id: WalletType; label: string; desc: string }[] = [
-  { id: "cash",    label: "Tunai",      desc: "Uang cash / dompet fisik" },
-  { id: "bank",    label: "Bank",       desc: "Rekening tabungan / giro" },
-  { id: "ewallet", label: "E-Wallet",   desc: "GoPay, OVO, Dana, dll" },
-  { id: "savings", label: "Tabungan",   desc: "Tabungan tujuan khusus" },
+  { id: "cash",        label: "Tunai",        desc: "Uang cash / dompet fisik" },
+  { id: "bank",        label: "Bank",         desc: "Rekening tabungan / giro" },
+  { id: "ewallet",     label: "E-Wallet",     desc: "GoPay, OVO, Dana, dll" },
+  { id: "savings",     label: "Tabungan",     desc: "Tabungan tujuan khusus" },
+  { id: "credit_card", label: "Kartu Kredit", desc: "Visa, Mastercard, dll" },
 ];
 
 const WALLET_SUGGESTIONS: Record<WalletType, string[]> = {
-  cash:    ["Dompet Tunai", "Kas Harian", "Uang Saku"],
-  bank:    ["BCA", "BRI", "Mandiri", "BNI"],
-  ewallet: ["GoPay", "OVO", "Dana", "ShopeePay"],
-  savings: ["Tabungan Darurat", "Dana Pendidikan", "Tabungan Liburan"],
+  cash:        ["Dompet Tunai", "Kas Harian", "Uang Saku"],
+  bank:        ["BCA", "BRI", "Mandiri", "BNI"],
+  ewallet:     ["GoPay", "OVO", "Dana", "ShopeePay"],
+  savings:     ["Tabungan Darurat", "Dana Pendidikan", "Tabungan Liburan"],
+  credit_card: ["Kartu Kredit BCA", "Kartu Kredit Mandiri", "Kartu Kredit BNI"],
 };
 
 const STORAGE_KEY = "maalify_onboarding_skipped";

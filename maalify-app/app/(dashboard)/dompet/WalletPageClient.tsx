@@ -13,17 +13,19 @@ import { WalletTypeIcon, Users, Lock, Building2, ArrowRightLeft } from "@/lib/ic
 import type { WalletType as IconWalletType } from "@/lib/icons";
 
 const TYPE_LABEL: Record<WalletType, string> = {
-  cash: "Tunai",
-  bank: "Bank",
-  savings: "Tabungan",
-  ewallet: "E-Wallet",
+  cash:        "Tunai",
+  bank:        "Bank",
+  savings:     "Tabungan",
+  ewallet:     "E-Wallet",
+  credit_card: "Kartu Kredit",
 };
 
 const TYPE_DEFAULT_COLOR: Record<WalletType, string> = {
-  cash: "#27AE60",
-  bank: "#1E3A5F",
-  savings: "#F59E0B",
-  ewallet: "#8B5CF6",
+  cash:        "#27AE60",
+  bank:        "#1E3A5F",
+  savings:     "#F59E0B",
+  ewallet:     "#8B5CF6",
+  credit_card: "#EF4444",
 };
 
 interface Props {
@@ -222,8 +224,8 @@ export default function WalletPageClient({ wallets, inactiveWallets, transfers, 
 
           {/* Step hints untuk admin */}
           {canManage && (
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 max-w-lg mx-auto">
-              {(["cash","bank","ewallet","savings"] as const).map(wType => (
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 pt-2 max-w-xl mx-auto">
+              {(["cash","bank","ewallet","savings","credit_card"] as const).map(wType => (
                 <button
                   key={wType}
                   onClick={openAdd}

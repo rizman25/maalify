@@ -5,7 +5,7 @@ import { formatRupiah } from "@/lib/utils";
 import type { Wallet } from "@/types";
 import { saveTransfer } from "@/app/actions/wallets";
 const TYPE_LABEL: Record<string, string> = {
-  cash: "Tunai", bank: "Bank", savings: "Tabungan", ewallet: "E-Wallet",
+  cash: "Tunai", bank: "Bank", savings: "Tabungan", ewallet: "E-Wallet", credit_card: "Kartu Kredit",
 };
 
 interface Props {

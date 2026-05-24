@@ -32,13 +32,14 @@ import type { LucideProps } from "lucide-react";
 
 // ─── Wallet type icon ──────────────────────────────────────────────────────
 
-export type WalletType = "cash" | "bank" | "savings" | "ewallet";
+export type WalletType = "cash" | "bank" | "savings" | "ewallet" | "credit_card";
 
 const WALLET_TYPE_ICON: Record<WalletType, React.ComponentType<LucideProps>> = {
-  cash:    Banknote,
-  bank:    Building2,
-  savings: PiggyBank,
-  ewallet: Smartphone,
+  cash:        Banknote,
+  bank:        Building2,
+  savings:     PiggyBank,
+  ewallet:     Smartphone,
+  credit_card: CreditCard,
 };
 
 export function WalletTypeIcon({
