@@ -97,6 +97,21 @@ export default function SetupChecklistWidget() {
     setOpen(false);
   }
 
+  // Auto-dismiss saat semua langkah selesai
+  useEffect(() => {
+    if (!loading && Object.keys(status).length > 0) {
+      const allComplete = ITEMS.every(item => status[item.key]);
+      if (allComplete) {
+        const timer = setTimeout(() => {
+          localStorage.setItem("maalify_setup_dismissed", "true");
+          setDismissed(true);
+          setOpen(false);
+        }, 1500);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [loading, status]);
+
   if (!mounted || dismissed) return null;
 
   const doneCount = ITEMS.filter(item => status[item.key]).length;
