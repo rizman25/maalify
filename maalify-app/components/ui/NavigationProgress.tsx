@@ -63,14 +63,14 @@ function NavigationProgressInner() {
 
   return (
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center transition-opacity duration-300"
+      className="fixed bottom-5 right-5 z-[9999] transition-opacity duration-300"
       style={{ opacity: fading ? 0 : 1 }}
     >
-      <div className="w-14 h-14 rounded-full bg-brand-primary shadow-2xl flex items-center justify-center">
+      <div className="w-10 h-10 rounded-full bg-brand-primary shadow-lg flex items-center justify-center">
         <svg
           className="animate-spin text-white"
-          width="24"
-          height="24"
+          width="20"
+          height="20"
           viewBox="0 0 24 24"
           fill="none"
         >
