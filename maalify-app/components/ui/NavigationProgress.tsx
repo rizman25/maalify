@@ -66,11 +66,11 @@ function NavigationProgressInner() {
       className="fixed bottom-6 right-6 z-[9999] transition-opacity duration-300"
       style={{ opacity: fading ? 0 : 1 }}
     >
-      <div className="w-11 h-11 rounded-full bg-[var(--bg-surface)] shadow-lg border border-[var(--border)] flex items-center justify-center">
+      <div className="w-12 h-12 rounded-full bg-brand-primary shadow-xl flex items-center justify-center">
         <svg
-          className="animate-spin text-brand-primary"
-          width="22"
-          height="22"
+          className="animate-spin text-white"
+          width="24"
+          height="24"
           viewBox="0 0 24 24"
           fill="none"
         >
@@ -79,9 +79,7 @@ function NavigationProgressInner() {
             stroke="currentColor"
             strokeWidth="3"
             strokeLinecap="round"
-            strokeDasharray="32"
-            strokeDashoffset="12"
-            opacity="0.25"
+            opacity="0.3"
           />
           <path
             d="M12 2a10 10 0 0 1 10 10"
