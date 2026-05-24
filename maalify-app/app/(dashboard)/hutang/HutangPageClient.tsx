@@ -134,9 +134,9 @@ export default function HutangPageClient({ debts, wallets, householdId, userId }
               }`}
             >
               {t === "payable" ? "Hutang" : "Piutang"}
-              {active.filter(d => d.type === t).length > 0 && tab !== t && (
+              {tab !== t && debts.filter(d => d.type === t && d.status !== "settled").length > 0 && (
                 <span className="ml-1.5 text-[10px] bg-[var(--bg-elevated)] text-[var(--text-secondary)] px-1.5 py-0.5 rounded-full">
-                  {filtered.filter(d => d.type === t && d.status !== "settled").length}
+                  {debts.filter(d => d.type === t && d.status !== "settled").length}
                 </span>
               )}
             </button>
@@ -164,6 +164,22 @@ export default function HutangPageClient({ debts, wallets, householdId, userId }
           </div>
         ) : (
           <div className="space-y-5">
+            {/* All-done callout — active list empty but settled exists */}
+            {active.length === 0 && settled.length > 0 && (
+              <div className="flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-green-50 border border-green-200">
+                <div className="w-9 h-9 rounded-full bg-green-100 flex items-center justify-center text-green-600 flex-shrink-0">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-green-700">
+                    Semua {tab === "payable" ? "hutang" : "piutang"} sudah lunas!
+                  </p>
+                  <p className="text-xs text-green-600 mt-0.5">Riwayat tersimpan di bawah</p>
+                </div>
+              </div>
+            )}
             {active.length > 0 && (
               <div className="space-y-3">
                 <p className="text-xs font-semibold text-[var(--text-secondary)] tracking-widest uppercase px-1">

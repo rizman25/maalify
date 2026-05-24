@@ -126,16 +126,46 @@ export default function TabunganPageClient({ goals, wallets, householdId, userId
 
         {/* Goals grid */}
         {filtered.length === 0 ? (
-          <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border)] py-16 text-center">
+          <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border)] py-16 text-center px-6">
             <div className="w-16 h-16 rounded-2xl bg-brand-primary/10 text-brand-primary flex items-center justify-center mx-auto mb-3">
-              <Target size={32} />
+              {filter === "active" && completedCount > 0
+                ? <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a10 10 0 1 0 10 10H12V2z"/><polyline points="22 4 12 14 9 11"/></svg>
+                : <Target size={32} />}
             </div>
-            <p className="text-sm font-medium text-[var(--text-primary)]">Belum ada goal</p>
-            <p className="text-xs text-[var(--text-secondary)] mt-1">Buat target keuangan pertama kamu</p>
-            <button onClick={() => setModal({ type: "add" })}
-              className="mt-4 px-4 py-2 rounded-xl bg-brand-primary text-white text-sm font-medium hover:opacity-90">
-              + Buat Goal
-            </button>
+            {filter === "active" && completedCount > 0 ? (
+              <>
+                <p className="text-sm font-semibold text-[var(--text-primary)]">Semua goal sudah selesai! 🎉</p>
+                <p className="text-xs text-[var(--text-secondary)] mt-1">
+                  {completedCount} goal telah tercapai
+                </p>
+                <button onClick={() => setFilter("completed")}
+                  className="mt-4 px-4 py-2 rounded-xl border border-[var(--border)] text-sm font-medium text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] transition-colors">
+                  Lihat goal selesai →
+                </button>
+              </>
+            ) : filter === "completed" ? (
+              <>
+                <p className="text-sm font-medium text-[var(--text-primary)]">Belum ada goal yang selesai</p>
+                <p className="text-xs text-[var(--text-secondary)] mt-1">
+                  Selesaikan goal aktif untuk melihatnya di sini
+                </p>
+                {goals.filter(g => !g.is_completed).length > 0 && (
+                  <button onClick={() => setFilter("active")}
+                    className="mt-3 text-xs text-brand-primary hover:underline">
+                    Lihat goal aktif →
+                  </button>
+                )}
+              </>
+            ) : (
+              <>
+                <p className="text-sm font-medium text-[var(--text-primary)]">Belum ada goal</p>
+                <p className="text-xs text-[var(--text-secondary)] mt-1">Buat target keuangan pertama kamu</p>
+                <button onClick={() => setModal({ type: "add" })}
+                  className="mt-4 px-4 py-2 rounded-xl bg-brand-primary text-white text-sm font-medium hover:opacity-90">
+                  + Buat Goal
+                </button>
+              </>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
