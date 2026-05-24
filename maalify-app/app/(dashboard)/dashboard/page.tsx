@@ -336,8 +336,16 @@ export default async function DashboardPage() {
       {/* Charts */}
       {/* Trend — full width */}
       <div className="bg-[var(--bg-surface)] rounded-xl border border-[var(--border)] p-5">
-        <p className="font-semibold text-[var(--text-primary)] mb-1">Tren Pemasukan & Pengeluaran</p>
-        <p className="text-xs text-[var(--text-secondary)] mb-4">6 bulan terakhir</p>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <p className="font-semibold text-[var(--text-primary)]">Arus Kas</p>
+            <p className="text-xs text-[var(--text-secondary)] mt-0.5">6 bulan terakhir</p>
+          </div>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[var(--border)] bg-[var(--bg-elevated)] text-xs text-[var(--text-secondary)]">
+            <span>Bulanan</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
         <TrendChart data={trendData} />
       </div>
 
