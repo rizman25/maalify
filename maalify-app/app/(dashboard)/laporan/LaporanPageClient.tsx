@@ -457,40 +457,49 @@ export default function LaporanPageClient({
           <div className="px-5 py-4 border-b border-[var(--border)]">
             <p className="font-semibold text-[var(--text-primary)]">Ringkasan {isDaily ? "Harian" : "Per Periode"}</p>
           </div>
-          <div className="divide-y divide-[var(--border)]">
-            {/* Header */}
-            <div className="grid grid-cols-4 gap-4 px-5 py-2.5 bg-[var(--bg-elevated)]">
-              {[colLabel.toUpperCase(), "PEMASUKAN", "PENGELUARAN", "SELISIH"].map((h, i) => (
-                <p key={h} className={`text-[10px] font-bold text-[var(--text-secondary)] tracking-wider ${i > 0 ? "text-right" : ""}`}>{h}</p>
-              ))}
+          {activePeriods.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 gap-2 text-center">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--text-secondary)] opacity-40">
+                <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+              <p className="text-sm text-[var(--text-secondary)]">Tidak ada transaksi di periode ini</p>
             </div>
-            {periodData.map((row, idx) => {
-              const hasData = row.income > 0 || row.expense > 0;
-              return (
-                <div key={idx} className={`grid grid-cols-4 gap-4 px-5 py-3 items-center ${hasData ? "" : "opacity-40"}`}>
-                  <p className="text-sm font-medium text-[var(--text-primary)]">{row.label}</p>
-                  <p className="text-sm font-financial text-right text-[var(--color-success)]">
-                    {row.income > 0 ? `Rp ${formatRupiah(row.income)}` : "-"}
-                  </p>
-                  <p className="text-sm font-financial text-right text-[var(--color-danger)]">
-                    {row.expense > 0 ? `Rp ${formatRupiah(row.expense)}` : "-"}
-                  </p>
-                  <p className={`text-sm font-financial font-semibold text-right ${row.net > 0 ? "text-[var(--color-success)]" : row.net < 0 ? "text-[var(--color-danger)]" : "text-[var(--text-secondary)]"}`}>
-                    {hasData ? `${row.net >= 0 ? "+" : ""}Rp ${formatRupiah(Math.abs(row.net))}` : "-"}
-                  </p>
-                </div>
-              );
-            })}
-            {/* Total row */}
-            <div className="grid grid-cols-4 gap-4 px-5 py-3.5 items-center bg-[var(--bg-elevated)] font-semibold">
-              <p className="text-sm text-[var(--text-primary)]">Total</p>
-              <p className="text-sm font-financial text-right text-[var(--color-success)]">Rp {formatRupiah(totalIncome)}</p>
-              <p className="text-sm font-financial text-right text-[var(--color-danger)]">Rp {formatRupiah(totalExpense)}</p>
-              <p className={`text-sm font-financial text-right ${net >= 0 ? "text-[var(--color-success)]" : "text-[var(--color-danger)]"}`}>
-                {net >= 0 ? "+" : ""}Rp {formatRupiah(Math.abs(net))}
-              </p>
+          ) : (
+            <div className="divide-y divide-[var(--border)]">
+              {/* Header */}
+              <div className="grid grid-cols-4 gap-4 px-5 py-2.5 bg-[var(--bg-elevated)]">
+                {[colLabel.toUpperCase(), "PEMASUKAN", "PENGELUARAN", "SELISIH"].map((h, i) => (
+                  <p key={h} className={`text-[10px] font-bold text-[var(--text-secondary)] tracking-wider ${i > 0 ? "text-right" : ""}`}>{h}</p>
+                ))}
+              </div>
+              {periodData.map((row, idx) => {
+                const hasData = row.income > 0 || row.expense > 0;
+                return (
+                  <div key={idx} className={`grid grid-cols-4 gap-4 px-5 py-3 items-center ${hasData ? "" : "opacity-40"}`}>
+                    <p className="text-sm font-medium text-[var(--text-primary)]">{row.label}</p>
+                    <p className="text-sm font-financial text-right text-[var(--color-success)]">
+                      {row.income > 0 ? `Rp ${formatRupiah(row.income)}` : "-"}
+                    </p>
+                    <p className="text-sm font-financial text-right text-[var(--color-danger)]">
+                      {row.expense > 0 ? `Rp ${formatRupiah(row.expense)}` : "-"}
+                    </p>
+                    <p className={`text-sm font-financial font-semibold text-right ${row.net > 0 ? "text-[var(--color-success)]" : row.net < 0 ? "text-[var(--color-danger)]" : "text-[var(--text-secondary)]"}`}>
+                      {hasData ? `${row.net >= 0 ? "+" : ""}Rp ${formatRupiah(Math.abs(row.net))}` : "-"}
+                    </p>
+                  </div>
+                );
+              })}
+              {/* Total row */}
+              <div className="grid grid-cols-4 gap-4 px-5 py-3.5 items-center bg-[var(--bg-elevated)] font-semibold">
+                <p className="text-sm text-[var(--text-primary)]">Total</p>
+                <p className="text-sm font-financial text-right text-[var(--color-success)]">Rp {formatRupiah(totalIncome)}</p>
+                <p className="text-sm font-financial text-right text-[var(--color-danger)]">Rp {formatRupiah(totalExpense)}</p>
+                <p className={`text-sm font-financial text-right ${net >= 0 ? "text-[var(--color-success)]" : "text-[var(--color-danger)]"}`}>
+                  {net >= 0 ? "+" : ""}Rp {formatRupiah(Math.abs(net))}
+                </p>
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Category breakdown */}
