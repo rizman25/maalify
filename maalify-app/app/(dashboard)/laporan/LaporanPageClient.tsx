@@ -426,23 +426,30 @@ export default function LaporanPageClient({
         <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border)] p-5">
           <p className="font-semibold text-[var(--text-primary)] mb-1">Pemasukan vs Pengeluaran</p>
           <p className="text-xs text-[var(--text-secondary)] mb-5">{chartLabel} · {rangeLabel}</p>
-          <ResponsiveContainer width="100%" height={240}>
-            <BarChart data={periodData} margin={{ top: 4, right: 4, left: -10, bottom: 0 }} barGap={4}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-              <XAxis dataKey="label" tick={{ fontSize: 11, fill: "var(--text-secondary)" }} axisLine={false} tickLine={false}
-                interval={tickInterval} />
-              <YAxis tickFormatter={formatY} tick={{ fontSize: 11, fill: "var(--text-secondary)" }} axisLine={false} tickLine={false} />
-              <Tooltip
-                formatter={(value, name) => [formatTooltip(Number(value)), name === "income" ? "Pemasukan" : "Pengeluaran"]}
-                labelStyle={{ color: "var(--text-primary)", fontWeight: 600 }}
-                contentStyle={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12, color: "var(--text-primary)", boxShadow: "0 4px 12px rgba(0,0,0,0.15)" }}
-                itemStyle={{ color: "var(--text-secondary)" }}
-              />
-              <Legend formatter={(v) => v === "income" ? "Pemasukan" : "Pengeluaran"} iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12, paddingTop: 8 }} />
-              <Bar dataKey="income"  fill="#27AE60" radius={[4, 4, 0, 0]} maxBarSize={32} />
-              <Bar dataKey="expense" fill="#E74C3C" radius={[4, 4, 0, 0]} maxBarSize={32} />
-            </BarChart>
-          </ResponsiveContainer>
+          {activePeriods.length === 0 ? (
+            <ChartEmptyState
+              message="Belum ada transaksi di periode ini"
+              hint="Coba pilih rentang waktu yang lain, atau mulai catat transaksi."
+            />
+          ) : (
+            <ResponsiveContainer width="100%" height={240}>
+              <BarChart data={periodData} margin={{ top: 4, right: 4, left: -10, bottom: 0 }} barGap={4}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                <XAxis dataKey="label" tick={{ fontSize: 11, fill: "var(--text-secondary)" }} axisLine={false} tickLine={false}
+                  interval={tickInterval} />
+                <YAxis tickFormatter={formatY} tick={{ fontSize: 11, fill: "var(--text-secondary)" }} axisLine={false} tickLine={false} />
+                <Tooltip
+                  formatter={(value, name) => [formatTooltip(Number(value)), name === "income" ? "Pemasukan" : "Pengeluaran"]}
+                  labelStyle={{ color: "var(--text-primary)", fontWeight: 600 }}
+                  contentStyle={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12, color: "var(--text-primary)", boxShadow: "0 4px 12px rgba(0,0,0,0.15)" }}
+                  itemStyle={{ color: "var(--text-secondary)" }}
+                />
+                <Legend formatter={(v) => v === "income" ? "Pemasukan" : "Pengeluaran"} iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12, paddingTop: 8 }} />
+                <Bar dataKey="income"  fill="#27AE60" radius={[4, 4, 0, 0]} maxBarSize={32} />
+                <Bar dataKey="expense" fill="#E74C3C" radius={[4, 4, 0, 0]} maxBarSize={32} />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
         </div>
 
         {/* Period table */}
@@ -632,6 +639,25 @@ export default function LaporanPageClient({
       <ExportModal householdId={householdId} userId={userId} onClose={() => setExportOpen(false)} />
     )}
     </>
+  );
+}
+
+function ChartEmptyState({ message, hint }: { message: string; hint?: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-12 gap-3">
+      <div className="w-14 h-14 rounded-2xl bg-[var(--bg-elevated)] flex items-center justify-center text-[var(--text-secondary)]">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.5">
+          <line x1="18" y1="20" x2="18" y2="10"/>
+          <line x1="12" y1="20" x2="12" y2="4"/>
+          <line x1="6" y1="20" x2="6" y2="14"/>
+          <line x1="2" y1="20" x2="22" y2="20"/>
+        </svg>
+      </div>
+      <div className="text-center">
+        <p className="text-sm font-medium text-[var(--text-secondary)]">{message}</p>
+        {hint && <p className="text-xs text-[var(--text-secondary)] opacity-70 mt-1 max-w-xs">{hint}</p>}
+      </div>
+    </div>
   );
 }
 
