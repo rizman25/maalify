@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
+import { RECURRING_BADGE_KEY } from "@/components/dashboard/RecurringReminderChecker";
 
 type Role = "super_admin" | "admin" | "member";
 
@@ -36,7 +38,7 @@ const ROLE_COLOR: Record<Role, string> = {
   member: "bg-[var(--bg-elevated)] text-[var(--text-secondary)]",
 };
 
-function NavItem({ href, icon, label }: { href: string; icon: React.ReactNode; label: string }) {
+function NavItem({ href, icon, label, badge }: { href: string; icon: React.ReactNode; label: string; badge?: number }) {
   const pathname = usePathname();
   const isActive = pathname === href || (href !== "/dashboard" && pathname.startsWith(href + "/"));
   // derive tour ID: /transaksi → tour-nav-transaksi, /transaksi-berulang → tour-nav-transaksi-berulang
@@ -54,7 +56,15 @@ function NavItem({ href, icon, label }: { href: string; icon: React.ReactNode; l
       )}
     >
       {icon}
-      <span>{label}</span>
+      <span className="flex-1">{label}</span>
+      {badge != null && badge > 0 && (
+        <span className={cn(
+          "min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold flex items-center justify-center leading-none",
+          isActive ? "bg-white/30 text-white" : "bg-red-500 text-white"
+        )}>
+          {badge > 99 ? "99+" : badge}
+        </span>
+      )}
     </Link>
   );
 }
@@ -66,6 +76,34 @@ interface Props {
 export default function Sidebar({ userRole = "member" }: Props) {
   const visibleMain    = mainNav.filter(item => item.roles.includes(userRole));
   const visibleSettings = settingsNav.filter(item => item.roles.includes(userRole));
+  const pathname = usePathname();
+
+  // Baca pending recurring count dari localStorage (diisi oleh RecurringReminderChecker)
+  const [recurringPending, setRecurringPending] = useState(0);
+
+  useEffect(() => {
+    function readBadge() {
+      try {
+        const val = localStorage.getItem(RECURRING_BADGE_KEY);
+        setRecurringPending(val ? parseInt(val, 10) : 0);
+      } catch { /* ignore */ }
+    }
+    readBadge();
+
+    // Update saat storage berubah (mis. setelah RecurringReminderChecker selesai)
+    window.addEventListener("storage", readBadge);
+    return () => window.removeEventListener("storage", readBadge);
+  }, []);
+
+  // Hapus badge saat user sedang di halaman berulang
+  useEffect(() => {
+    if (pathname.startsWith("/transaksi-berulang")) {
+      try {
+        localStorage.setItem(RECURRING_BADGE_KEY, "0");
+        setRecurringPending(0);
+      } catch { /* ignore */ }
+    }
+  }, [pathname]);
 
   return (
     <aside className="w-60 flex-shrink-0 bg-[var(--bg-surface)] border-r border-[var(--border)] flex flex-col h-screen sticky top-0">
@@ -87,7 +125,13 @@ export default function Sidebar({ userRole = "member" }: Props) {
       <nav className="flex-1 px-3 py-4 flex flex-col gap-5 overflow-y-auto">
         <div className="space-y-0.5">
           <p className="text-[10px] font-semibold text-[var(--text-secondary)] tracking-widest uppercase px-3 mb-2">Menu Utama</p>
-          {visibleMain.map((item) => <NavItem key={item.href} {...item} />)}
+          {visibleMain.map((item) => (
+            <NavItem
+              key={item.href}
+              {...item}
+              badge={item.href === "/transaksi-berulang" && userRole !== "member" ? recurringPending : undefined}
+            />
+          ))}
         </div>
 
         <div className="space-y-0.5">

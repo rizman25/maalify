@@ -1,17 +1,30 @@
 import webpush from "web-push";
 import { createServiceClient } from "@/lib/supabase/service";
 
-webpush.setVapidDetails(
-  process.env.VAPID_SUBJECT!,
-  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-  process.env.VAPID_PRIVATE_KEY!
-);
-
 export interface PushPayload {
   title: string;
   body: string;
   url?: string;
   icon?: string;
+}
+
+/**
+ * Set VAPID details secara lazy — hanya saat hendak mengirim notifikasi,
+ * bukan saat module di-import. Mencegah crash pada build time jika env vars
+ * belum tersedia.
+ */
+function initVapid() {
+  const subject = process.env.VAPID_SUBJECT;
+  const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+  const privateKey = process.env.VAPID_PRIVATE_KEY;
+
+  if (!subject || !publicKey || !privateKey) {
+    throw new Error(
+      "Push notification env vars belum di-set: VAPID_SUBJECT, NEXT_PUBLIC_VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY"
+    );
+  }
+
+  webpush.setVapidDetails(subject, publicKey, privateKey);
 }
 
 /**
@@ -26,6 +39,9 @@ export async function sendPushToUser(userId: string, payload: PushPayload) {
     .eq("user_id", userId);
 
   if (!subs || subs.length === 0) return;
+
+  // Inisialisasi VAPID hanya saat benar-benar ada subscription yang akan dikirim
+  initVapid();
 
   const staleIds: string[] = [];
 

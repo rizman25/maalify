@@ -16,6 +16,7 @@ const TOC = [
   { id: "tabungan",       label: "Target Tabungan" },
   { id: "hutang",         label: "Hutang & Piutang" },
   { id: "project",        label: "Project Keluarga" },
+  { id: "kategori",       label: "Kategori" },
   { id: "laporan",        label: "Laporan" },
   { id: "pengaturan",     label: "Pengaturan" },
   { id: "tips",           label: "Tips & Trik" },
@@ -209,7 +210,7 @@ export default function PanduanPageClient() {
             </p>
             <SubSection title="Fitur Utama">
               <BulletList items={[
-                <><strong>Dashboard Real-time</strong> — Ringkasan keuangan bulanan, tren 6 bulan, dan insight otomatis</>,
+                <><strong>Dashboard Real-time</strong> — Ringkasan keuangan bulanan, grafik arus kas 3/6/12 bulan, dan insight otomatis</>,
                 <><strong>Pencatatan Transaksi</strong> — Catat pemasukan dan pengeluaran dengan kategori dan lampiran</>,
                 <><strong>Transaksi Berulang</strong> — Otomatisasi tagihan rutin seperti listrik, internet, cicilan</>,
                 <><strong>Multi Dompet</strong> — Kelola beberapa rekening, dompet tunai, e-wallet sekaligus</>,
@@ -218,7 +219,9 @@ export default function PanduanPageClient() {
                 <><strong>Target Tabungan</strong> — Tentukan tujuan menabung dengan progress bar dan top-up</>,
                 <><strong>Hutang & Piutang</strong> — Lacak utang yang harus dibayar atau piutang yang akan diterima</>,
                 <><strong>Project Keluarga</strong> — Rencanakan dana untuk proyek besar seperti liburan atau renovasi</>,
+                <><strong>Kategori Kustom</strong> — Kelola kategori transaksi dengan ikon dan warna pilihan sendiri</>,
                 <><strong>Laporan & Ekspor</strong> — Laporan PDF dan Excel untuk analisis mendalam</>,
+                <><strong>Notifikasi Push</strong> — Peringatan otomatis ke perangkat saat anggaran hampir habis atau terlampaui</>,
               ]} />
             </SubSection>
             <SubSection title="Alur Mulai Menggunakan Maalify">
@@ -431,21 +434,46 @@ export default function PanduanPageClient() {
               Dashboard adalah halaman utama yang menampilkan <strong>ringkasan keuangan bulan berjalan</strong> secara real-time. Setiap data diperbarui otomatis setiap kali Anda membuka halaman.
             </p>
 
-            <SubSection title="Kartu Ringkasan (4 Kartu Atas)">
+            <SubSection title="Kartu Ringkasan (8 Kartu)">
+              <p className="text-[var(--text-secondary)] mb-2">Dashboard menampilkan <strong>8 kartu ringkasan</strong> yang dibagi menjadi dua baris: data <strong>Bersama</strong> (seluruh anggota) dan data <strong>Pribadi</strong> (hanya milik Anda).</p>
+              <p className="font-medium text-[var(--text-primary)] mb-1.5">Baris Bersama:</p>
               <BulletList items={[
-                <><strong>Total Saldo</strong> — Jumlah saldo dari semua dompet aktif yang dimiliki family</>,
-                <><strong>Pemasukan Bulan Ini</strong> — Total pemasukan di bulan berjalan, disertai persentase perubahan dari bulan lalu</>,
-                <><strong>Pengeluaran Bulan Ini</strong> — Total pengeluaran bulan berjalan, perubahan dari bulan lalu</>,
+                <><strong>Total Saldo Bersama</strong> — Jumlah saldo dari semua dompet Bersama aktif</>,
+                <><strong>Pemasukan Bersama</strong> — Total pemasukan dari dompet Bersama di bulan ini</>,
+                <><strong>Pengeluaran Bersama</strong> — Total pengeluaran dari dompet Bersama di bulan ini</>,
                 <><strong>Tabungan Bersih</strong> — Selisih pemasukan dikurangi pengeluaran. Hijau = surplus, merah = defisit</>,
+              ]} />
+              <p className="font-medium text-[var(--text-primary)] mt-3 mb-1.5">Baris Pribadi (hanya terlihat oleh Anda):</p>
+              <BulletList items={[
+                <><strong>Total Saldo Pribadi</strong> — Jumlah saldo dari semua dompet Pribadi milik Anda</>,
+                <><strong>Pemasukan Pribadi</strong> — Total pemasukan di dompet Pribadi bulan ini</>,
+                <><strong>Pengeluaran Pribadi</strong> — Total pengeluaran di dompet Pribadi bulan ini</>,
+                <><strong>Tabungan Bersih Pribadi</strong> — Selisih pemasukan dan pengeluaran dari dompet Pribadi</>,
               ]} />
             </SubSection>
 
-            <SubSection title="Tren Pemasukan & Pengeluaran">
-              <p>Grafik batang yang menampilkan perbandingan pemasukan (hijau) dan pengeluaran (merah) selama <strong>6 bulan terakhir</strong>. Gunakan grafik ini untuk melihat pola keuangan dan mengidentifikasi bulan dengan pengeluaran tinggi.</p>
+            <SubSection title="Grafik Arus Kas">
+              <p>Grafik kombinasi (<em>ComposedChart</em>) yang menampilkan tiga data sekaligus dalam satu tampilan:</p>
+              <BulletList items={[
+                <><span className="inline-block w-3 h-3 rounded-sm bg-emerald-500 mr-1 align-middle" /> <strong>Batang hijau</strong> — Pemasukan per bulan</>,
+                <><span className="inline-block w-3 h-3 rounded-sm bg-red-400 mr-1 align-middle" /> <strong>Batang merah</strong> — Pengeluaran per bulan</>,
+                <><span className="inline-block w-3 h-1 bg-blue-500 mr-1 align-middle" style={{display:"inline-block",borderTop:"2px dashed #3b82f6",height:0,width:"14px"}} /> <strong>Garis biru putus-putus</strong> — Saldo Bersih (pemasukan − pengeluaran)</>,
+              ]} />
+              <p className="mt-2 text-[var(--text-secondary)]">Gunakan <strong>dropdown periode</strong> di pojok kanan grafik untuk memilih rentang waktu:</p>
+              <BulletList items={[
+                <><strong>3 Bulan</strong> — Tampilkan 3 bulan terakhir</>,
+                <><strong>6 Bulan</strong> — Tampilkan 6 bulan terakhir</>,
+                <><strong>1 Tahun</strong> — Tampilkan 12 bulan terakhir</>,
+              ]} />
+              <p className="mt-2 text-[var(--text-secondary)]">Subtitle di bawah judul "Arus Kas" menyesuaikan otomatis sesuai periode yang dipilih. Hover pada grafik untuk melihat tooltip detail tiap bulan.</p>
             </SubSection>
 
             <SubSection title="Pengeluaran per Kategori">
               <p>Grafik donut yang memecah total pengeluaran bulan ini ke dalam kategori-kategori. Warna setiap irisan sesuai dengan warna kategori yang Anda tentukan. Hover pada irisan untuk melihat detail jumlah dan persentase.</p>
+            </SubSection>
+
+            <SubSection title="Pemasukan per Kategori">
+              <p>Grafik donut serupa untuk sisi pemasukan — menampilkan proporsi tiap kategori pemasukan (gaji, bonus, penjualan, dll.) bulan ini. Kedua grafik kategori (pengeluaran dan pemasukan) tampil berdampingan di bawah grafik Arus Kas.</p>
             </SubSection>
 
             <SubSection title="Anggaran Bulan Ini">
@@ -838,6 +866,61 @@ export default function PanduanPageClient() {
             </SubSection>
           </Section>
 
+          {/* ── KATEGORI ── */}
+          <Section id="kategori" title="Kategori"
+            icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>}>
+            <p>
+              Kategori digunakan untuk mengelompokkan transaksi agar laporan dan anggaran lebih bermakna. Maalify menyediakan kategori bawaan yang siap pakai, namun Anda dapat menambah, mengubah, atau menghapus kategori sesuai kebutuhan keluarga.
+            </p>
+
+            <SubSection title="Jenis Kategori">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)]">
+                  <p className="font-semibold text-[var(--text-primary)] text-sm mb-1">Kategori Pengeluaran</p>
+                  <p className="text-xs text-[var(--text-secondary)]">Digunakan saat mencatat transaksi tipe <strong>Pengeluaran</strong>. Contoh bawaan: Makan & Minum, Transportasi, Belanja, Tagihan, Kesehatan, Pendidikan, Hiburan.</p>
+                </div>
+                <div className="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)]">
+                  <p className="font-semibold text-[var(--text-primary)] text-sm mb-1">Kategori Pemasukan</p>
+                  <p className="text-xs text-[var(--text-secondary)]">Digunakan saat mencatat transaksi tipe <strong>Pemasukan</strong>. Contoh bawaan: Gaji, Bonus, Freelance, Investasi, Hadiah, Lainnya.</p>
+                </div>
+              </div>
+            </SubSection>
+
+            <SubSection title="Cara Menambah Kategori Baru">
+              <StepList steps={[
+                "Buka halaman Kategori dari sidebar",
+                "Klik \"+ Tambah Kategori\"",
+                "Isi nama kategori (contoh: \"Olahraga\", \"Hobi\", \"Uang Sekolah\")",
+                "Pilih tipe: Pengeluaran atau Pemasukan",
+                "Pilih ikon yang mewakili kategori dari daftar tersedia",
+                "Pilih warna identifikasi — warna ini yang akan muncul di grafik donut",
+                "Klik Simpan",
+              ]} />
+            </SubSection>
+
+            <SubSection title="Mengedit & Menghapus Kategori">
+              <BulletList items={[
+                "Klik ikon pensil di sebelah nama kategori untuk mengedit nama, ikon, atau warna",
+                "Klik ikon tempat sampah untuk menghapus kategori yang tidak lagi digunakan",
+                "Kategori yang sudah dipakai di transaksi <strong>tidak bisa dihapus</strong> — Anda perlu memindahkan atau menghapus transaksi terkait terlebih dahulu",
+                "Kategori bawaan sistem dapat diedit namanya tetapi tidak dapat dihapus",
+              ]} />
+            </SubSection>
+
+            <SubSection title="Tips Penggunaan Kategori">
+              <BulletList items={[
+                <><strong>Buat kategori spesifik</strong> — Daripada \"Belanja\", coba \"Belanja Bulanan\", \"Belanja Online\", \"Belanja Pakaian\" agar laporan lebih informatif</>,
+                <><strong>Jangan terlalu banyak</strong> — 10–15 kategori pengeluaran sudah cukup untuk sebagian besar keluarga. Terlalu banyak justru menyulitkan konsistensi pencatatan</>,
+                <><strong>Warna kontras</strong> — Pilih warna yang berbeda jauh antar kategori agar grafik donut mudah dibaca</>,
+                <><strong>Sesuaikan dengan anggaran</strong> — Buat kategori yang sama persis dengan yang Anda gunakan di fitur Anggaran agar tracking lebih akurat</>,
+              ]} />
+            </SubSection>
+
+            <InfoBox type="info">
+              Kategori bersifat <strong>global untuk seluruh family</strong> — semua anggota menggunakan daftar kategori yang sama. Perubahan kategori oleh Admin atau Super Admin berlaku untuk semua anggota.
+            </InfoBox>
+          </Section>
+
           {/* ── LAPORAN ── */}
           <Section id="laporan" title="Laporan"
             icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg>}>
@@ -911,6 +994,36 @@ export default function PanduanPageClient() {
               </InfoBox>
             </SubSection>
 
+            <SubSection title="Notifikasi Push">
+              <p>Maalify dapat mengirimkan notifikasi langsung ke perangkat Anda meskipun browser sedang ditutup, selama perangkat terhubung ke internet.</p>
+              <p className="mt-2 text-[var(--text-secondary)]">Notifikasi yang dikirimkan antara lain:</p>
+              <BulletList items={[
+                <><strong>Anggaran hampir habis</strong> — Dikirim saat pengeluaran kategori mencapai ≥80% dari batas anggaran</>,
+                <><strong>Anggaran melebihi batas</strong> — Dikirim saat pengeluaran kategori melampaui batas anggaran (&gt;100%)</>,
+              ]} />
+              <StepList steps={[
+                "Buka Pengaturan → cari bagian \"Notifikasi Push\"",
+                "Klik tombol \"Aktifkan Notifikasi\"",
+                "Browser akan meminta izin notifikasi — pilih Izinkan",
+                "Status akan berubah menjadi \"Aktif\" — notifikasi siap diterima",
+                "Untuk menonaktifkan, klik tombol \"Nonaktifkan\" di bagian yang sama",
+              ]} />
+              <InfoBox type="tip">
+                Notifikasi push bekerja bahkan saat tab Maalify ditutup, selama browser masih berjalan di latar belakang. Untuk hasil terbaik, instal Maalify sebagai aplikasi (PWA) di perangkat Anda.
+              </InfoBox>
+            </SubSection>
+
+            <SubSection title="Instal sebagai Aplikasi (PWA)">
+              <p>Maalify dapat diinstal sebagai aplikasi di HP atau komputer tanpa melalui App Store/Play Store — disebut <em>Progressive Web App</em> (PWA).</p>
+              <BulletList items={[
+                <><strong>Android (Chrome)</strong> — Klik ikon unduh/instal di address bar, atau buka menu Chrome → \"Tambahkan ke layar utama\"</>,
+                <><strong>iPhone (Safari)</strong> — Ketuk ikon Bagikan → \"Tambahkan ke Layar Utama\"</>,
+                <><strong>Desktop</strong> — Klik ikon instal di address bar browser Chrome/Edge</>,
+              ]} />
+              <p className="mt-2 text-[var(--text-secondary)]">Setelah terinstal, Maalify berjalan seperti aplikasi native — bisa diakses dari layar utama, berjalan fullscreen, dan mendukung notifikasi push.</p>
+              <p className="mt-2 text-[var(--text-secondary)]">Klik ikon <strong>unduh/instal</strong> di header aplikasi untuk membuka panduan langkah demi langkah sesuai perangkat Anda.</p>
+            </SubSection>
+
             <SubSection title="Keluar (Logout)">
               <p>Tombol <strong>Logout</strong> tersedia di bagian bawah sidebar (desktop) atau menu (mobile). Setelah logout, Anda perlu login ulang untuk mengakses data.</p>
             </SubSection>
@@ -967,10 +1080,13 @@ export default function PanduanPageClient() {
                   <tbody>
                     {[
                       ["Tambah transaksi dari mana saja", "Klik + di header atau tombol cepat di Dashboard"],
+                      ["Pencarian global", "Tekan Ctrl + K (atau ⌘K di Mac) dari halaman mana saja"],
                       ["Pindah antar bulan di Transaksi", "Klik panah ← → di atas tabel transaksi"],
                       ["Salin anggaran bulan lalu", "Halaman Anggaran → \"Salin dari bulan lalu\""],
                       ["Lihat detail goal", "Klik nama/ikon goal di halaman Tabungan"],
                       ["Filter transaksi per kategori", "Dropdown kategori di atas tabel transaksi"],
+                      ["Instal aplikasi di perangkat", "Klik ikon unduh di header → ikuti panduan sesuai perangkat"],
+                      ["Aktifkan notifikasi push", "Pengaturan → bagian Notifikasi Push → Aktifkan"],
                     ].map(([aksi, cara], i) => (
                       <tr key={i} className="border-t border-[var(--border)]">
                         <td className="py-3.5 px-5 text-[var(--text-primary)]">{aksi}</td>

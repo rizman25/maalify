@@ -8,6 +8,7 @@ import ScanStrukButton from "@/components/dashboard/ScanStrukButton";
 import RecentTransaksiList from "@/components/dashboard/RecentTransaksiList";
 import MemberSpendingSummary from "@/components/dashboard/MemberSpendingSummary";
 import type { MemberSpending } from "@/components/dashboard/MemberSpendingSummary";
+import { RecurringReminderChecker } from "@/components/dashboard/RecurringReminderChecker";
 import Link from "next/link";
 import { CategoryIcon } from "@/lib/icons";
 import { Users, User, Target } from "@/lib/icons";
@@ -241,6 +242,9 @@ export default async function DashboardPage() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-6 px-4 py-6">
+      {/* Recurring reminder push — invisible, throttled 8 jam, hanya admin/super_admin */}
+      {!isMember && <RecurringReminderChecker householdId={householdId} />}
+
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0 pr-2">

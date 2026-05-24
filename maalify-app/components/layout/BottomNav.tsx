@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
+import { RECURRING_BADGE_KEY } from "@/components/dashboard/RecurringReminderChecker";
 
 type Role = "super_admin" | "admin" | "member";
 
@@ -103,6 +105,21 @@ interface Props {
 
 export default function BottomNav({ userRole, onMenuClick }: Props) {
   const pathname = usePathname();
+  const [recurringPending, setRecurringPending] = useState(0);
+
+  useEffect(() => {
+    function readBadge() {
+      try {
+        const val = localStorage.getItem(RECURRING_BADGE_KEY);
+        setRecurringPending(val ? parseInt(val, 10) : 0);
+      } catch { /* ignore */ }
+    }
+    readBadge();
+    window.addEventListener("storage", readBadge);
+    return () => window.removeEventListener("storage", readBadge);
+  }, []);
+
+  const showMenuDot = userRole !== "member" && recurringPending > 0 && !pathname.startsWith("/transaksi-berulang");
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-[var(--bg-surface)] border-t border-[var(--border)] safe-area-bottom">
@@ -134,11 +151,16 @@ export default function BottomNav({ userRole, onMenuClick }: Props) {
           onClick={onMenuClick}
           className="flex-1 flex flex-col items-center justify-center gap-1 text-[10px] font-medium text-[var(--text-secondary)] transition-colors"
         >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="3" y1="6" x2="21" y2="6"/>
-            <line x1="3" y1="12" x2="21" y2="12"/>
-            <line x1="3" y1="18" x2="21" y2="18"/>
-          </svg>
+          <div className="relative">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="3" y1="6" x2="21" y2="6"/>
+              <line x1="3" y1="12" x2="21" y2="12"/>
+              <line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+            {showMenuDot && (
+              <span className="absolute -top-0.5 -right-1 w-2.5 h-2.5 rounded-full bg-red-500 border-2 border-[var(--bg-surface)]" />
+            )}
+          </div>
           <span>Menu</span>
         </button>
       </div>

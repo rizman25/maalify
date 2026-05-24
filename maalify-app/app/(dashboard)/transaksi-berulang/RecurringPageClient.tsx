@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useRefresh } from "@/hooks/useRefresh";
 import { formatRupiah } from "@/lib/utils";
@@ -8,6 +8,7 @@ import type { RecurringItem, PendingItem } from "./page";
 import RecurringModal from "@/components/transaksi/RecurringModal";
 import { Toast, useToast } from "@/components/ui/Toast";
 import { toggleRecurringActive, confirmRecurring, skipRecurring } from "@/app/actions/recurring";
+import { RECURRING_BADGE_KEY } from "@/components/dashboard/RecurringReminderChecker";
 import { CategoryIcon, RefreshCw, CheckCircle2 } from "@/lib/icons";
 
 interface Wallet { id: string; name: string; type: string; current_balance: number; }
@@ -70,6 +71,17 @@ export default function RecurringPageClient({
     Object.fromEntries(pendingItems.map(p => [`${p.recurringId}_${p.scheduledDate}`, p.scheduledDate]))
   );
   const [processingKey, setProcessingKey] = useState<string | null>(null);
+
+  // Sync badge di sidebar dengan jumlah pending aktual saat halaman ini dimuat/diperbarui
+  useEffect(() => {
+    try {
+      localStorage.setItem(RECURRING_BADGE_KEY, String(pendingItems.length));
+      window.dispatchEvent(new StorageEvent("storage", {
+        key: RECURRING_BADGE_KEY,
+        newValue: String(pendingItems.length),
+      }));
+    } catch { /* ignore */ }
+  }, [pendingItems.length]);
 
   const handleSaved = useCallback(() => {
     if (modal === "add") showToast("Transaksi berulang berhasil ditambahkan");
