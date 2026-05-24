@@ -6,6 +6,18 @@ import { formatRupiah } from "@/lib/utils";
 import type { Wallet, Category, TransactionWithCategory, TransactionType, TransactionVisibility } from "@/types";
 import { CategoryIcon, Lock, Home } from "@/lib/icons";
 
+export interface SavedTxData {
+  id: string;
+  type: TransactionType;
+  amount: number;
+  description: string;
+  categoryId: string;
+  walletId: string;
+  date: string;
+  visibility: TransactionVisibility;
+  note: string | null;
+}
+
 interface Props {
   transaction: TransactionWithCategory | null;
   wallets: Wallet[];
@@ -13,7 +25,7 @@ interface Props {
   householdId: string;
   userId: string;
   onClose: () => void;
-  onSaved: () => void;
+  onSaved: (saved?: SavedTxData) => void;
 }
 
 export default function TransaksiModal({
@@ -138,16 +150,25 @@ export default function TransaksiModal({
 
       if (err || !newTx) { setError(err?.message ?? "Gagal menyimpan"); setLoading(false); return; }
 
-      if (attachmentFile) {
-        try {
-          const url = await uploadAttachment(newTx.id);
-          await supabase.from("transactions").update({ attachment_url: url }).eq("id", newTx.id);
-        } catch {
-          // attachment upload failed — transaction still saved, non-critical
-        }
-      }
+      // Close modal immediately with optimistic data — attachment uploads in background
+      onSaved({
+        id: newTx.id,
+        type,
+        amount: parsedAmount,
+        description: description.trim(),
+        categoryId,
+        walletId,
+        date,
+        visibility,
+        note: note.trim() || null,
+      });
 
-      // Cek budget & kirim push jika mendekati/melebihi limit (fire-and-forget)
+      // Fire-and-forget: attachment upload + budget check (non-blocking)
+      if (attachmentFile) {
+        uploadAttachment(newTx.id).then(url =>
+          supabase.from("transactions").update({ attachment_url: url }).eq("id", newTx.id)
+        ).catch(() => {});
+      }
       if (type === "expense" && categoryId) {
         fetch("/api/push/check-budget", {
           method: "POST",
@@ -155,6 +176,7 @@ export default function TransaksiModal({
           body: JSON.stringify({ householdId, categoryId }),
         }).catch(() => {});
       }
+      return; // modal is unmounting, skip setLoading(false)
     }
 
     onSaved();

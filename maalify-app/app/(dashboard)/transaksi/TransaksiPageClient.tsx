@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useRefresh } from "@/hooks/useRefresh";
 import Link from "next/link";
 import { formatRupiah } from "@/lib/utils";
 import type { Wallet, Category, TransactionWithCategory } from "@/types";
-import TransaksiModal from "@/components/transaksi/TransaksiModal";
+import TransaksiModal, { type SavedTxData } from "@/components/transaksi/TransaksiModal";
 import ScanStrukModal from "@/components/transaksi/ScanStrukModal";
 import { Toast, useToast } from "@/components/ui/Toast";
 import { CategoryIcon, Lock, Home, AlertCircle, Receipt, Search } from "@/lib/icons";
@@ -42,8 +42,34 @@ export default function TransaksiPageClient({
   const [editTarget, setEditTarget] = useState<TransactionWithCategory | null>(null);
   const [scanOpen, setScanOpen] = useState(false);
 
-  const totalIncome  = transactions.filter(t => t.type === "income").reduce((s, t) => s + Number(t.amount), 0);
-  const totalExpense = transactions.filter(t => t.type === "expense").reduce((s, t) => s + Number(t.amount), 0);
+  // Optimistic items: shown immediately after save, before server refresh completes
+  const [optimisticTxs, setOptimisticTxs] = useState<TransactionWithCategory[]>([]);
+  const prevTransactionsRef = useRef(transactions);
+
+  // When server data refreshes (new array ref), drop any optimistic items that are
+  // now present in the real list — clean swap with no flicker
+  useEffect(() => {
+    if (transactions === prevTransactionsRef.current) return;
+    prevTransactionsRef.current = transactions;
+    const realIds = new Set(transactions.map(t => t.id));
+    setOptimisticTxs(prev => prev.filter(o => !realIds.has(o.id)));
+  }, [transactions]);
+
+  // Merge optimistic (current month only, not yet in real list) with real transactions
+  const allTransactions = useMemo(() => {
+    const realIds = new Set(transactions.map(t => t.id));
+    const pending = optimisticTxs.filter(o => {
+      if (realIds.has(o.id)) return false;
+      const [y, m] = o.date.split("-").map(Number);
+      return y === year && m === month;
+    });
+    return [...pending, ...transactions];
+  }, [optimisticTxs, transactions, year, month]);
+
+  const optimisticIds = useMemo(() => new Set(optimisticTxs.map(o => o.id)), [optimisticTxs]);
+
+  const totalIncome  = allTransactions.filter(t => t.type === "income").reduce((s, t) => s + Number(t.amount), 0);
+  const totalExpense = allTransactions.filter(t => t.type === "expense").reduce((s, t) => s + Number(t.amount), 0);
 
   const hasActiveFilter = filterType !== "all" || filterWallet !== "all" || filterCategory !== "all" || search !== "";
 
@@ -56,14 +82,14 @@ export default function TransaksiPageClient({
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
-    return transactions.filter(t => {
+    return allTransactions.filter(t => {
       if (filterType !== "all" && t.type !== filterType) return false;
       if (filterWallet !== "all" && t.wallet_id !== filterWallet) return false;
       if (filterCategory !== "all" && t.category_id !== filterCategory) return false;
       if (q && !t.description.toLowerCase().includes(q)) return false;
       return true;
     });
-  }, [transactions, filterType, filterWallet, filterCategory, search]);
+  }, [allTransactions, filterType, filterWallet, filterCategory, search]);
 
   const grouped = useMemo(() => {
     const map = new Map<string, TransactionWithCategory[]>();
@@ -86,10 +112,40 @@ export default function TransaksiPageClient({
   function openAdd() { setEditTarget(null); setModalOpen(true); }
   function openEdit(tx: TransactionWithCategory) { setEditTarget(tx); setModalOpen(true); }
   function handleClose() { setModalOpen(false); setEditTarget(null); }
-  function handleSaved() {
+  function handleSaved(saved?: SavedTxData) {
     const isEdit = editTarget !== null;
     handleClose();
     showToast(isEdit ? "Transaksi berhasil diperbarui" : "Transaksi berhasil dicatat");
+
+    // New transaction: insert into optimistic list immediately so it shows before refresh
+    if (saved && !isEdit) {
+      const cat = categories.find(c => c.id === saved.categoryId);
+      const wal = wallets.find(w => w.id === saved.walletId);
+      const optimistic: TransactionWithCategory = {
+        id: saved.id,
+        household_id: householdId,
+        user_id: userId,
+        recurring_id: null,
+        type: saved.type,
+        amount: saved.amount,
+        description: saved.description,
+        category_id: saved.categoryId,
+        wallet_id: saved.walletId,
+        date: saved.date,
+        note: saved.note,
+        attachment_url: null,
+        visibility: saved.visibility,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        categories: cat
+          ? { name: cat.name, icon: cat.icon, color: cat.color }
+          : { name: "Lainnya", icon: null, color: null },
+        wallets: wal ? { name: wal.name } : { name: "Dompet" },
+        users: null,
+      };
+      setOptimisticTxs(prev => [optimistic, ...prev]);
+    }
+
     refresh();
   }
 
@@ -100,11 +156,11 @@ export default function TransaksiPageClient({
   }
 
   // Categories that appear in current month's transactions (for relevant filter)
-  const usedCategoryIds = useMemo(() => new Set(transactions.map(t => t.category_id)), [transactions]);
+  const usedCategoryIds = useMemo(() => new Set(allTransactions.map(t => t.category_id)), [allTransactions]);
   const relevantCategories = categories.filter(c => usedCategoryIds.has(c.id));
 
   // Wallets that appear in current month's transactions
-  const usedWalletIds = useMemo(() => new Set(transactions.map(t => t.wallet_id)), [transactions]);
+  const usedWalletIds = useMemo(() => new Set(allTransactions.map(t => t.wallet_id)), [allTransactions]);
   const relevantWallets = wallets.filter(w => usedWalletIds.has(w.id));
 
   return (
@@ -347,12 +403,13 @@ export default function TransaksiPageClient({
                   const isOwn = tx.user_id === userId;
                   const isPrivate = tx.visibility === "private";
                   const memberName = !isOwn ? (tx.users?.name ?? "Anggota") : null;
+                  const isPending = optimisticIds.has(tx.id);
                   return (
                     <button key={tx.id}
-                      onClick={() => isOwn ? openEdit(tx) : undefined}
+                      onClick={() => isOwn && !isPending ? openEdit(tx) : undefined}
                       className={["w-full flex items-center gap-4 px-4 py-3.5 transition-colors text-left",
                         i > 0 ? "border-t border-[var(--border)]" : "",
-                        isOwn ? "hover:bg-[var(--bg-elevated)] cursor-pointer" : "cursor-default opacity-90",
+                        isPending ? "cursor-default animate-pulse opacity-70" : isOwn ? "hover:bg-[var(--bg-elevated)] cursor-pointer" : "cursor-default opacity-90",
                       ].join(" ")}>
                       <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
                         style={{ backgroundColor: (tx.categories?.color ?? "#94A3B8") + "20", color: tx.categories?.color ?? "#94A3B8" }}>
