@@ -5,6 +5,7 @@ import LogoutButton from "./LogoutButton";
 import NotificationPanel from "./NotificationPanel";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 import type { AppNotification } from "@/types";
+import { loadNotifPrefs } from "@/app/(dashboard)/pengaturan/PengaturanPageClient";
 
 interface TopbarProps {
   householdName: string;
@@ -27,8 +28,10 @@ export default function Topbar({ householdName, userName, avatarUrl, darkMode, o
     .join("")
     .toUpperCase();
 
-  const highCount = notifications.filter(n => n.urgency === "high").length;
-  const badgeCount = notifications.length;
+  const [notifPrefs] = useState(() => loadNotifPrefs());
+  const visibleNotifications = notifications.filter(n => notifPrefs[n.type] !== false);
+  const highCount = visibleNotifications.filter(n => n.urgency === "high").length;
+  const badgeCount = visibleNotifications.length;
 
   return (
     <header className="h-14 flex-shrink-0 bg-[var(--bg-surface)] border-b border-[var(--border)] px-4 flex items-center justify-between gap-3">

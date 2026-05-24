@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useEffect, useRef, useTransition } from "react";
+import React, { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import type { AppNotification } from "@/types";
 import { markNotificationsRead } from "@/app/actions/notifications";
 import { AlertCircle, Target, RefreshCw, Bell } from "@/lib/icons";
 import type { LucideProps } from "lucide-react";
 import { AlertTriangle, Crown } from "lucide-react";
+import { loadNotifPrefs } from "@/app/(dashboard)/pengaturan/PengaturanPageClient";
 
 interface Props {
   notifications: AppNotification[];
@@ -28,6 +29,10 @@ export default function NotificationPanel({ notifications, onClose }: Props) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
+  // Filter notifications based on user preferences
+  const [prefs] = useState(() => loadNotifPrefs());
+  const filtered = notifications.filter(n => prefs[n.type] !== false);
+
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) onClose();
@@ -47,7 +52,7 @@ export default function NotificationPanel({ notifications, onClose }: Props) {
 
   function markAllRead() {
     startTransition(async () => {
-      await markNotificationsRead(notifications.map((n) => n.id));
+      await markNotificationsRead(filtered.map((n) => n.id));
       onClose();
     });
   }
@@ -61,13 +66,13 @@ export default function NotificationPanel({ notifications, onClose }: Props) {
       <div className="px-4 py-3 border-b border-[var(--border)] flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="text-sm font-semibold text-[var(--text-primary)]">Notifikasi</span>
-          {notifications.length > 0 && (
+          {filtered.length > 0 && (
             <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-brand-primary/10 text-brand-primary">
-              {notifications.length}
+              {filtered.length}
             </span>
           )}
         </div>
-        {notifications.length > 0 && (
+        {filtered.length > 0 && (
           <button
             onClick={markAllRead}
             disabled={isPending}
@@ -79,7 +84,7 @@ export default function NotificationPanel({ notifications, onClose }: Props) {
       </div>
 
       {/* List */}
-      {notifications.length === 0 ? (
+      {filtered.length === 0 ? (
         <div className="px-4 py-8 text-center">
           <div className="w-10 h-10 rounded-full bg-brand-primary/10 text-brand-primary flex items-center justify-center mx-auto mb-2"><Bell size={20} /></div>
           <p className="text-sm font-medium text-[var(--text-primary)]">Semua beres!</p>
@@ -87,7 +92,7 @@ export default function NotificationPanel({ notifications, onClose }: Props) {
         </div>
       ) : (
         <ul className="max-h-80 overflow-y-auto divide-y divide-[var(--border)]">
-          {notifications.map((n) => (
+          {filtered.map((n) => (
             <li key={n.id}>
               <button
                 onClick={() => go(n)}
@@ -109,7 +114,7 @@ export default function NotificationPanel({ notifications, onClose }: Props) {
       )}
 
       {/* Footer */}
-      {notifications.length > 0 && (
+      {filtered.length > 0 && (
         <div className="px-4 py-2.5 border-t border-[var(--border)] text-center">
           <p className="text-[10px] text-[var(--text-secondary)]">
             Notifikasi yang dibaca hilang selama 24 jam

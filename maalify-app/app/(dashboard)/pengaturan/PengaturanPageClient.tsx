@@ -6,6 +6,86 @@ import { formatRupiah } from "@/lib/utils";
 import { changeMemberRole, removeMember } from "@/app/actions/members";
 import { Star } from "@/lib/icons";
 
+// ─── Notification preferences ────────────────────────────────────────────────
+const NOTIF_PREFS_KEY = "maalify_notif_prefs";
+
+type NotifPrefs = Record<string, boolean>;
+
+const NOTIF_DEFAULT: NotifPrefs = {
+  debt_due_soon:          true,
+  debt_overdue:           true,
+  budget_near:            true,
+  budget_over:            true,
+  savings_goal_due:       true,
+  savings_goal_completed: true,
+};
+
+export function loadNotifPrefs(): NotifPrefs {
+  if (typeof window === "undefined") return { ...NOTIF_DEFAULT };
+  try {
+    const raw = localStorage.getItem(NOTIF_PREFS_KEY);
+    return raw ? { ...NOTIF_DEFAULT, ...JSON.parse(raw) } : { ...NOTIF_DEFAULT };
+  } catch { return { ...NOTIF_DEFAULT }; }
+}
+
+const NOTIF_ITEMS: {
+  key: string;
+  label: string;
+  desc: string;
+  iconBg: string;
+  iconColor: string;
+  icon: React.ReactNode;
+}[] = [
+  {
+    key: "debt_due_soon",
+    label: "Pengingat Tagihan",
+    desc: "Ingatkan tagihan yang akan jatuh tempo",
+    iconBg: "bg-blue-100",
+    iconColor: "text-blue-500",
+    icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
+  },
+  {
+    key: "debt_overdue",
+    label: "Tagihan Terlambat",
+    desc: "Notif saat tagihan sudah lewat jatuh tempo",
+    iconBg: "bg-red-100",
+    iconColor: "text-red-500",
+    icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>,
+  },
+  {
+    key: "budget_near",
+    label: "Peringatan Budget",
+    desc: "Notif saat budget hampir habis",
+    iconBg: "bg-amber-100",
+    iconColor: "text-amber-500",
+    icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>,
+  },
+  {
+    key: "budget_over",
+    label: "Budget Terlampaui",
+    desc: "Notif saat budget sudah terlampaui",
+    iconBg: "bg-orange-100",
+    iconColor: "text-orange-500",
+    icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>,
+  },
+  {
+    key: "savings_goal_due",
+    label: "Progress Goal",
+    desc: "Update progress tabungan goal",
+    iconBg: "bg-green-100",
+    iconColor: "text-green-600",
+    icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>,
+  },
+  {
+    key: "savings_goal_completed",
+    label: "Goal Tercapai",
+    desc: "Notif saat target goal tercapai",
+    iconBg: "bg-green-100",
+    iconColor: "text-green-600",
+    icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
+  },
+];
+
 interface Profile { id: string; name: string; email: string; avatar_url: string | null; phone: string | null; }
 interface Household { id: string; name: string; description: string | null; invite_code: string; }
 interface Member { id: string; role: string; joined_at: string; user: { id: string; name: string; email: string } | null; }
@@ -23,7 +103,7 @@ interface Props {
   userRole: string;
 }
 
-type Tab = "profil" | "household" | "aktivitas" | "keamanan";
+type Tab = "profil" | "household" | "aktivitas" | "keamanan" | "notifikasi";
 
 export default function PengaturanPageClient({ profile, household, members, categories, activity, householdId, userId, userRole }: Props) {
   const router = useRouter();
@@ -272,6 +352,17 @@ export default function PengaturanPageClient({ profile, household, members, cate
     }
   }
 
+  // Notification preferences state
+  const [notifPrefs, setNotifPrefs] = useState<NotifPrefs>(() => loadNotifPrefs());
+
+  function toggleNotif(key: string) {
+    setNotifPrefs(prev => {
+      const next = { ...prev, [key]: !prev[key] };
+      try { localStorage.setItem(NOTIF_PREFS_KEY, JSON.stringify(next)); } catch {}
+      return next;
+    });
+  }
+
   // Keamanan state
   const [newPass, setNewPass] = useState("");
   const [confirmPass, setConfirmPass] = useState("");
@@ -455,10 +546,11 @@ export default function PengaturanPageClient({ profile, household, members, cate
   };
 
   const TABS: { id: Tab; label: string }[] = [
-    { id: "profil",    label: "Profil" },
-    { id: "household", label: "Family" },
-    { id: "aktivitas", label: "Aktivitas" },
-    { id: "keamanan",  label: "Keamanan" },
+    { id: "profil",      label: "Profil" },
+    { id: "household",   label: "Family" },
+    { id: "aktivitas",   label: "Aktivitas" },
+    { id: "notifikasi",  label: "Notifikasi" },
+    { id: "keamanan",    label: "Keamanan" },
   ];
 
   // User has no household — show join form instead of normal settings
@@ -974,6 +1066,56 @@ export default function PengaturanPageClient({ profile, household, members, cate
             <p className="text-[10px] text-[var(--text-secondary)] text-center">
               Menampilkan 30 transaksi terbaru dari semua anggota household
             </p>
+          </div>
+        )}
+
+        {/* ─── NOTIFIKASI ─── */}
+        {tab === "notifikasi" && (
+          <div className="space-y-4">
+            <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border)] overflow-hidden">
+              <div className="px-5 py-4 border-b border-[var(--border)]">
+                <p className="font-semibold text-[var(--text-primary)]">Pengaturan Notifikasi</p>
+                <p className="text-xs text-[var(--text-secondary)] mt-0.5">Pilih jenis notifikasi yang ingin kamu terima</p>
+              </div>
+
+              <div className="divide-y divide-[var(--border)]">
+                {NOTIF_ITEMS.map(item => {
+                  const enabled = notifPrefs[item.key] !== false;
+                  return (
+                    <div key={item.key} className="flex items-center gap-4 px-5 py-4">
+                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${item.iconBg} ${item.iconColor}`}>
+                        {item.icon}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-[var(--text-primary)]">{item.label}</p>
+                        <p className="text-xs text-[var(--text-secondary)] mt-0.5">{item.desc}</p>
+                      </div>
+                      {/* Toggle pill */}
+                      <button
+                        type="button"
+                        onClick={() => toggleNotif(item.key)}
+                        className={[
+                          "relative inline-flex w-11 h-6 rounded-full transition-colors duration-200 focus:outline-none flex-shrink-0",
+                          enabled ? "bg-green-500" : "bg-[var(--border)]",
+                        ].join(" ")}
+                        aria-label={enabled ? "Matikan" : "Aktifkan"}
+                      >
+                        <span className={[
+                          "absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200",
+                          enabled ? "translate-x-5" : "translate-x-0",
+                        ].join(" ")} />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="px-5 py-3 bg-[var(--bg-elevated)] border-t border-[var(--border)]">
+                <p className="text-[10px] text-[var(--text-secondary)]">
+                  Preferensi disimpan di perangkat ini. Notifikasi akan muncul di panel notifikasi saat kamu membuka aplikasi.
+                </p>
+              </div>
+            </div>
           </div>
         )}
 

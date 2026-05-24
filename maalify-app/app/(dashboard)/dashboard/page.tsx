@@ -60,20 +60,20 @@ export default async function DashboardPage() {
     // Personal queries — filtered by private wallet IDs (is_shared = false)
     personalCurRes, personalPrevRes,
   ] = await Promise.all([
-    // ── Household (Bersama) ──
-    supabase.from("transactions").select("type, amount")
+    // ── Household (Bersama) — include wallet_id so we can exclude private wallets ──
+    supabase.from("transactions").select("type, amount, wallet_id")
       .eq("household_id", householdId).gte("date", monthStart).lt("date", monthEnd),
 
-    supabase.from("transactions").select("type, amount")
+    supabase.from("transactions").select("type, amount, wallet_id")
       .eq("household_id", householdId).gte("date", prevMonthStart).lt("date", monthStart),
 
-    supabase.from("wallets").select("current_balance")
+    supabase.from("wallets").select("current_balance, is_shared")
       .eq("household_id", householdId).eq("is_active", true),
 
-    supabase.from("transactions").select("type, amount, date")
+    supabase.from("transactions").select("type, amount, date, wallet_id")
       .eq("household_id", householdId).gte("date", trendStart).order("date"),
 
-    supabase.from("transactions").select("amount, categories(name, color)")
+    supabase.from("transactions").select("amount, wallet_id, categories(name, color)")
       .eq("household_id", householdId).eq("type", "expense")
       .gte("date", monthStart).lt("date", monthEnd),
 
@@ -125,12 +125,17 @@ export default async function DashboardPage() {
       : Promise.resolve({ data: [] }),
   ]);
 
-  // ── Household stats ──
-  const curIncome  = (curMonthRes.data ?? []).filter(t => t.type === "income").reduce((s,t) => s + Number(t.amount), 0);
-  const curExpense = (curMonthRes.data ?? []).filter(t => t.type === "expense").reduce((s,t) => s + Number(t.amount), 0);
-  const prevIncome  = (prevMonthRes.data ?? []).filter(t => t.type === "income").reduce((s,t) => s + Number(t.amount), 0);
-  const prevExpense = (prevMonthRes.data ?? []).filter(t => t.type === "expense").reduce((s,t) => s + Number(t.amount), 0);
-  const totalAset  = (walletsRes.data ?? []).reduce((s, w) => s + Number(w.current_balance), 0);
+  // ── Household stats — exclude private wallet transactions ──
+  const privateWalletSet = new Set(privateWalletIds);
+  const sharedCurData  = (curMonthRes.data  ?? []).filter(t => !privateWalletSet.has(t.wallet_id));
+  const sharedPrevData = (prevMonthRes.data ?? []).filter(t => !privateWalletSet.has(t.wallet_id));
+
+  const curIncome  = sharedCurData.filter(t => t.type === "income").reduce((s,t) => s + Number(t.amount), 0);
+  const curExpense = sharedCurData.filter(t => t.type === "expense").reduce((s,t) => s + Number(t.amount), 0);
+  const prevIncome  = sharedPrevData.filter(t => t.type === "income").reduce((s,t) => s + Number(t.amount), 0);
+  const prevExpense = sharedPrevData.filter(t => t.type === "expense").reduce((s,t) => s + Number(t.amount), 0);
+  // Total saldo Bersama = hanya dompet yang is_shared = true
+  const totalAset  = (walletsRes.data ?? []).filter(w => w.is_shared).reduce((s, w) => s + Number(w.current_balance), 0);
   const netSavings = curIncome - curExpense;
   const prevNetSavings = prevIncome - prevExpense;
 
@@ -163,7 +168,7 @@ export default async function DashboardPage() {
     const key = `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
     trendMap.set(key, { income: 0, expense: 0 });
   }
-  for (const tx of trendRes.data ?? []) {
+  for (const tx of (trendRes.data ?? []).filter(t => !privateWalletSet.has(t.wallet_id))) {
     const key = tx.date.substring(0, 7);
     if (trendMap.has(key)) {
       const e = trendMap.get(key)!;
@@ -177,7 +182,7 @@ export default async function DashboardPage() {
 
   // Category donut
   const catMap = new Map<string, { name: string; color: string; amount: number }>();
-  for (const row of catRes.data ?? []) {
+  for (const row of (catRes.data ?? []).filter(r => !privateWalletSet.has(r.wallet_id))) {
     const cats = row.categories as { name: string; color: string } | { name: string; color: string }[] | null;
     const cat = Array.isArray(cats) ? cats[0] : cats;
     if (!cat) continue;
