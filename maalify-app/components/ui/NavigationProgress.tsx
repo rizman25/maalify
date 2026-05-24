@@ -11,29 +11,28 @@ function NavigationProgressInner() {
   const { isLoading } = usePageLoading();
 
   const [visible, setVisible] = useState(false);
-  const [width, setWidth] = useState(0);
-  const timerRef   = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [fading, setFading] = useState(false);
+  const timerRef    = useRef<ReturnType<typeof setTimeout> | null>(null);
   const completeRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prevKey = useRef(`${pathname}?${searchParams.toString()}`);
 
   function clearTimers() {
-    if (timerRef.current)   clearTimeout(timerRef.current);
+    if (timerRef.current)    clearTimeout(timerRef.current);
     if (completeRef.current) clearTimeout(completeRef.current);
   }
 
-  function runBar() {
+  function showSpinner() {
     clearTimers();
+    setFading(false);
     setVisible(true);
-    setWidth(0);
-    timerRef.current = setTimeout(() => setWidth(75), 10);
   }
 
-  function finishBar() {
+  function hideSpinner() {
     clearTimers();
-    setWidth(100);
+    setFading(true);
     completeRef.current = setTimeout(() => {
       setVisible(false);
-      setWidth(0);
+      setFading(false);
     }, 300);
   }
 
@@ -42,8 +41,8 @@ function NavigationProgressInner() {
     const key = `${pathname}?${searchParams.toString()}`;
     if (prevKey.current === key) return;
     prevKey.current = key;
-    runBar();
-    completeRef.current = setTimeout(() => finishBar(), 400);
+    showSpinner();
+    completeRef.current = setTimeout(() => hideSpinner(), 500);
     return clearTimers;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname, searchParams]);
@@ -51,10 +50,9 @@ function NavigationProgressInner() {
   // Data refresh (router.refresh() via PageLoadingContext)
   useEffect(() => {
     if (isLoading) {
-      runBar();
+      showSpinner();
     } else {
-      // Only finish if bar is currently running
-      if (visible) finishBar();
+      if (visible) hideSpinner();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoading]);
@@ -65,9 +63,35 @@ function NavigationProgressInner() {
 
   return (
     <div
-      className="fixed top-0 left-0 z-[9999] h-[3px] bg-brand-primary shadow-[0_0_8px_rgba(30,58,95,0.5)] transition-all duration-300 ease-out"
-      style={{ width: `${width}%` }}
-    />
+      className="fixed bottom-6 right-6 z-[9999] transition-opacity duration-300"
+      style={{ opacity: fading ? 0 : 1 }}
+    >
+      <div className="w-11 h-11 rounded-full bg-[var(--bg-surface)] shadow-lg border border-[var(--border)] flex items-center justify-center">
+        <svg
+          className="animate-spin text-brand-primary"
+          width="22"
+          height="22"
+          viewBox="0 0 24 24"
+          fill="none"
+        >
+          <circle
+            cx="12" cy="12" r="10"
+            stroke="currentColor"
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeDasharray="32"
+            strokeDashoffset="12"
+            opacity="0.25"
+          />
+          <path
+            d="M12 2a10 10 0 0 1 10 10"
+            stroke="currentColor"
+            strokeWidth="3"
+            strokeLinecap="round"
+          />
+        </svg>
+      </div>
+    </div>
   );
 }
 
