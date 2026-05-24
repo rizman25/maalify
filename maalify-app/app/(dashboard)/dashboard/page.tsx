@@ -55,7 +55,7 @@ export default async function DashboardPage() {
   const privateWalletIds = (privateWalletsData ?? []).map(w => w.id);
 
   const [
-    curMonthRes, prevMonthRes, walletsRes, trendRes, catRes, budgetsRes, debtsRes,
+    curMonthRes, prevMonthRes, walletsRes, trendRes, catRes, incomeCatRes, budgetsRes, debtsRes,
     recentTxRes, activeWalletsRes, catsRes, goalsRes, memberSpendingRes, membersCountRes, recurringRes,
     // Personal queries — filtered by private wallet IDs (is_shared = false)
     personalCurRes, personalPrevRes,
@@ -75,6 +75,10 @@ export default async function DashboardPage() {
 
     supabase.from("transactions").select("amount, wallet_id, categories(name, color)")
       .eq("household_id", householdId).eq("type", "expense")
+      .gte("date", monthStart).lt("date", monthEnd),
+
+    supabase.from("transactions").select("amount, wallet_id, categories(name, color)")
+      .eq("household_id", householdId).eq("type", "income")
       .gte("date", monthStart).lt("date", monthEnd),
 
     supabase.from("budgets").select("id, amount, category_id, categories(name, color)")
@@ -191,6 +195,18 @@ export default async function DashboardPage() {
     else catMap.set(cat.name, { name: cat.name, color: cat.color ?? "#94A3B8", amount: Number(row.amount) });
   }
   const categoryData = Array.from(catMap.values()).sort((a, b) => b.amount - a.amount).slice(0, 6);
+
+  // Income category donut
+  const incomeCatMap = new Map<string, { name: string; color: string; amount: number }>();
+  for (const row of (incomeCatRes.data ?? [])) {
+    const cats = row.categories as { name: string; color: string } | { name: string; color: string }[] | null;
+    const cat = Array.isArray(cats) ? cats[0] : cats;
+    if (!cat) continue;
+    const existing = incomeCatMap.get(cat.name);
+    if (existing) existing.amount += Number(row.amount);
+    else incomeCatMap.set(cat.name, { name: cat.name, color: cat.color ?? "#27AE60", amount: Number(row.amount) });
+  }
+  const incomeCategoryData = Array.from(incomeCatMap.values()).sort((a, b) => b.amount - a.amount).slice(0, 6);
 
   // Budget dengan spending aktual
   type BudgetRow = { id: string; amount: number; category_id: string; categories: { name: string; color: string } | { name: string; color: string }[] | null };
@@ -318,19 +334,31 @@ export default async function DashboardPage() {
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-        <div className="lg:col-span-3 bg-[var(--bg-surface)] rounded-xl border border-[var(--border)] p-5">
-          <p className="font-semibold text-[var(--text-primary)] mb-1">Tren Pemasukan & Pengeluaran</p>
-          <p className="text-xs text-[var(--text-secondary)] mb-4">6 bulan terakhir</p>
-          <TrendChart data={trendData} />
-        </div>
-        <div className="lg:col-span-2 bg-[var(--bg-surface)] rounded-xl border border-[var(--border)] p-5">
+      {/* Trend — full width */}
+      <div className="bg-[var(--bg-surface)] rounded-xl border border-[var(--border)] p-5">
+        <p className="font-semibold text-[var(--text-primary)] mb-1">Tren Pemasukan & Pengeluaran</p>
+        <p className="text-xs text-[var(--text-secondary)] mb-4">6 bulan terakhir</p>
+        <TrendChart data={trendData} />
+      </div>
+
+      {/* Category charts — 2 columns */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="bg-[var(--bg-surface)] rounded-xl border border-[var(--border)] p-5">
           <p className="font-semibold text-[var(--text-primary)] mb-1">Pengeluaran per Kategori</p>
           <p className="text-xs text-[var(--text-secondary)] mb-4">{bulanNama}</p>
           {categoryData.length === 0 ? (
             <div className="h-48 flex items-center justify-center text-sm text-[var(--text-secondary)]">Belum ada pengeluaran</div>
           ) : (
             <CategoryChart data={categoryData} total={curExpense + pCurExpense} />
+          )}
+        </div>
+        <div className="bg-[var(--bg-surface)] rounded-xl border border-[var(--border)] p-5">
+          <p className="font-semibold text-[var(--text-primary)] mb-1">Pemasukan per Kategori</p>
+          <p className="text-xs text-[var(--text-secondary)] mb-4">{bulanNama}</p>
+          {incomeCategoryData.length === 0 ? (
+            <div className="h-48 flex items-center justify-center text-sm text-[var(--text-secondary)]">Belum ada pemasukan</div>
+          ) : (
+            <CategoryChart data={incomeCategoryData} total={curIncome + pCurIncome} />
           )}
         </div>
       </div>
