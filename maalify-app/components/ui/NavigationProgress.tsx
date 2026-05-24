@@ -63,7 +63,7 @@ function NavigationProgressInner() {
 
   return (
     <div
-      className="fixed bottom-5 right-5 z-[9999] transition-opacity duration-300"
+      className="fixed bottom-20 right-5 lg:bottom-5 z-[9999] transition-opacity duration-300"
       style={{ opacity: fading ? 0 : 1 }}
     >
       <div className="w-10 h-10 rounded-full bg-brand-primary shadow-lg flex items-center justify-center">

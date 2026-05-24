@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import LogoutButton from "./LogoutButton";
 import NotificationPanel from "./NotificationPanel";
 import ThemeToggle from "@/components/ui/ThemeToggle";
@@ -22,6 +22,13 @@ interface TopbarProps {
 export default function Topbar({ householdName, userName, avatarUrl, darkMode, onToggleDark, onMenuClick, onSearchClick, notifications }: TopbarProps) {
   const [panelOpen, setPanelOpen] = useState(false);
   const [installOpen, setInstallOpen] = useState(false);
+
+  // Listen for install modal trigger from sidebar (mobile)
+  useEffect(() => {
+    function handler() { setInstallOpen(true); }
+    window.addEventListener("open-install-modal", handler);
+    return () => window.removeEventListener("open-install-modal", handler);
+  }, []);
 
   const initials = userName
     .split(" ")
@@ -57,10 +64,10 @@ export default function Topbar({ householdName, userName, avatarUrl, darkMode, o
         {/* Dark mode toggle */}
         <ThemeToggle dark={darkMode} onToggle={onToggleDark} size="sm" />
 
-        {/* Install app button */}
+        {/* Install app button — hidden on mobile (accessible via sidebar / browser prompt) */}
         <button
           onClick={() => setInstallOpen(true)}
-          className="p-2 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] transition-colors"
+          className="hidden sm:flex p-2 rounded-lg text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] transition-colors"
           aria-label="Install Aplikasi"
           title="Install Aplikasi"
         >

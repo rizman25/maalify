@@ -125,10 +125,10 @@ export default function SetupChecklistWidget() {
       {/* Panel */}
       {open && (
         <div
-          className="fixed z-[60] shadow-2xl rounded-2xl overflow-hidden bottom-4 lg:bottom-[5.5rem]"
+          className="fixed z-[60] shadow-2xl rounded-2xl overflow-hidden bottom-[5.5rem] lg:bottom-[5.5rem]"
           style={{
             right: "1rem",
-            width: "340px",
+            width: "min(340px, calc(100vw - 2rem))",
             maxHeight: "75vh",
             display: "flex",
             flexDirection: "column",

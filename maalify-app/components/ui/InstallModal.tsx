@@ -40,9 +40,9 @@ export default function InstallModal({ onClose }: Props) {
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-sm bg-[var(--bg-surface)] rounded-2xl shadow-2xl overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 pt-5 pb-4">
+      <div className="relative w-full max-w-sm bg-[var(--bg-surface)] rounded-2xl shadow-2xl flex flex-col max-h-[90svh] overflow-hidden">
+        {/* Header — sticky so close button always visible */}
+        <div className="flex items-center justify-between px-5 pt-5 pb-4 flex-shrink-0">
           <h2 className="text-lg font-bold text-[var(--text-primary)]">Install Aplikasi</h2>
           <button
             onClick={onClose}
@@ -54,7 +54,7 @@ export default function InstallModal({ onClose }: Props) {
           </button>
         </div>
 
-        <div className="px-5 pb-5 space-y-4">
+        <div className="px-5 pb-5 space-y-4 overflow-y-auto">
           {/* Why install banner */}
           <div className="rounded-2xl p-4 text-white" style={{ background: "linear-gradient(135deg, #1E3A5F 0%, #2E8B57 100%)" }}>
             <p className="font-bold text-sm mb-3">Kenapa Install Aplikasi?</p>
