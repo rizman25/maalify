@@ -557,33 +557,69 @@ export default function LaporanPageClient({
             {topExpense.length > 0 && (
               <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border)] p-5">
                 <p className="font-semibold text-[var(--text-primary)] mb-4 text-sm">Porsi Pengeluaran</p>
-                <ResponsiveContainer width="100%" height={180}>
-                  <PieChart>
-                    <Pie data={topExpense} dataKey="amount" nameKey="name" cx="50%" cy="50%"
-                      innerRadius={48} outerRadius={72} strokeWidth={2} stroke="var(--bg-surface)">
-                      {topExpense.map((e, i) => <Cell key={i} fill={e.color} />)}
-                    </Pie>
-                    <Tooltip formatter={(v) => [`Rp ${formatRupiah(Number(v))}`, ""]}
-                      contentStyle={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12, color: "var(--text-primary)", boxShadow: "0 4px 12px rgba(0,0,0,0.15)" }}
-                      itemStyle={{ color: "var(--text-secondary)" }} />
-                  </PieChart>
-                </ResponsiveContainer>
+                <div className="flex items-center gap-4">
+                  {/* Donut */}
+                  <div className="flex-shrink-0 w-[120px] h-[120px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie data={topExpense} dataKey="amount" nameKey="name" cx="50%" cy="50%"
+                          innerRadius={36} outerRadius={54} strokeWidth={2} stroke="var(--bg-surface)">
+                          {topExpense.map((e, i) => <Cell key={i} fill={e.color} />)}
+                        </Pie>
+                        <Tooltip formatter={(v) => [`Rp ${formatRupiah(Number(v))}`, ""]}
+                          contentStyle={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12, color: "var(--text-primary)", boxShadow: "0 4px 12px rgba(0,0,0,0.15)" }}
+                          itemStyle={{ color: "var(--text-secondary)" }} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                  {/* Legend */}
+                  <div className="flex-1 min-w-0 space-y-2">
+                    {topExpense.map(c => {
+                      const pct = totalExpense > 0 ? ((c.amount / totalExpense) * 100).toFixed(1) : "0";
+                      return (
+                        <div key={c.name} className="flex items-center gap-2 min-w-0">
+                          <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: c.color }} />
+                          <span className="text-xs text-[var(--text-primary)] truncate flex-1">{c.name}</span>
+                          <span className="text-[10px] text-[var(--text-secondary)] flex-shrink-0 font-medium">{pct}%</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
             )}
             {topIncome.length > 0 && (
               <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border)] p-5">
                 <p className="font-semibold text-[var(--text-primary)] mb-4 text-sm">Porsi Pemasukan</p>
-                <ResponsiveContainer width="100%" height={180}>
-                  <PieChart>
-                    <Pie data={topIncome} dataKey="amount" nameKey="name" cx="50%" cy="50%"
-                      innerRadius={48} outerRadius={72} strokeWidth={2} stroke="var(--bg-surface)">
-                      {topIncome.map((e, i) => <Cell key={i} fill={e.color} />)}
-                    </Pie>
-                    <Tooltip formatter={(v) => [`Rp ${formatRupiah(Number(v))}`, ""]}
-                      contentStyle={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12, color: "var(--text-primary)", boxShadow: "0 4px 12px rgba(0,0,0,0.15)" }}
-                      itemStyle={{ color: "var(--text-secondary)" }} />
-                  </PieChart>
-                </ResponsiveContainer>
+                <div className="flex items-center gap-4">
+                  {/* Donut */}
+                  <div className="flex-shrink-0 w-[120px] h-[120px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie data={topIncome} dataKey="amount" nameKey="name" cx="50%" cy="50%"
+                          innerRadius={36} outerRadius={54} strokeWidth={2} stroke="var(--bg-surface)">
+                          {topIncome.map((e, i) => <Cell key={i} fill={e.color} />)}
+                        </Pie>
+                        <Tooltip formatter={(v) => [`Rp ${formatRupiah(Number(v))}`, ""]}
+                          contentStyle={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12, color: "var(--text-primary)", boxShadow: "0 4px 12px rgba(0,0,0,0.15)" }}
+                          itemStyle={{ color: "var(--text-secondary)" }} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                  {/* Legend */}
+                  <div className="flex-1 min-w-0 space-y-2">
+                    {topIncome.map(c => {
+                      const pct = totalIncome > 0 ? ((c.amount / totalIncome) * 100).toFixed(1) : "0";
+                      return (
+                        <div key={c.name} className="flex items-center gap-2 min-w-0">
+                          <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: c.color }} />
+                          <span className="text-xs text-[var(--text-primary)] truncate flex-1">{c.name}</span>
+                          <span className="text-[10px] text-[var(--text-secondary)] flex-shrink-0 font-medium">{pct}%</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
             )}
           </div>
