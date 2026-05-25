@@ -28,6 +28,8 @@ interface Props {
 export default function DashboardShell({ householdName, userName, avatarUrl, userRole, notifications, hasWallets, householdId, userId, children }: Props) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  // Sidebar toggle untuk tablet/desktop (lg:) — state diingat via localStorage
+  const [lgSidebarOpen, setLgSidebarOpen] = useState(true);
   // Init from DOM directly — anti-FOUC script already set the class
   const [darkMode, setDarkMode] = useState(() =>
     typeof document !== "undefined"
@@ -35,6 +37,20 @@ export default function DashboardShell({ householdName, userName, avatarUrl, use
       : false
   );
   const pathname = usePathname();
+
+  // Baca state sidebar dari localStorage setelah mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("maalify-sidebar-open");
+      setLgSidebarOpen(saved === null ? true : saved === "true");
+    } catch { /* ignore */ }
+  }, []);
+
+  function toggleLgSidebar() {
+    const next = !lgSidebarOpen;
+    setLgSidebarOpen(next);
+    try { localStorage.setItem("maalify-sidebar-open", String(next)); } catch { /* ignore */ }
+  }
 
   // Safety net: re-sync dark class from localStorage after React hydration.
   // Necessary because React's hydration commit can remove the 'dark' class
@@ -73,10 +89,23 @@ export default function DashboardShell({ householdName, userName, avatarUrl, use
 
   return (
     <div className="flex h-screen bg-[var(--bg-base)] overflow-hidden">
-      {/* Desktop sidebar — hidden on mobile */}
-      <div className="hidden lg:flex">
-        <Sidebar userRole={userRole} />
+      {/* Desktop sidebar — hidden on mobile, toggleable on lg: */}
+      <div className={lgSidebarOpen ? "hidden lg:flex" : "hidden"}>
+        <Sidebar userRole={userRole} onCollapse={toggleLgSidebar} />
       </div>
+
+      {/* Re-open sidebar button — appears when sidebar is collapsed on lg: */}
+      {!lgSidebarOpen && (
+        <button
+          onClick={toggleLgSidebar}
+          className="hidden lg:flex fixed left-0 top-1/2 -translate-y-1/2 z-30 items-center justify-center w-5 h-12 bg-[var(--bg-surface)] border-y border-r border-[var(--border)] rounded-r-lg text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] hover:text-[var(--text-primary)] transition-colors shadow-sm"
+          title="Tampilkan sidebar"
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+        </button>
+      )}
 
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (

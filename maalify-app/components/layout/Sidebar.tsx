@@ -71,9 +71,10 @@ function NavItem({ href, icon, label, badge }: { href: string; icon: React.React
 
 interface Props {
   userRole?: Role;
+  onCollapse?: () => void;
 }
 
-export default function Sidebar({ userRole = "member" }: Props) {
+export default function Sidebar({ userRole = "member", onCollapse }: Props) {
   const visibleMain    = mainNav.filter(item => item.roles.includes(userRole));
   const visibleSettings = settingsNav.filter(item => item.roles.includes(userRole));
   const pathname = usePathname();
@@ -125,11 +126,25 @@ export default function Sidebar({ userRole = "member" }: Props) {
     <aside className="w-60 flex-shrink-0 bg-[var(--bg-surface)] border-r border-[var(--border)] flex flex-col h-screen sticky top-0">
       {/* Logo */}
       <div className="px-5 py-4 border-b border-[var(--border)]">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-brand-primary flex items-center justify-center">
-            <span className="text-white font-bold text-sm">M</span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-brand-primary flex items-center justify-center">
+              <span className="text-white font-bold text-sm">M</span>
+            </div>
+            <span className="font-bold text-[var(--text-primary)] text-lg tracking-tight">Maalify</span>
           </div>
-          <span className="font-bold text-[var(--text-primary)] text-lg tracking-tight">Maalify</span>
+          {/* Collapse button — lg: only */}
+          {onCollapse && (
+            <button
+              onClick={onCollapse}
+              className="hidden lg:flex items-center justify-center w-7 h-7 rounded-md text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] hover:text-[var(--text-primary)] transition-colors"
+              title="Sembunyikan sidebar"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
+          )}
         </div>
         {/* Role badge */}
         <span className={cn("mt-2 inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full", ROLE_COLOR[userRole])}>
