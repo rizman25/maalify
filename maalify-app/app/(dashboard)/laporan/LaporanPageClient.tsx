@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { formatRupiah } from "@/lib/utils";
 import {
@@ -84,6 +84,7 @@ export default function LaporanPageClient({
   const router = useRouter();
   const [exportOpen, setExportOpen] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
+  const touchStartX = useRef<number | null>(null);
   const net = totalIncome - totalExpense;
   const now = new Date();
   const currentYear = now.getFullYear();
@@ -94,6 +95,28 @@ export default function LaporanPageClient({
 
   function navigateYear(dir: -1 | 1) {
     router.push(`/laporan?range=1y&year=${year + dir}`);
+  }
+
+  function handleTouchStart(e: React.TouchEvent) {
+    touchStartX.current = e.touches[0].clientX;
+  }
+
+  function handleTouchEnd(e: React.TouchEvent) {
+    if (touchStartX.current === null) return;
+    const delta = e.changedTouches[0].clientX - touchStartX.current;
+    touchStartX.current = null;
+    if (Math.abs(delta) < 50) return; // below threshold — ignore
+
+    if (range === "1y") {
+      // Swipe left (delta < 0) = next year; swipe right = previous year
+      if (delta < 0 && year < currentYear) navigateYear(1);
+      else if (delta > 0) navigateYear(-1);
+    } else {
+      const idx = RANGE_OPTIONS.findIndex(o => o.value === range);
+      // Swipe left = forward (larger range); swipe right = backward (smaller range)
+      if (delta < 0 && idx < RANGE_OPTIONS.length - 1) navigateRange(RANGE_OPTIONS[idx + 1].value);
+      else if (delta > 0 && idx > 0) navigateRange(RANGE_OPTIONS[idx - 1].value);
+    }
   }
 
   function exportLaporan() {
@@ -279,7 +302,7 @@ export default function LaporanPageClient({
 
   return (
     <>
-    <div className="min-h-full">
+    <div className="min-h-full" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
       <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
 
         {/* Header */}
@@ -502,84 +525,25 @@ export default function LaporanPageClient({
           )}
         </div>
 
-        {/* Category breakdown */}
+        {/* Category breakdown + Donut — merged */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border)] p-5">
-            <p className="font-semibold text-[var(--text-primary)] mb-1">Pengeluaran per Kategori</p>
-            <p className="text-xs text-[var(--text-secondary)] mb-4">{rangeLabel}</p>
+          {/* Pengeluaran */}
+          <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border)] p-5 space-y-4">
+            <div>
+              <p className="font-semibold text-[var(--text-primary)]">Pengeluaran per Kategori</p>
+              <p className="text-xs text-[var(--text-secondary)] mt-0.5">{rangeLabel}</p>
+            </div>
             {topExpense.length === 0 ? (
               <div className="py-8 text-center text-sm text-[var(--text-secondary)]">Belum ada pengeluaran</div>
             ) : (
-              <div className="space-y-3">
-                {topExpense.map((c) => {
-                  const pct = totalExpense > 0 ? ((c.amount / totalExpense) * 100).toFixed(1) : "0";
-                  return (
-                    <div key={c.name}>
-                      <div className="flex items-center justify-between mb-1.5">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span className="flex-shrink-0" style={{ color: c.color }}><CategoryIcon slug={c.icon} size={16} /></span>
-                          <span className="text-sm text-[var(--text-primary)] truncate">{c.name}</span>
-                        </div>
-                        <div className="flex items-center gap-2 flex-shrink-0 ml-2">
-                          <span className="text-xs text-[var(--text-secondary)]">{pct}%</span>
-                          <span className="font-financial text-sm font-medium text-[var(--text-primary)]">Rp {formatRupiah(c.amount)}</span>
-                        </div>
-                      </div>
-                      <div className="h-1.5 bg-[var(--bg-elevated)] rounded-full overflow-hidden">
-                        <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: c.color }} />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border)] p-5">
-            <p className="font-semibold text-[var(--text-primary)] mb-1">Pemasukan per Kategori</p>
-            <p className="text-xs text-[var(--text-secondary)] mb-4">{rangeLabel}</p>
-            {topIncome.length === 0 ? (
-              <div className="py-8 text-center text-sm text-[var(--text-secondary)]">Belum ada pemasukan</div>
-            ) : (
-              <div className="space-y-3">
-                {topIncome.map((c) => {
-                  const pct = totalIncome > 0 ? ((c.amount / totalIncome) * 100).toFixed(1) : "0";
-                  return (
-                    <div key={c.name}>
-                      <div className="flex items-center justify-between mb-1.5">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span className="flex-shrink-0" style={{ color: c.color }}><CategoryIcon slug={c.icon} size={16} /></span>
-                          <span className="text-sm text-[var(--text-primary)] truncate">{c.name}</span>
-                        </div>
-                        <div className="flex items-center gap-2 flex-shrink-0 ml-2">
-                          <span className="text-xs text-[var(--text-secondary)]">{pct}%</span>
-                          <span className="font-financial text-sm font-medium text-[var(--text-primary)]">Rp {formatRupiah(c.amount)}</span>
-                        </div>
-                      </div>
-                      <div className="h-1.5 bg-[var(--bg-elevated)] rounded-full overflow-hidden">
-                        <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: c.color }} />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Donut charts */}
-        {(topExpense.length > 0 || topIncome.length > 0) && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {topExpense.length > 0 && (
-              <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border)] p-5">
-                <p className="font-semibold text-[var(--text-primary)] mb-4 text-sm">Porsi Pengeluaran</p>
+              <>
+                {/* Donut */}
                 <div className="flex items-center gap-4">
-                  {/* Donut */}
-                  <div className="flex-shrink-0 w-[120px] h-[120px]">
+                  <div className="flex-shrink-0 w-[100px] h-[100px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie data={topExpense} dataKey="amount" nameKey="name" cx="50%" cy="50%"
-                          innerRadius={36} outerRadius={54} strokeWidth={2} stroke="var(--bg-surface)">
+                          innerRadius={30} outerRadius={46} strokeWidth={2} stroke="var(--bg-surface)">
                           {topExpense.map((e, i) => <Cell key={i} fill={e.color} />)}
                         </Pie>
                         <Tooltip formatter={(v) => [`Rp ${formatRupiah(Number(v))}`, ""]}
@@ -588,32 +552,68 @@ export default function LaporanPageClient({
                       </PieChart>
                     </ResponsiveContainer>
                   </div>
-                  {/* Legend */}
-                  <div className="flex-1 min-w-0 space-y-2">
-                    {topExpense.map(c => {
+                  <div className="flex-1 min-w-0 space-y-1.5">
+                    {topExpense.slice(0, 5).map(c => {
                       const pct = totalExpense > 0 ? ((c.amount / totalExpense) * 100).toFixed(1) : "0";
                       return (
                         <div key={c.name} className="flex items-center gap-2 min-w-0">
-                          <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: c.color }} />
+                          <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: c.color }} />
                           <span className="text-xs text-[var(--text-primary)] truncate flex-1">{c.name}</span>
-                          <span className="text-[10px] text-[var(--text-secondary)] flex-shrink-0 font-medium">{pct}%</span>
+                          <span className="text-[10px] text-[var(--text-secondary)] flex-shrink-0 font-medium tabular-nums">{pct}%</span>
                         </div>
                       );
                     })}
+                    {topExpense.length > 5 && (
+                      <p className="text-[10px] text-[var(--text-secondary)] pl-4">+{topExpense.length - 5} lainnya</p>
+                    )}
                   </div>
                 </div>
-              </div>
+                {/* Divider */}
+                <div className="h-px bg-[var(--border)]" />
+                {/* Progress bars */}
+                <div className="space-y-3">
+                  {topExpense.map((c) => {
+                    const pct = totalExpense > 0 ? ((c.amount / totalExpense) * 100).toFixed(1) : "0";
+                    return (
+                      <div key={c.name}>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="flex-shrink-0" style={{ color: c.color }}><CategoryIcon slug={c.icon} size={14} /></span>
+                            <span className="text-sm text-[var(--text-primary)] truncate">{c.name}</span>
+                          </div>
+                          <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+                            <span className="text-xs text-[var(--text-secondary)] tabular-nums">{pct}%</span>
+                            <span className="font-financial text-sm font-medium text-[var(--text-primary)]">Rp {formatRupiah(c.amount)}</span>
+                          </div>
+                        </div>
+                        <div className="h-1.5 bg-[var(--bg-elevated)] rounded-full overflow-hidden">
+                          <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: c.color }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
             )}
-            {topIncome.length > 0 && (
-              <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border)] p-5">
-                <p className="font-semibold text-[var(--text-primary)] mb-4 text-sm">Porsi Pemasukan</p>
+          </div>
+
+          {/* Pemasukan */}
+          <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border)] p-5 space-y-4">
+            <div>
+              <p className="font-semibold text-[var(--text-primary)]">Pemasukan per Kategori</p>
+              <p className="text-xs text-[var(--text-secondary)] mt-0.5">{rangeLabel}</p>
+            </div>
+            {topIncome.length === 0 ? (
+              <div className="py-8 text-center text-sm text-[var(--text-secondary)]">Belum ada pemasukan</div>
+            ) : (
+              <>
+                {/* Donut */}
                 <div className="flex items-center gap-4">
-                  {/* Donut */}
-                  <div className="flex-shrink-0 w-[120px] h-[120px]">
+                  <div className="flex-shrink-0 w-[100px] h-[100px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie data={topIncome} dataKey="amount" nameKey="name" cx="50%" cy="50%"
-                          innerRadius={36} outerRadius={54} strokeWidth={2} stroke="var(--bg-surface)">
+                          innerRadius={30} outerRadius={46} strokeWidth={2} stroke="var(--bg-surface)">
                           {topIncome.map((e, i) => <Cell key={i} fill={e.color} />)}
                         </Pie>
                         <Tooltip formatter={(v) => [`Rp ${formatRupiah(Number(v))}`, ""]}
@@ -622,24 +622,51 @@ export default function LaporanPageClient({
                       </PieChart>
                     </ResponsiveContainer>
                   </div>
-                  {/* Legend */}
-                  <div className="flex-1 min-w-0 space-y-2">
-                    {topIncome.map(c => {
+                  <div className="flex-1 min-w-0 space-y-1.5">
+                    {topIncome.slice(0, 5).map(c => {
                       const pct = totalIncome > 0 ? ((c.amount / totalIncome) * 100).toFixed(1) : "0";
                       return (
                         <div key={c.name} className="flex items-center gap-2 min-w-0">
-                          <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: c.color }} />
+                          <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: c.color }} />
                           <span className="text-xs text-[var(--text-primary)] truncate flex-1">{c.name}</span>
-                          <span className="text-[10px] text-[var(--text-secondary)] flex-shrink-0 font-medium">{pct}%</span>
+                          <span className="text-[10px] text-[var(--text-secondary)] flex-shrink-0 font-medium tabular-nums">{pct}%</span>
                         </div>
                       );
                     })}
+                    {topIncome.length > 5 && (
+                      <p className="text-[10px] text-[var(--text-secondary)] pl-4">+{topIncome.length - 5} lainnya</p>
+                    )}
                   </div>
                 </div>
-              </div>
+                {/* Divider */}
+                <div className="h-px bg-[var(--border)]" />
+                {/* Progress bars */}
+                <div className="space-y-3">
+                  {topIncome.map((c) => {
+                    const pct = totalIncome > 0 ? ((c.amount / totalIncome) * 100).toFixed(1) : "0";
+                    return (
+                      <div key={c.name}>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="flex-shrink-0" style={{ color: c.color }}><CategoryIcon slug={c.icon} size={14} /></span>
+                            <span className="text-sm text-[var(--text-primary)] truncate">{c.name}</span>
+                          </div>
+                          <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+                            <span className="text-xs text-[var(--text-secondary)] tabular-nums">{pct}%</span>
+                            <span className="font-financial text-sm font-medium text-[var(--text-primary)]">Rp {formatRupiah(c.amount)}</span>
+                          </div>
+                        </div>
+                        <div className="h-1.5 bg-[var(--bg-elevated)] rounded-full overflow-hidden">
+                          <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: c.color }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
             )}
           </div>
-        )}
+        </div>
 
       </div>
     </div>
