@@ -45,10 +45,12 @@ export default function HutangModal({ mode, debt, householdId, userId, onClose, 
     ? Math.ceil(parsedAmount / parsedMonths)
     : null;
 
-  // Edit mode: compute from stored data
-  const editMonthly = debt?.installment_months && debt.installment_months > 0
-    ? Math.ceil(debt.total_amount / debt.installment_months)
-    : null;
+  // Edit mode: compute from current state (amount bisa berubah)
+  const editMonthly = parsedMonths > 0 && parsedAmount > 0
+    ? Math.ceil(parsedAmount / parsedMonths)
+    : debt?.installment_months && debt.installment_months > 0 && parsedAmount > 0
+      ? Math.ceil(parsedAmount / debt.installment_months)
+      : null;
   const editPaidInstallments = editMonthly && debt
     ? Math.floor((debt.total_amount - debt.remaining_amount) / editMonthly)
     : 0;
@@ -90,8 +92,13 @@ export default function HutangModal({ mode, debt, householdId, userId, onClose, 
         });
         if (err) throw err;
       } else if (debt) {
+        // Hitung ulang remaining: bayar yang sudah terjadi tetap, sisanya menyesuaikan nominal baru
+        const alreadyPaid = debt.total_amount - debt.remaining_amount;
+        const newRemaining = Math.max(0, amt - alreadyPaid);
         const { error: err } = await supabase.from("debts").update({
           party_name: partyName.trim(),
+          total_amount: amt,
+          remaining_amount: newRemaining,
           due_date: dueDate || null,
           description: description.trim() || null,
           installment_months: months,
@@ -190,26 +197,17 @@ export default function HutangModal({ mode, debt, householdId, userId, onClose, 
             <label className="text-xs font-medium text-[var(--text-secondary)]">
               {mode === "edit" ? "Total Hutang" : "Total Nominal"}
             </label>
-            {mode === "edit" ? (
-              <div className="flex items-center gap-2 border border-[var(--border)] rounded-xl px-3 py-3 bg-[var(--bg-elevated)]">
-                <span className="text-sm text-[var(--text-secondary)] font-medium">Rp</span>
-                <span className="font-financial text-lg font-semibold text-[var(--text-primary)]">
-                  {formatRupiah(debt!.total_amount)}
-                </span>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2 border border-[var(--border)] rounded-xl px-3 py-3 focus-within:border-brand-primary transition-colors bg-[var(--bg-card)]">
-                <span className="text-sm text-[var(--text-secondary)] font-medium flex-shrink-0">Rp</span>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  value={amount ? Number(amount).toLocaleString("id-ID") : ""}
-                  onChange={handleAmountChange}
-                  placeholder="0"
-                  className="flex-1 bg-transparent text-[var(--text-primary)] font-financial text-lg font-semibold outline-none placeholder:text-[var(--text-secondary)]/40"
-                />
-              </div>
-            )}
+            <div className="flex items-center gap-2 border border-[var(--border)] rounded-xl px-3 py-3 focus-within:border-brand-primary transition-colors bg-[var(--bg-card)]">
+              <span className="text-sm text-[var(--text-secondary)] font-medium flex-shrink-0">Rp</span>
+              <input
+                type="text"
+                inputMode="numeric"
+                value={amount ? Number(amount).toLocaleString("id-ID") : ""}
+                onChange={handleAmountChange}
+                placeholder="0"
+                className="flex-1 bg-transparent text-[var(--text-primary)] font-financial text-lg font-semibold outline-none placeholder:text-[var(--text-secondary)]/40"
+              />
+            </div>
           </div>
 
           {/* Installment */}
