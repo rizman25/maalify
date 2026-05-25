@@ -133,6 +133,7 @@ export default function ProjectPageClient({
         ? supabase
             .from("transfers")
             .select("id, amount, date, description, from_wallet_id")
+            .eq("household_id", householdId)
             .eq("to_wallet_id", walletId)
             .order("date", { ascending: false })
             .limit(100)
