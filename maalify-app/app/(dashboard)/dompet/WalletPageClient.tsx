@@ -50,6 +50,7 @@ export default function WalletPageClient({ wallets, inactiveWallets, transfers, 
   const [activating, setActivating] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [walletTab, setWalletTab] = useState<"semua" | "bersama" | "pribadi">("semua");
 
   const totalAset = wallets.reduce((sum, w) => sum + Number(w.current_balance), 0);
   const totalBersama = wallets.filter(w => w.is_shared).reduce((sum, w) => sum + Number(w.current_balance), 0);
@@ -187,6 +188,25 @@ export default function WalletPageClient({ wallets, inactiveWallets, transfers, 
         </div>
       </div>
 
+      {/* Tab: Semua / Bersama / Pribadi */}
+      {wallets.length > 0 && (
+        <div className="flex bg-[var(--bg-elevated)] rounded-xl p-1 gap-1">
+          {(["semua", "bersama", "pribadi"] as const).map(tab => (
+            <button
+              key={tab}
+              onClick={() => setWalletTab(tab)}
+              className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
+                walletTab === tab
+                  ? "bg-brand-primary text-white shadow-sm"
+                  : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+              }`}
+            >
+              {tab === "semua" ? `Semua (${wallets.length})` : tab === "bersama" ? `Bersama (${countBersama})` : `Pribadi (${countPribadi})`}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Wallet Grid */}
       {wallets.length === 0 ? (
         <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border)] px-6 py-14 text-center space-y-4">
@@ -240,9 +260,22 @@ export default function WalletPageClient({ wallets, inactiveWallets, transfers, 
             </div>
           )}
         </div>
-      ) : (
+      ) : (() => {
+        const filteredWallets = wallets.filter(w =>
+          walletTab === "semua" ? true :
+          walletTab === "bersama" ? w.is_shared :
+          !w.is_shared
+        );
+        if (filteredWallets.length === 0) return (
+          <div className="bg-[var(--bg-surface)] rounded-xl border border-[var(--border)] py-10 text-center">
+            <p className="text-sm text-[var(--text-secondary)]">
+              Belum ada dompet {walletTab === "bersama" ? "bersama" : "pribadi"}
+            </p>
+          </div>
+        );
+        return (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {wallets.map((wallet) => {
+          {filteredWallets.map((wallet) => {
             const color = wallet.color ?? TYPE_DEFAULT_COLOR[wallet.type];
             return (
               <div
@@ -356,7 +389,7 @@ export default function WalletPageClient({ wallets, inactiveWallets, transfers, 
           })}
 
           {/* Add card */}
-          {canManage && (
+          {canManage && walletTab === "semua" && (
             <button
               onClick={openAdd}
               className="bg-[var(--bg-surface)] rounded-xl border-2 border-dashed border-[var(--border)] p-5 flex flex-col items-center justify-center gap-2 text-[var(--text-secondary)] hover:border-brand-primary hover:text-brand-primary transition-colors min-h-[160px]"
@@ -368,7 +401,8 @@ export default function WalletPageClient({ wallets, inactiveWallets, transfers, 
             </button>
           )}
         </div>
-      )}
+        );
+      })()}
 
       {/* Dompet Nonaktif */}
       {inactiveWallets.length > 0 && (
