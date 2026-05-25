@@ -80,6 +80,14 @@ function daysLeft(dateStr: string): number {
   return Math.ceil((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 }
 
+interface Contribution {
+  id: string;
+  amount: number;
+  date: string;
+  description: string | null;
+  from_wallet: { name: string } | null;
+}
+
 export default function ProjectPageClient({
   projects, wallets, householdId, userId, userRole,
 }: Props) {
@@ -89,6 +97,8 @@ export default function ProjectPageClient({
   const [view, setView] = useState<View>("list");
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [projectItems, setProjectItems] = useState<ProjectItem[]>([]);
+  const [contributions, setContributions] = useState<Contribution[]>([]);
+  const [showContributions, setShowContributions] = useState(false);
   const [loadingItems, setLoadingItems] = useState(false);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [modal, setModal] = useState<ModalState>(null);
@@ -101,21 +111,35 @@ export default function ProjectPageClient({
   const handleItemSaved = useCallback(async () => {
     setModal(null);
     if (selectedProject) {
-      await loadItems(selectedProject.id);
+      await loadItems(selectedProject.id, selectedProject.wallet_id ?? undefined);
     }
   }, [selectedProject]);
 
-  async function loadItems(projectId: string) {
+  async function loadItems(projectId: string, walletId?: string) {
     setLoadingItems(true);
     const { createClient } = await import("@/lib/supabase/client");
     const supabase = createClient();
-    const { data } = await supabase
-      .from("project_items")
-      .select("*")
-      .eq("project_id", projectId)
-      .order("sort_order")
-      .order("created_at");
-    setProjectItems(data ?? []);
+
+    const [itemsRes, contribRes] = await Promise.all([
+      supabase
+        .from("project_items")
+        .select("*")
+        .eq("project_id", projectId)
+        .order("sort_order")
+        .order("created_at"),
+
+      walletId
+        ? supabase
+            .from("transfers")
+            .select("id, amount, date, description, from_wallet:wallets!transfers_from_wallet_id_fkey(name)")
+            .eq("to_wallet_id", walletId)
+            .order("date", { ascending: false })
+            .limit(100)
+        : Promise.resolve({ data: [] }),
+    ]);
+
+    setProjectItems(itemsRes.data ?? []);
+    setContributions((contribRes.data ?? []) as Contribution[]);
     setLoadingItems(false);
 
     // Backfill: deduct wallet for any paid items that have no transaction yet
@@ -127,13 +151,16 @@ export default function ProjectPageClient({
   async function openDetail(project: Project) {
     setSelectedProject(project);
     setView("detail");
-    await loadItems(project.id);
+    setShowContributions(false);
+    await loadItems(project.id, project.wallet_id ?? undefined);
   }
 
   function goBack() {
     setView("list");
     setSelectedProject(null);
     setProjectItems([]);
+    setContributions([]);
+    setShowContributions(false);
   }
 
   const filteredProjects = statusFilter === "all"
@@ -307,6 +334,67 @@ export default function ProjectPageClient({
             </div>
           </div>
 
+          {/* Riwayat Kontribusi */}
+          {contributions.length > 0 && (
+            <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border)] overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setShowContributions(v => !v)}
+                className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-[var(--bg-elevated)] transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full bg-brand-accent/15 flex items-center justify-center">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-brand-accent">
+                      <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+                      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                    </svg>
+                  </div>
+                  <span className="text-sm font-semibold text-[var(--text-primary)]">Riwayat Kontribusi</span>
+                  <span className="text-xs bg-brand-accent/10 text-brand-accent font-medium px-2 py-0.5 rounded-full">{contributions.length}</span>
+                </div>
+                <svg
+                  width="16" height="16" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                  className={`text-[var(--text-secondary)] transition-transform duration-200 ${showContributions ? "rotate-180" : ""}`}
+                >
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </button>
+
+              {showContributions && (
+                <div className="divide-y divide-[var(--border)] border-t border-[var(--border)]">
+                  {contributions.map(c => (
+                    <div key={c.id} className="flex items-center gap-3 px-4 py-3">
+                      <div className="w-8 h-8 rounded-full bg-brand-accent/10 text-brand-accent flex items-center justify-center flex-shrink-0">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/>
+                          <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
+                          <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
+                        </svg>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-[var(--text-primary)] truncate">
+                          {c.from_wallet?.name ?? "—"}
+                        </p>
+                        {c.description && (
+                          <p className="text-[10px] text-[var(--text-secondary)] truncate">{c.description}</p>
+                        )}
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <p className="font-financial text-sm font-semibold text-brand-accent">
+                          +Rp {formatRupiah(c.amount)}
+                        </p>
+                        <p className="text-[10px] text-[var(--text-secondary)]">
+                          {new Date(c.date + "T00:00:00").toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Items section */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
@@ -414,7 +502,7 @@ export default function ProjectPageClient({
             onSaved={() => {
               setModal(null);
               refresh();
-              if (selectedProject) loadItems(selectedProject.id);
+              if (selectedProject) loadItems(selectedProject.id, selectedProject.wallet_id ?? undefined);
             }}
           />
         )}
