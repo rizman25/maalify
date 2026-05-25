@@ -100,6 +100,7 @@ export default function ProjectPageClient({
   const [projectItems, setProjectItems] = useState<ProjectItem[]>([]);
   const [contributions, setContributions] = useState<Contribution[]>([]);
   const [showContributions, setShowContributions] = useState(false);
+  const [showExpenses, setShowExpenses] = useState(false);
   const [loadingItems, setLoadingItems] = useState(false);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [modal, setModal] = useState<ModalState>(null);
@@ -190,6 +191,7 @@ export default function ProjectPageClient({
     setSelectedProject(project);
     setView("detail");
     setShowContributions(false);
+    setShowExpenses(false);
     await loadItems(project.id, project.wallet_id ?? undefined);
   }
 
@@ -443,6 +445,85 @@ export default function ProjectPageClient({
               )}
             </div>
           )}
+
+          {/* Riwayat Pengeluaran */}
+          {(paidItems.length > 0 || dpItems.length > 0) && (() => {
+            const spentItems = [...paidItems, ...dpItems].sort((a, b) => {
+              if (!a.paid_at && !b.paid_at) return 0;
+              if (!a.paid_at) return 1;
+              if (!b.paid_at) return -1;
+              return b.paid_at.localeCompare(a.paid_at);
+            });
+            const spentTotal = spentItems.reduce((s, i) => s + (i.actual_amount ?? i.planned_amount), 0);
+            return (
+              <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border)] overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setShowExpenses(v => !v)}
+                  className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-[var(--bg-elevated)] transition-colors"
+                >
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-full bg-warning/15 flex items-center justify-center">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-warning">
+                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                      </svg>
+                    </div>
+                    <span className="text-sm font-semibold text-[var(--text-primary)]">Riwayat Pengeluaran</span>
+                    <span className="text-xs bg-warning/10 text-warning font-medium px-2 py-0.5 rounded-full">{spentItems.length}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-financial text-xs font-semibold text-warning">Rp {formatRupiah(spentTotal)}</span>
+                    <svg
+                      width="16" height="16" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                      className={`text-[var(--text-secondary)] transition-transform duration-200 ${showExpenses ? "rotate-180" : ""}`}
+                    >
+                      <polyline points="6 9 12 15 18 9"/>
+                    </svg>
+                  </div>
+                </button>
+
+                {showExpenses && (
+                  <div className="divide-y divide-[var(--border)] border-t border-[var(--border)]">
+                    {spentItems.map(item => {
+                      const amt = item.actual_amount ?? item.planned_amount;
+                      const isDP = item.actual_amount != null && item.actual_amount < item.planned_amount;
+                      return (
+                        <div key={item.id} className="flex items-center gap-3 px-4 py-3">
+                          <div className="w-8 h-8 rounded-full bg-warning/10 text-warning flex items-center justify-center flex-shrink-0">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                            </svg>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <p className="text-sm font-medium text-[var(--text-primary)] truncate">{item.name}</p>
+                              {isDP && (
+                                <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-warning/15 text-warning flex-shrink-0">DP</span>
+                              )}
+                            </div>
+                            {isDP && (
+                              <p className="text-[10px] text-[var(--text-secondary)]">Rencana: Rp {formatRupiah(item.planned_amount)}</p>
+                            )}
+                          </div>
+                          <div className="text-right flex-shrink-0">
+                            <p className="font-financial text-sm font-semibold text-warning">
+                              -Rp {formatRupiah(amt)}
+                            </p>
+                            <p className="text-[10px] text-[var(--text-secondary)]">
+                              {item.paid_at
+                                ? new Date(item.paid_at + "T00:00:00").toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })
+                                : "—"}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           {/* Items section */}
           <div className="space-y-3">
