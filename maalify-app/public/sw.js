@@ -1,4 +1,4 @@
-const CACHE_NAME = "maalify-v1";
+const CACHE_NAME = "maalify-v2";
 const OFFLINE_URL = "/offline";
 
 // Install: cache halaman offline
