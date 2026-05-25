@@ -545,11 +545,7 @@ export default function LaporanPageClient({
                         innerRadius={36} outerRadius={54} strokeWidth={2} stroke="var(--bg-surface)">
                         {topExpense.map((e, i) => <Cell key={i} fill={e.color} />)}
                       </Pie>
-                      <Tooltip
-                        formatter={(v, name) => [`Rp ${formatRupiah(Number(v))}`, name]}
-                        contentStyle={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12, color: "var(--text-primary)", boxShadow: "0 4px 12px rgba(0,0,0,0.15)" }}
-                        itemStyle={{ color: "var(--text-secondary)" }}
-                      />
+                      <Tooltip content={<PieTooltip />} />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
@@ -600,11 +596,7 @@ export default function LaporanPageClient({
                         innerRadius={36} outerRadius={54} strokeWidth={2} stroke="var(--bg-surface)">
                         {topIncome.map((e, i) => <Cell key={i} fill={e.color} />)}
                       </Pie>
-                      <Tooltip
-                        formatter={(v, name) => [`Rp ${formatRupiah(Number(v))}`, name]}
-                        contentStyle={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12, color: "var(--text-primary)", boxShadow: "0 4px 12px rgba(0,0,0,0.15)" }}
-                        itemStyle={{ color: "var(--text-secondary)" }}
-                      />
+                      <Tooltip content={<PieTooltip />} />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
@@ -645,6 +637,17 @@ export default function LaporanPageClient({
       <ExportModal householdId={householdId} userId={userId} onClose={() => setExportOpen(false)} />
     )}
     </>
+  );
+}
+
+function PieTooltip({ active, payload }: { active?: boolean; payload?: Array<{ name: string; value: number }> }) {
+  if (!active || !payload?.length) return null;
+  const { name, value } = payload[0];
+  return (
+    <div style={{ background: "var(--bg-elevated)", border: "1px solid var(--border)", borderRadius: 8, padding: "8px 12px", fontSize: 12, color: "var(--text-primary)", boxShadow: "0 4px 12px rgba(0,0,0,0.15)" }}>
+      <p style={{ fontWeight: 600, marginBottom: 2 }}>{name}</p>
+      <p style={{ color: "var(--text-secondary)" }}>Rp {formatRupiah(value)}</p>
+    </div>
   );
 }
 
