@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { formatRupiah } from "@/lib/utils";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, Legend, Cell, PieChart, Pie,
+  ResponsiveContainer, Legend, Cell, PieChart, Pie, Sector,
 } from "recharts";
 import ExportModal from "@/components/laporan/ExportModal";
 import type { Range, PeriodRow } from "./page";
@@ -542,7 +542,9 @@ export default function LaporanPageClient({
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie data={topExpense} dataKey="amount" nameKey="name" cx="50%" cy="50%"
-                        innerRadius={36} outerRadius={54} strokeWidth={2} stroke="var(--bg-surface)">
+                        innerRadius={36} outerRadius={54} strokeWidth={2} stroke="var(--bg-surface)"
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        activeShape={(props: any) => <Sector {...props} outerRadius={props.outerRadius + 7} />}>
                         {topExpense.map((e, i) => <Cell key={i} fill={e.color} />)}
                       </Pie>
                       <Tooltip content={<PieTooltip />} />
@@ -593,7 +595,9 @@ export default function LaporanPageClient({
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie data={topIncome} dataKey="amount" nameKey="name" cx="50%" cy="50%"
-                        innerRadius={36} outerRadius={54} strokeWidth={2} stroke="var(--bg-surface)">
+                        innerRadius={36} outerRadius={54} strokeWidth={2} stroke="var(--bg-surface)"
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        activeShape={(props: any) => <Sector {...props} outerRadius={props.outerRadius + 7} />}>
                         {topIncome.map((e, i) => <Cell key={i} fill={e.color} />)}
                       </Pie>
                       <Tooltip content={<PieTooltip />} />
