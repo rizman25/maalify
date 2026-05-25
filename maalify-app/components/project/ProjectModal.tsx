@@ -1,9 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { formatRupiah } from "@/lib/utils";
 import type { Project, ProjectType, ProjectStatus } from "@/types";
+import { Plane, Home, ShoppingCart, Car, HeartPulse, Package } from "@/lib/icons";
+import { GraduationCap, Diamond } from "lucide-react";
+import type { LucideProps } from "lucide-react";
 
 interface Wallet { id: string; name: string; type: string; current_balance: number; }
 
@@ -17,15 +20,15 @@ interface Props {
   onSaved: () => void;
 }
 
-const PROJECT_TYPES: { value: ProjectType; label: string }[] = [
-  { value: "trip",      label: "Trip" },
-  { value: "wedding",   label: "Pernikahan" },
-  { value: "property",  label: "Properti" },
-  { value: "purchase",  label: "Pembelian" },
-  { value: "education", label: "Pendidikan" },
-  { value: "vehicle",   label: "Kendaraan" },
-  { value: "health",    label: "Kesehatan" },
-  { value: "other",     label: "Lainnya" },
+const PROJECT_TYPES: { value: ProjectType; label: string; Icon: React.ComponentType<LucideProps> }[] = [
+  { value: "trip",      label: "Trip",        Icon: Plane },
+  { value: "wedding",   label: "Pernikahan",  Icon: Diamond },
+  { value: "property",  label: "Properti",    Icon: Home },
+  { value: "purchase",  label: "Pembelian",   Icon: ShoppingCart },
+  { value: "education", label: "Pendidikan",  Icon: GraduationCap },
+  { value: "vehicle",   label: "Kendaraan",   Icon: Car },
+  { value: "health",    label: "Kesehatan",   Icon: HeartPulse },
+  { value: "other",     label: "Lainnya",     Icon: Package },
 ];
 
 const STATUS_OPTIONS: { value: ProjectStatus; label: string }[] = [
@@ -193,12 +196,13 @@ export default function ProjectModal({ mode, project, householdId, userId, walle
                   type="button"
                   onClick={() => setType(t.value)}
                   className={[
-                    "flex flex-col items-center gap-1 py-2.5 rounded-xl border-2 text-[10px] font-medium transition-colors",
+                    "flex flex-col items-center gap-1.5 py-3 rounded-xl border-2 text-[10px] font-medium transition-colors",
                     type === t.value
                       ? "border-brand-primary bg-brand-primary/5 text-brand-primary"
                       : "border-[var(--border)] text-[var(--text-secondary)] hover:border-brand-primary/40",
                   ].join(" ")}
                 >
+                  <t.Icon size={18} />
                   {t.label}
                 </button>
               ))}
