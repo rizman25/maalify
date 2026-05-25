@@ -341,7 +341,7 @@ export default function ProjectPageClient({
                 </div>
                 <div className="text-center px-2 py-2.5 rounded-xl bg-brand-primary/8">
                   <p className="text-[10px] text-[var(--text-secondary)] leading-tight mb-1">Dana Tersedia</p>
-                  <p className="font-financial font-bold text-sm text-brand-primary leading-tight">Rp {formatRupiah(walletBalance)}</p>
+                  <p className="font-financial font-bold text-sm text-brand-primary leading-tight">Rp {formatRupiah(Math.max(0, current - totalPaid))}</p>
                 </div>
               </div>
             </div>
