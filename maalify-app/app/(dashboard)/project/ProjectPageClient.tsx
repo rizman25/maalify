@@ -85,7 +85,8 @@ interface Contribution {
   amount: number;
   date: string;
   description: string | null;
-  from_wallet: { name: string } | null;
+  from_wallet_id: string | null;
+  walletName?: string;
 }
 
 export default function ProjectPageClient({
@@ -131,15 +132,30 @@ export default function ProjectPageClient({
       walletId
         ? supabase
             .from("transfers")
-            .select("id, amount, date, description, from_wallet:wallets!transfers_from_wallet_id_fkey(name)")
+            .select("id, amount, date, description, from_wallet_id")
             .eq("to_wallet_id", walletId)
             .order("date", { ascending: false })
             .limit(100)
         : Promise.resolve({ data: [] }),
     ]);
 
+    // Fetch wallet names (including inactive) for name lookup
+    const { createClient: cc } = await import("@/lib/supabase/client");
+    const sb = cc();
+    const fromIds = [...new Set((contribRes.data ?? []).map((c: { from_wallet_id: string | null }) => c.from_wallet_id).filter(Boolean))];
+    let walletNameMap: Record<string, string> = {};
+    if (fromIds.length > 0) {
+      const { data: wData } = await sb.from("wallets").select("id, name").in("id", fromIds as string[]);
+      walletNameMap = Object.fromEntries((wData ?? []).map(w => [w.id, w.name]));
+    }
+
     setProjectItems(itemsRes.data ?? []);
-    setContributions((contribRes.data ?? []) as Contribution[]);
+    setContributions(
+      ((contribRes.data ?? []) as Contribution[]).map(c => ({
+        ...c,
+        walletName: c.from_wallet_id ? (walletNameMap[c.from_wallet_id] ?? "—") : "—",
+      }))
+    );
     setLoadingItems(false);
 
     // Backfill: deduct wallet for any paid items that have no transaction yet
@@ -374,7 +390,7 @@ export default function ProjectPageClient({
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-[var(--text-primary)] truncate">
-                          {c.from_wallet?.name ?? "—"}
+                          {c.walletName ?? "—"}
                         </p>
                         {c.description && (
                           <p className="text-[10px] text-[var(--text-secondary)] truncate">{c.description}</p>
