@@ -5,11 +5,17 @@ import { useRouter } from "next/navigation";
 import { formatRupiah } from "@/lib/utils";
 import type { Wallet, Category } from "@/types";
 
+interface StrukItem {
+  name: string;
+  qty: number;
+  price: number;
+}
+
 interface ParsedStruk {
   merchant: string;
   date: string;
   total: number;
-  items: { name: string; price: number }[];
+  items: StrukItem[];
   transaction_type: "income" | "expense";
   description: string;
   confidence: "high" | "medium" | "low";
@@ -48,18 +54,23 @@ export default function ScanStrukModal({ wallets, categories, householdId, userI
   const [walletId, setWalletId] = useState(wallets[0]?.id ?? "");
   const [categoryId, setCategoryId] = useState("");
   const [note, setNote] = useState("");
-  const [editableItems, setEditableItems] = useState<{ name: string; price: number }[]>([]);
+  const [visibility, setVisibility] = useState<"shared" | "private">("shared");
+  const [editableItems, setEditableItems] = useState<StrukItem[]>([]);
 
-  function itemsToNote(items: { name: string; price: number }[]) {
-    return items.map(i => `${i.name} - Rp ${i.price.toLocaleString("id-ID")}`).join("\n");
+  function itemsToNote(items: StrukItem[]) {
+    return items.map(i =>
+      i.qty > 1
+        ? `${i.name} x${i.qty} - Rp ${i.price.toLocaleString("id-ID")}`
+        : `${i.name} - Rp ${i.price.toLocaleString("id-ID")}`
+    ).join("\n");
   }
 
-  function updateItem(index: number, field: "name" | "price", value: string) {
+  function updateItem(index: number, field: "name" | "qty" | "price", value: string) {
     const updated = editableItems.map((item, i) => {
       if (i !== index) return item;
-      return field === "price"
-        ? { ...item, price: parseInt(value.replace(/\D/g, ""), 10) || 0 }
-        : { ...item, name: value };
+      if (field === "price") return { ...item, price: parseInt(value.replace(/\D/g, ""), 10) || 0 };
+      if (field === "qty")   return { ...item, qty: Math.max(1, parseInt(value.replace(/\D/g, ""), 10) || 1) };
+      return { ...item, name: value };
     });
     setEditableItems(updated);
     setNote(itemsToNote(updated));
@@ -152,11 +163,14 @@ export default function ScanStrukModal({ wallets, categories, householdId, userI
       setAmount(String(data.total ?? 0));
       setDate(data.date ?? new Date().toISOString().split("T")[0]);
       setTxType(data.transaction_type ?? "expense");
-      setEditableItems(data.items ?? []);
-      if ((data.items ?? []).length > 0) {
-        setNote((data.items ?? []).map((i: { name: string; price: number }) =>
-          `${i.name} - Rp ${i.price.toLocaleString("id-ID")}`
-        ).join("\n"));
+      const normalizedItems: StrukItem[] = (data.items ?? []).map((i: { name: string; qty?: number; price: number }) => ({
+        name: i.name,
+        qty: Math.max(1, Number(i.qty) || 1),
+        price: Number(i.price) || 0,
+      }));
+      setEditableItems(normalizedItems);
+      if (normalizedItems.length > 0) {
+        setNote(itemsToNote(normalizedItems));
       }
       // Auto-pick category if match found
       const matchCat = categories.find(c =>
@@ -215,6 +229,7 @@ export default function ScanStrukModal({ wallets, categories, householdId, userI
         date,
         note: note.trim() || null,
         attachment_url: attachmentUrl,
+        visibility,
       });
 
       if (err) throw err;
@@ -423,24 +438,43 @@ export default function ScanStrukModal({ wallets, categories, householdId, userI
               {/* Items preview (editable) */}
               {editableItems.length > 0 && (
                 <div className="bg-[var(--bg-elevated)] rounded-xl p-3 space-y-2 max-h-40 overflow-y-auto">
-                  <p className="text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">
-                    Item Terdeteksi
-                    <span className="ml-1.5 font-normal normal-case text-[var(--text-secondary)]">— bisa diedit</span>
-                  </p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-[10px] font-bold text-[var(--text-secondary)] uppercase tracking-wider">
+                      Item Terdeteksi
+                      <span className="ml-1.5 font-normal normal-case text-[var(--text-secondary)]">— bisa diedit</span>
+                    </p>
+                    <div className="flex items-center gap-1 text-[10px] text-[var(--text-secondary)] pr-0.5">
+                      <span className="w-9 text-center">Qty</span>
+                      <span className="w-20 text-right">Harga</span>
+                    </div>
+                  </div>
                   {editableItems.map((item, i) => (
-                    <div key={i} className="flex items-center gap-2">
+                    <div key={i} className="flex items-center gap-1.5">
+                      {/* Nama item */}
                       <input
                         type="text"
                         value={item.name}
                         onChange={e => updateItem(i, "name", e.target.value)}
                         className="flex-1 min-w-0 text-xs border border-[var(--border)] rounded-lg px-2 py-1.5 bg-[var(--bg-surface)] text-[var(--text-primary)] outline-none focus:border-brand-primary transition-colors"
                       />
+                      {/* Qty */}
+                      <div className="flex items-center gap-0.5 flex-shrink-0">
+                        <span className="text-[10px] text-[var(--text-secondary)]">x</span>
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          value={item.qty}
+                          onChange={e => updateItem(i, "qty", e.target.value)}
+                          className="w-9 text-xs border border-[var(--border)] rounded-lg px-1.5 py-1.5 bg-[var(--bg-surface)] text-[var(--text-primary)] outline-none focus:border-brand-primary transition-colors text-center"
+                        />
+                      </div>
+                      {/* Harga satuan */}
                       <input
                         type="text"
                         inputMode="numeric"
                         value={item.price ? item.price.toLocaleString("id-ID") : ""}
                         onChange={e => updateItem(i, "price", e.target.value)}
-                        className="w-24 flex-shrink-0 text-xs border border-[var(--border)] rounded-lg px-2 py-1.5 bg-[var(--bg-surface)] text-[var(--text-primary)] font-financial outline-none focus:border-brand-primary transition-colors text-right"
+                        className="w-20 flex-shrink-0 text-xs border border-[var(--border)] rounded-lg px-2 py-1.5 bg-[var(--bg-surface)] text-[var(--text-primary)] font-financial outline-none focus:border-brand-primary transition-colors text-right"
                       />
                     </div>
                   ))}
@@ -464,6 +498,41 @@ export default function ScanStrukModal({ wallets, categories, householdId, userI
                       </button>
                     ))}
                   </div>
+                </div>
+
+                {/* Visibility toggle */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-[var(--text-secondary)]">Visibilitas</label>
+                  <div className="flex gap-2">
+                    {(["shared", "private"] as const).map(v => (
+                      <button key={v} onClick={() => setVisibility(v)}
+                        className={["flex-1 py-2 rounded-xl text-xs font-semibold border transition-all flex items-center justify-center gap-1.5",
+                          visibility === v
+                            ? "bg-brand-primary text-white border-brand-primary"
+                            : "border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)]"
+                        ].join(" ")}>
+                        {v === "shared" ? (
+                          <>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                            </svg>
+                            Bersama
+                          </>
+                        ) : (
+                          <>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                            </svg>
+                            Pribadi
+                          </>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-[var(--text-secondary)]">
+                    {visibility === "shared" ? "Terlihat oleh semua anggota household" : "Hanya terlihat oleh kamu"}
+                  </p>
                 </div>
 
                 {/* Description */}
@@ -551,7 +620,7 @@ export default function ScanStrukModal({ wallets, categories, householdId, userI
 
           {(step === "review" || step === "saving") && (
             <>
-              <button onClick={() => { setStep("upload"); setParsed(null); setEditableItems([]); setNote(""); }}
+              <button onClick={() => { setStep("upload"); setParsed(null); setEditableItems([]); setNote(""); setVisibility("shared"); }}
                 className="px-4 py-2.5 rounded-xl border border-[var(--border)] text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-elevated)] transition-colors">
                 ← Ulang
               </button>

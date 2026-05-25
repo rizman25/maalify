@@ -32,7 +32,7 @@ Kembalikan HANYA JSON valid (tanpa markdown, tanpa teks lain) dengan format:
   "merchant": "nama toko, merchant, atau pengirim",
   "date": "YYYY-MM-DD atau null jika tidak ada tanggal",
   "total": angka_integer_dalam_rupiah_tanpa_titik_koma,
-  "items": [{"name": "nama item atau deskripsi", "price": angka_integer}],
+  "items": [{"name": "nama item atau deskripsi", "qty": angka_integer_jumlah_item, "price": angka_integer_harga_satuan}],
   "transaction_type": "expense atau income",
   "description": "deskripsi ringkas max 80 karakter, contoh: Belanja Indomaret, Makan KFC, Transfer Gaji",
   "confidence": "high, medium, atau low"
@@ -40,6 +40,8 @@ Kembalikan HANYA JSON valid (tanpa markdown, tanpa teks lain) dengan format:
 
 Aturan penting:
 - total harus integer murni dalam rupiah (contoh: 85000, bukan "85.000" atau "85,000")
+- items.price adalah harga SATUAN (bukan harga total item tersebut)
+- items.qty adalah jumlah/kuantitas item (default 1 jika tidak ada info jumlah)
 - Struk belanja/makan/beli → transaction_type = "expense"
 - Struk gaji/slip gaji/transfer masuk/pendapatan → transaction_type = "income"
 - description singkat dan informatif dalam Bahasa Indonesia
@@ -131,7 +133,7 @@ export async function POST(req: NextRequest) {
       merchant: string;
       date: string | null;
       total: number;
-      items: { name: string; price: number }[];
+      items: { name: string; qty?: number; price: number }[];
       transaction_type: "income" | "expense";
       description: string;
       confidence: "high" | "medium" | "low";
@@ -148,7 +150,13 @@ export async function POST(req: NextRequest) {
       merchant: String(parsed.merchant ?? "").slice(0, 100),
       date: parsed.date ?? today,
       total: Math.max(0, Math.round(Number(parsed.total) || 0)),
-      items: Array.isArray(parsed.items) ? parsed.items.slice(0, 20) : [],
+      items: Array.isArray(parsed.items)
+        ? parsed.items.slice(0, 20).map(it => ({
+            name: String(it.name ?? ""),
+            qty: Math.max(1, Math.round(Number(it.qty) || 1)),
+            price: Math.max(0, Math.round(Number(it.price) || 0)),
+          }))
+        : [],
       transaction_type: parsed.transaction_type === "income" ? "income" : "expense",
       description: String(parsed.description ?? parsed.merchant ?? "").slice(0, 100),
       confidence: parsed.confidence ?? "medium",

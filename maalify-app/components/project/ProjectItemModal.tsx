@@ -26,15 +26,23 @@ export default function ProjectItemModal({ projectId, item, userId, onClose, onS
   const isEdit = !!item;
   const today = new Date().toISOString().split("T")[0];
 
+  // Derive initial payStatus from existing data
+  function getInitialPayStatus() {
+    if (!item?.is_paid) return "unpaid";
+    if (item.actual_amount != null && item.actual_amount < item.planned_amount) return "dp";
+    return "paid";
+  }
+
   const [name, setName] = useState(item?.name ?? "");
   const [plannedAmount, setPlannedAmount] = useState(isEdit ? String(item!.planned_amount) : "");
-  const [isPaid, setIsPaid] = useState(item?.is_paid ?? false);
+  const [payStatus, setPayStatus] = useState<"unpaid" | "dp" | "paid">(getInitialPayStatus);
   const [actualAmount, setActualAmount] = useState(isEdit && item!.actual_amount != null ? String(item!.actual_amount) : "");
   const [paidAt, setPaidAt] = useState(item?.paid_at ?? today);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showDelete, setShowDelete] = useState(false);
 
+  const isPaid = payStatus !== "unpaid";
   const parsedPlanned = parseAmount(plannedAmount);
   const parsedActual = parseAmount(actualAmount);
 
@@ -51,9 +59,10 @@ export default function ProjectItemModal({ projectId, item, userId, onClose, onS
       itemId: isEdit ? item!.id : undefined,
       name: name.trim(),
       plannedAmount: parsedPlanned,
-      isPaid,
-      actualAmount: isPaid && parsedActual > 0 ? parsedActual : null,
-      paidAt: isPaid ? paidAt : null,
+      // DP state: is_paid=true but actual < planned (convention: shows in DP section)
+      isPaid: payStatus !== "unpaid",
+      actualAmount: payStatus !== "unpaid" && parsedActual > 0 ? parsedActual : null,
+      paidAt: payStatus !== "unpaid" ? paidAt : null,
       userId,
     });
 
@@ -120,30 +129,75 @@ export default function ProjectItemModal({ projectId, item, userId, onClose, onS
             )}
           </div>
 
-          {/* Is paid toggle */}
-          <div className="flex items-center gap-3 p-3 rounded-xl bg-[var(--bg-elevated)]">
-            <button
-              type="button"
-              onClick={() => setIsPaid(!isPaid)}
-              className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${isPaid ? "bg-success" : "bg-[var(--border)]"}`}
-            >
-              <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${isPaid ? "translate-x-5" : "translate-x-0"}`} />
-            </button>
-            <div>
-              <p className="text-sm font-medium text-[var(--text-primary)]">
-                {isPaid ? "Sudah dibayar" : "Belum dibayar"}
-              </p>
-              <p className="text-xs text-[var(--text-secondary)]">Tandai jika item ini sudah terbayar</p>
+          {/* Payment status — 3 state */}
+          <div className="space-y-1.5">
+            <label className="block text-xs font-medium text-[var(--text-primary)]">Status Pembayaran</label>
+            <div className="grid grid-cols-3 gap-1.5">
+              {(["unpaid", "dp", "paid"] as const).map(s => {
+                const labels = { unpaid: "Belum Bayar", dp: "DP / Sebagian", paid: "Lunas" };
+                const active = payStatus === s;
+                const cls = active
+                  ? s === "unpaid" ? "bg-[var(--bg-elevated)] text-[var(--text-primary)] border-brand-primary ring-1 ring-brand-primary"
+                  : s === "dp"     ? "bg-warning/10 text-warning border-warning ring-1 ring-warning"
+                  :                  "bg-success/10 text-success border-success ring-1 ring-success"
+                  : "bg-[var(--bg-elevated)] text-[var(--text-secondary)] border-[var(--border)] hover:border-[var(--text-secondary)]";
+                return (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => { setPayStatus(s); if (s === "unpaid") setActualAmount(""); }}
+                    className={`py-2 px-1 rounded-xl border text-xs font-semibold transition-all ${cls}`}
+                  >
+                    {labels[s]}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          {/* Paid details */}
-          {isPaid && (
+          {/* DP details */}
+          {payStatus === "dp" && (
+            <div className="space-y-3 p-3 rounded-xl bg-warning/5 border border-warning/20">
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-medium text-[var(--text-primary)]">Jumlah DP Dibayar</label>
+                </div>
+                <div className="relative">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-[var(--text-secondary)] font-medium">Rp</span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={formatAmountInput(actualAmount)}
+                    onChange={(e) => setActualAmount(e.target.value.replace(/\./g, ""))}
+                    placeholder="0"
+                    className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-[var(--border)] text-sm text-[var(--text-primary)] bg-[var(--bg-surface)] font-financial focus:outline-none focus:ring-2 focus:ring-warning"
+                  />
+                </div>
+                {parsedActual > 0 && parsedPlanned > 0 && (
+                  <p className="text-xs mt-1 text-warning">
+                    Sisa Rp {formatRupiah(Math.max(0, parsedPlanned - parsedActual))} belum dibayar
+                  </p>
+                )}
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-[var(--text-primary)] mb-1.5">Tanggal DP</label>
+                <input
+                  type="date"
+                  value={paidAt}
+                  onChange={(e) => setPaidAt(e.target.value)}
+                  className="w-full px-3 py-2.5 rounded-xl border border-[var(--border)] text-sm text-[var(--text-primary)] bg-[var(--bg-surface)] focus:outline-none focus:ring-2 focus:ring-warning"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Paid (Lunas) details */}
+          {payStatus === "paid" && (
             <div className="space-y-3">
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <label className="block text-xs font-medium text-[var(--text-primary)]">
-                    Jumlah Aktual <span className="text-[var(--text-secondary)] font-normal">(opsional)</span>
+                    Jumlah Dibayar <span className="text-[var(--text-secondary)] font-normal">(opsional)</span>
                   </label>
                   {parsedPlanned > 0 && (
                     <button
@@ -172,7 +226,6 @@ export default function ProjectItemModal({ projectId, item, userId, onClose, onS
                   </p>
                 )}
               </div>
-
               <div>
                 <label className="block text-xs font-medium text-[var(--text-primary)] mb-1.5">Tanggal Bayar</label>
                 <input

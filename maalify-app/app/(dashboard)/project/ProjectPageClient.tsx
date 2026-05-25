@@ -56,11 +56,15 @@ export const PROJECT_STATUS_LABELS: Record<string, { label: string; cls: string 
 };
 
 function getProjectCurrentAmount(p: Project): number {
+  // Gunakan current_amount (gross kontribusi), bukan wallet balance
+  // wallet balance berkurang saat bayar item, tapi "terkumpul" tidak boleh berkurang
+  // Fallback ke wallet balance hanya jika current_amount belum pernah diisi (= 0)
+  if (p.current_amount > 0) return p.current_amount;
   if (p.wallets) {
     const w = Array.isArray(p.wallets) ? p.wallets[0] : p.wallets;
-    return (w as { current_balance: number })?.current_balance ?? p.current_amount;
+    return (w as { current_balance: number })?.current_balance ?? 0;
   }
-  return p.current_amount;
+  return 0;
 }
 
 function formatDate(dateStr: string) {
@@ -147,16 +151,28 @@ export default function ProjectPageClient({
   /* ─── Detail View ─── */
   if (view === "detail" && selectedProject) {
     const proj = selectedProject;
+    const walletBalance = (() => {
+      if (proj.wallets) {
+        const w = Array.isArray(proj.wallets) ? proj.wallets[0] : proj.wallets;
+        return (w as { current_balance: number })?.current_balance ?? 0;
+      }
+      return 0;
+    })();
+    const totalPlanned = projectItems.reduce((s, i) => s + i.planned_amount, 0);
+    const totalPaid = projectItems.filter(i => i.is_paid).reduce((s, i) => s + (i.actual_amount ?? i.planned_amount), 0);
+    // Terkumpul = current_amount project (gross kontribusi, tidak berkurang saat bayar)
+    // Saat items masih loading gunakan current_amount, setelah load bisa cross-check dengan walletBalance + totalPaid
     const current = getProjectCurrentAmount(proj);
     const pct = proj.target_amount > 0 ? Math.min((current / proj.target_amount) * 100, 100) : 0;
     const days = daysLeft(proj.target_date);
     const typeInfo = PROJECT_TYPE_LABELS[proj.type] ?? PROJECT_TYPE_LABELS.other;
     const statusInfo = PROJECT_STATUS_LABELS[proj.status] ?? PROJECT_STATUS_LABELS.planning;
-    const totalPlanned = projectItems.reduce((s, i) => s + i.planned_amount, 0);
-    const totalPaid = projectItems.filter(i => i.is_paid).reduce((s, i) => s + (i.actual_amount ?? i.planned_amount), 0);
     const spentPct = proj.target_amount > 0 ? Math.min((totalPaid / proj.target_amount) * 100, 100) : 0;
     const unpaidItems = projectItems.filter(i => !i.is_paid);
-    const paidItems = projectItems.filter(i => i.is_paid);
+    // DP / Sebagian: is_paid=true TAPI actual_amount < planned_amount
+    const dpItems    = projectItems.filter(i => i.is_paid && i.actual_amount != null && i.actual_amount < i.planned_amount);
+    // Lunas: is_paid=true DAN actual_amount >= planned_amount (atau null = sesuai rencana)
+    const paidItems  = projectItems.filter(i => i.is_paid && (i.actual_amount == null || i.actual_amount >= i.planned_amount));
 
     return (
       <div className="min-h-full">
@@ -226,19 +242,9 @@ export default function ProjectPageClient({
 
             {/* Progress */}
             <div className="space-y-2">
-              <div className="flex justify-between items-end">
-                <div>
-                  <p className="text-xs text-[var(--text-secondary)]">Terkumpul</p>
-                  <p className="font-financial font-bold text-xl text-brand-accent">
-                    Rp {formatRupiah(current)}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-xs text-[var(--text-secondary)]">Target</p>
-                  <p className="font-financial font-semibold text-[var(--text-primary)]">
-                    Rp {formatRupiah(proj.target_amount)}
-                  </p>
-                </div>
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-[var(--text-secondary)]">{pct.toFixed(1)}% dari target</span>
+                <span className="font-financial font-semibold text-[var(--text-primary)]">Rp {formatRupiah(proj.target_amount)}</span>
               </div>
               <div className="w-full h-3 bg-[var(--bg-elevated)] rounded-full overflow-hidden relative">
                 {/* Collected / funded bar */}
@@ -254,38 +260,50 @@ export default function ProjectPageClient({
                   />
                 )}
               </div>
-              <div className="flex justify-between text-xs text-[var(--text-secondary)]">
-                <span className="flex items-center gap-2">
-                  <span>{pct.toFixed(1)}% tercapai</span>
-                  {spentPct > 0 && (
-                    <span className="flex items-center gap-1 text-warning font-medium">
-                      <span className="w-2 h-2 rounded-full bg-warning inline-block" />
-                      {spentPct.toFixed(1)}% terpakai
-                    </span>
-                  )}
-                </span>
-                <span>Target: {formatDate(proj.target_date)}</span>
+              <p className="text-[10px] text-[var(--text-secondary)]">Target: {formatDate(proj.target_date)}</p>
+
+              {/* 3-metric breakdown */}
+              <div className="grid grid-cols-3 gap-2 pt-1">
+                <div className="text-center px-2 py-2.5 rounded-xl bg-brand-accent/8">
+                  <p className="text-[10px] text-[var(--text-secondary)] leading-tight mb-1">Dana Terkumpul</p>
+                  <p className="font-financial font-bold text-sm text-brand-accent leading-tight">Rp {formatRupiah(current)}</p>
+                </div>
+                <div className="text-center px-2 py-2.5 rounded-xl bg-warning/8">
+                  <p className="text-[10px] text-[var(--text-secondary)] leading-tight mb-1">Digunakan</p>
+                  <p className="font-financial font-bold text-sm text-warning leading-tight">Rp {formatRupiah(totalPaid)}</p>
+                </div>
+                <div className="text-center px-2 py-2.5 rounded-xl bg-brand-primary/8">
+                  <p className="text-[10px] text-[var(--text-secondary)] leading-tight mb-1">Dana Tersedia</p>
+                  <p className="font-financial font-bold text-sm text-brand-primary leading-tight">Rp {formatRupiah(walletBalance)}</p>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Summary chips */}
-          <div className="grid grid-cols-2 gap-3">
+          {/* Summary chips — item stats */}
+          <div className="grid grid-cols-3 gap-3">
             <div className="bg-[var(--bg-surface)] rounded-xl border border-[var(--border)] p-3 text-center">
               <p className="text-xs text-[var(--text-secondary)]">Total Item</p>
               <p className="font-semibold text-[var(--text-primary)] text-lg">{projectItems.length}</p>
             </div>
-            <div className="bg-[var(--bg-surface)] rounded-xl border border-[var(--border)] p-3 text-center">
-              <p className="text-xs text-[var(--text-secondary)]">Sudah Dibayar</p>
-              <p className="font-semibold text-success text-lg">{paidItems.length}</p>
-            </div>
-            <div className="bg-[var(--bg-surface)] rounded-xl border border-[var(--border)] p-3 text-center">
-              <p className="text-xs text-[var(--text-secondary)]">Total Anggaran</p>
-              <p className="font-financial font-semibold text-[var(--text-primary)] text-sm">Rp {formatRupiah(totalPlanned)}</p>
+            <div className="bg-[var(--bg-surface)] rounded-xl border border-warning/30 p-3 text-center">
+              <p className="text-xs text-[var(--text-secondary)]">DP</p>
+              <p className="font-semibold text-warning text-lg">{dpItems.length}</p>
             </div>
             <div className="bg-[var(--bg-surface)] rounded-xl border border-success/20 p-3 text-center">
-              <p className="text-xs text-[var(--text-secondary)]">Total Terbayar</p>
-              <p className="font-financial font-semibold text-success text-sm">Rp {formatRupiah(totalPaid)}</p>
+              <p className="text-xs text-[var(--text-secondary)]">Lunas</p>
+              <p className="font-semibold text-success text-lg">{paidItems.length}</p>
+            </div>
+          </div>
+          {/* Budget summary */}
+          <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-[var(--bg-surface)] border border-[var(--border)]">
+            <div>
+              <p className="text-xs text-[var(--text-secondary)]">Total Anggaran Item</p>
+              <p className="font-financial font-semibold text-sm text-[var(--text-primary)]">Rp {formatRupiah(totalPlanned)}</p>
+            </div>
+            <div className="text-right">
+              <p className="text-xs text-[var(--text-secondary)]">Sudah Dibayar</p>
+              <p className="font-financial font-semibold text-sm text-success">Rp {formatRupiah(totalPaid)}</p>
             </div>
           </div>
 
@@ -326,10 +344,25 @@ export default function ProjectPageClient({
                   </div>
                 )}
 
+                {dpItems.length > 0 && (
+                  <div className="space-y-2 pt-2">
+                    <p className="text-[10px] font-semibold text-warning tracking-widest uppercase px-1">
+                      DP / Belum Lunas ({dpItems.length})
+                    </p>
+                    {dpItems.map(item => (
+                      <ItemRow
+                        key={item.id}
+                        item={item}
+                        onEdit={canManage ? () => setModal({ kind: "item", projectId: proj.id, item }) : undefined}
+                      />
+                    ))}
+                  </div>
+                )}
+
                 {paidItems.length > 0 && (
                   <div className="space-y-2 pt-2">
                     <p className="text-[10px] font-semibold text-[var(--text-secondary)] tracking-widest uppercase px-1">
-                      Sudah Dibayar ({paidItems.length})
+                      Lunas ({paidItems.length})
                     </p>
                     {paidItems.map(item => (
                       <ItemRow
@@ -341,17 +374,6 @@ export default function ProjectPageClient({
                   </div>
                 )}
 
-                {/* Total row */}
-                <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-[var(--bg-elevated)] mt-2">
-                  <div>
-                    <p className="text-xs text-[var(--text-secondary)]">Total Rencana</p>
-                    <p className="font-financial font-semibold text-sm text-[var(--text-primary)]">Rp {formatRupiah(totalPlanned)}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xs text-[var(--text-secondary)]">Sudah Dibayar</p>
-                    <p className="font-financial font-semibold text-sm text-success">Rp {formatRupiah(totalPaid)}</p>
-                  </div>
-                </div>
               </div>
             )}
           </div>
@@ -552,32 +574,58 @@ export default function ProjectPageClient({
 }
 
 function ItemRow({ item, onEdit }: { item: ProjectItem; onEdit?: () => void }) {
+  const isDP = item.is_paid && item.actual_amount != null && item.actual_amount < item.planned_amount;
+  const remaining = isDP ? item.planned_amount - (item.actual_amount ?? 0) : 0;
+
   return (
     <div
-      className={`flex items-center gap-3 px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--bg-surface)] transition-colors ${item.is_paid ? "opacity-70" : ""} ${onEdit ? "hover:bg-[var(--bg-elevated)] cursor-pointer" : "cursor-default"}`}
+      className={`flex items-center gap-3 px-4 py-3 rounded-xl border bg-[var(--bg-surface)] transition-colors ${
+        isDP ? "border-warning/40" : item.is_paid ? "border-[var(--border)] opacity-70" : "border-[var(--border)]"
+      } ${onEdit ? "hover:bg-[var(--bg-elevated)] cursor-pointer" : "cursor-default"}`}
       onClick={onEdit}
     >
+      {/* Status icon */}
       <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-        item.is_paid ? "border-success bg-success" : "border-[var(--border)]"
+        isDP ? "border-warning bg-warning/10" :
+        item.is_paid ? "border-success bg-success" :
+        "border-[var(--border)]"
       }`}>
-        {item.is_paid && (
+        {isDP ? (
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-warning">
+            <line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+        ) : item.is_paid ? (
           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="20 6 9 17 4 12"/>
           </svg>
-        )}
+        ) : null}
       </div>
+
+      {/* Name + meta */}
       <div className="flex-1 min-w-0">
-        <p className={`text-sm font-medium ${item.is_paid ? "line-through text-[var(--text-secondary)]" : "text-[var(--text-primary)]"}`}>
+        <p className={`text-sm font-medium ${item.is_paid && !isDP ? "line-through text-[var(--text-secondary)]" : "text-[var(--text-primary)]"}`}>
           {item.name}
         </p>
-        {item.is_paid && item.paid_at && (
+        {isDP && item.paid_at && (
+          <p className="text-[10px] text-warning">
+            DP {new Date(item.paid_at + "T00:00:00").toLocaleDateString("id-ID", { day: "numeric", month: "short" })} · Sisa Rp {formatRupiah(remaining)}
+          </p>
+        )}
+        {!isDP && item.is_paid && item.paid_at && (
           <p className="text-[10px] text-[var(--text-secondary)]">
-            Dibayar {new Date(item.paid_at + "T00:00:00").toLocaleDateString("id-ID", { day: "numeric", month: "short" })}
+            Lunas {new Date(item.paid_at + "T00:00:00").toLocaleDateString("id-ID", { day: "numeric", month: "short" })}
           </p>
         )}
       </div>
+
+      {/* Amount */}
       <div className="text-right flex-shrink-0">
-        {item.is_paid && item.actual_amount != null ? (
+        {isDP ? (
+          <div>
+            <p className="font-financial text-xs font-semibold text-warning">Rp {formatRupiah(item.actual_amount!)}</p>
+            <p className="font-financial text-[10px] text-[var(--text-secondary)]">dari Rp {formatRupiah(item.planned_amount)}</p>
+          </div>
+        ) : item.is_paid && item.actual_amount != null ? (
           <div>
             <p className="font-financial text-xs font-semibold text-success">Rp {formatRupiah(item.actual_amount)}</p>
             {item.actual_amount !== item.planned_amount && (

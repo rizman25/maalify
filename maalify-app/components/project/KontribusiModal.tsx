@@ -46,18 +46,14 @@ export default function KontribusiModal({ project, wallets, userId, householdId,
   const [note, setNote] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [goalReached, setGoalReached] = useState(false);
 
   const parsedAmount = parseAmount(amount);
   const selectedWallet = wallets.find(w => w.id === sourceWalletId);
 
-  const currentAmount = (() => {
-    if (project.wallets) {
-      const w = Array.isArray(project.wallets) ? project.wallets[0] : project.wallets;
-      return (w as { current_balance: number })?.current_balance ?? project.current_amount;
-    }
-    return project.current_amount;
-  })();
-
+  // Gunakan current_amount project (gross kontribusi), bukan wallet balance
+  // Wallet balance bisa berkurang karena pembayaran item, tapi kontribusi tetap dihitung
+  const currentAmount = project.current_amount;
   const remaining = Math.max(0, project.target_amount - currentAmount);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -85,16 +81,59 @@ export default function KontribusiModal({ project, wallets, userId, householdId,
 
     if (transferErr) { setError(transferErr.message); setLoading(false); return; }
 
-    // Sync current_amount on project
+    const newAmount = project.current_amount + parsedAmount;
+
+    // Tambahkan ke current_amount project (gross total kontribusi, tidak berkurang saat bayar item)
     await supabase
       .from("projects")
       .update({
-        current_amount: currentAmount + parsedAmount,
+        current_amount: newAmount,
         updated_at: new Date().toISOString(),
       })
       .eq("id", project.id);
 
+    // Cek apakah target tercapai
+    if (newAmount >= project.target_amount) {
+      setLoading(false);
+      setGoalReached(true);
+      return;
+    }
+
     onSaved();
+  }
+
+  // Goal reached screen
+  if (goalReached) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+        <div className="absolute inset-0 bg-black/40" onClick={onSaved} />
+        <div className="relative bg-[var(--bg-surface)] rounded-2xl shadow-xl w-full max-w-sm p-8 flex flex-col items-center text-center gap-4">
+          {/* Celebration icon */}
+          <div className="w-20 h-20 rounded-full bg-success/10 flex items-center justify-center">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-success">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-[var(--text-primary)]">Target Tercapai! 🎉</h2>
+            <p className="text-sm text-[var(--text-secondary)] mt-1">{project.name}</p>
+          </div>
+          <p className="text-sm text-[var(--text-secondary)]">
+            Dana untuk project ini sudah mencapai target{" "}
+            <span className="font-financial font-semibold text-[var(--text-primary)]">Rp {formatRupiah(project.target_amount)}</span>.
+            Selamat! 🎊
+          </p>
+          <div className="w-full pt-2">
+            <button
+              onClick={onSaved}
+              className="w-full py-3 rounded-xl bg-success text-white font-semibold text-sm hover:opacity-90 transition-opacity"
+            >
+              Selesai
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
