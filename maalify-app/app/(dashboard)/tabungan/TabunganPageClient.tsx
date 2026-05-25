@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useRefresh } from "@/hooks/useRefresh";
 import { formatRupiah } from "@/lib/utils";
@@ -66,14 +66,33 @@ export default function TabunganPageClient({ goals, wallets, householdId, userId
   const { toast, showToast, dismissToast } = useToast();
   const [modal, setModal] = useState<ModalState>(null);
   const [filter, setFilter] = useState<"all" | "active" | "completed">("active");
+  const [optimisticGoals, setOptimisticGoals] = useState<Goal[]>(goals);
 
-  const filtered = goals.filter(g =>
+  // Sync optimistic state when server data arrives after refresh()
+  useEffect(() => { setOptimisticGoals(goals); }, [goals]);
+
+  function handleContributeSaved(goalId: string, signedAmount: number) {
+    setOptimisticGoals(prev => prev.map(g => {
+      if (g.id !== goalId) return g;
+      const newAmount = Number(g.current_amount) + signedAmount;
+      return {
+        ...g,
+        current_amount: newAmount,
+        is_completed: newAmount >= Number(g.target_amount),
+      };
+    }));
+    showToast(signedAmount > 0 ? "Dana berhasil ditambahkan" : "Dana berhasil ditarik");
+    setModal(null);
+    refresh();
+  }
+
+  const filtered = optimisticGoals.filter(g =>
     filter === "all" ? true : filter === "completed" ? g.is_completed : !g.is_completed
   );
 
-  const totalTarget  = goals.filter(g => !g.is_completed).reduce((s, g) => s + Number(g.target_amount), 0);
-  const totalSaved   = goals.filter(g => !g.is_completed).reduce((s, g) => s + Number(g.current_amount), 0);
-  const completedCount = goals.filter(g => g.is_completed).length;
+  const totalTarget  = optimisticGoals.filter(g => !g.is_completed).reduce((s, g) => s + Number(g.target_amount), 0);
+  const totalSaved   = optimisticGoals.filter(g => !g.is_completed).reduce((s, g) => s + Number(g.current_amount), 0);
+  const completedCount = optimisticGoals.filter(g => g.is_completed).length;
 
   return (
     <div className="min-h-full">
@@ -200,7 +219,7 @@ export default function TabunganPageClient({ goals, wallets, householdId, userId
           userId={userId}
           mode="topup"
           onClose={() => setModal(null)}
-          onSaved={() => { showToast("Dana berhasil ditambahkan"); setModal(null); refresh(); }}
+          onSaved={handleContributeSaved}
         />
       )}
       {modal?.type === "withdraw" && (
@@ -210,7 +229,7 @@ export default function TabunganPageClient({ goals, wallets, householdId, userId
           userId={userId}
           mode="withdraw"
           onClose={() => setModal(null)}
-          onSaved={() => { showToast("Dana berhasil ditarik", "info"); setModal(null); refresh(); }}
+          onSaved={handleContributeSaved}
         />
       )}
       {modal?.type === "detail" && (
@@ -491,7 +510,7 @@ function ContributeModal({ goal, wallets, userId, mode, onClose, onSaved }: {
   userId: string;
   mode: "topup" | "withdraw";
   onClose: () => void;
-  onSaved: () => void;
+  onSaved: (goalId: string, signedAmount: number) => void;
 }) {
   const [amount, setAmount] = useState("");
   const [walletId, setWalletId] = useState(wallets[0]?.id ?? "");
@@ -521,7 +540,7 @@ function ContributeModal({ goal, wallets, userId, mode, onClose, onSaved }: {
       const newBalance = Number(goal.current_amount) + signedAmount;
       const isCompleted = newBalance >= Number(goal.target_amount);
 
-      // Insert contribution
+      // Primary write — modal closes after this
       const { error: contErr } = await supabase.from("savings_contributions").insert({
         goal_id: goal.id,
         wallet_id: walletId || null,
@@ -531,27 +550,32 @@ function ContributeModal({ goal, wallets, userId, mode, onClose, onSaved }: {
       });
       if (contErr) throw contErr;
 
-      // Update goal current_amount
-      const { error: goalErr } = await supabase.from("savings_goals").update({
-        current_amount: newBalance,
-        is_completed: isCompleted,
-        updated_at: new Date().toISOString(),
-      }).eq("id", goal.id);
-      if (goalErr) throw goalErr;
+      // Close modal & apply optimistic update immediately
+      onSaved(goal.id, signedAmount);
 
-      // Update wallet balance
+      // Secondary writes — fire-and-forget, refresh() will re-sync anyway
+      const updates: Promise<unknown>[] = [
+        supabase.from("savings_goals").update({
+          current_amount: newBalance,
+          is_completed: isCompleted,
+          updated_at: new Date().toISOString(),
+        }).eq("id", goal.id).then(),
+      ];
       if (walletId) {
         const wallet = wallets.find(w => w.id === walletId);
         if (wallet) {
-          const newWalletBalance = Number(wallet.current_balance) - signedAmount;
-          await supabase.from("wallets").update({ current_balance: newWalletBalance }).eq("id", walletId);
+          updates.push(
+            supabase.from("wallets")
+              .update({ current_balance: Number(wallet.current_balance) - signedAmount })
+              .eq("id", walletId).then()
+          );
         }
       }
-
-      onSaved();
+      Promise.all(updates).catch(console.error);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Terjadi kesalahan");
-    } finally { setSaving(false); }
+      setSaving(false);
+    }
   }
 
   const pct = Math.min(100, Math.round((Number(goal.current_amount) / Number(goal.target_amount)) * 100));

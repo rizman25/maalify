@@ -63,24 +63,30 @@ export default async function DashboardPage() {
   ] = await Promise.all([
     // ── Household (Bersama) — include wallet_id so we can exclude private wallets ──
     supabase.from("transactions").select("type, amount, wallet_id")
-      .eq("household_id", householdId).gte("date", monthStart).lt("date", monthEnd),
+      .eq("household_id", householdId).gte("date", monthStart).lt("date", monthEnd)
+      .limit(1000),
 
     supabase.from("transactions").select("type, amount, wallet_id")
-      .eq("household_id", householdId).gte("date", prevMonthStart).lt("date", monthStart),
+      .eq("household_id", householdId).gte("date", prevMonthStart).lt("date", monthStart)
+      .limit(1000),
 
     supabase.from("wallets").select("current_balance, is_shared")
       .eq("household_id", householdId).eq("is_active", true),
 
+    // Trend 12 bulan — ambil max 2000 row (≈167 tx/bln rata-rata sangat aktif)
     supabase.from("transactions").select("type, amount, date, wallet_id")
-      .eq("household_id", householdId).gte("date", trendStart).order("date"),
+      .eq("household_id", householdId).gte("date", trendStart).order("date")
+      .limit(2000),
 
     supabase.from("transactions").select("amount, wallet_id, categories(name, color)")
       .eq("household_id", householdId).eq("type", "expense")
-      .gte("date", monthStart).lt("date", monthEnd),
+      .gte("date", monthStart).lt("date", monthEnd)
+      .limit(1000),
 
     supabase.from("transactions").select("amount, wallet_id, categories(name, color)")
       .eq("household_id", householdId).eq("type", "income")
-      .gte("date", monthStart).lt("date", monthEnd),
+      .gte("date", monthStart).lt("date", monthEnd)
+      .limit(1000),
 
     supabase.from("budgets").select("id, amount, category_id, categories(name, color)")
       .eq("household_id", householdId).eq("month", month).eq("year", year),
@@ -120,6 +126,7 @@ export default async function DashboardPage() {
           .eq("household_id", householdId)
           .in("wallet_id", privateWalletIds)
           .gte("date", monthStart).lt("date", monthEnd)
+          .limit(1000)
       : Promise.resolve({ data: [] }),
 
     privateWalletIds.length > 0
@@ -127,6 +134,7 @@ export default async function DashboardPage() {
           .eq("household_id", householdId)
           .in("wallet_id", privateWalletIds)
           .gte("date", prevMonthStart).lt("date", monthStart)
+          .limit(1000)
       : Promise.resolve({ data: [] }),
   ]);
 

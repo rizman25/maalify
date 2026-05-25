@@ -121,7 +121,7 @@ export default function ProjectPageClient({
     const { createClient } = await import("@/lib/supabase/client");
     const supabase = createClient();
 
-    const [itemsRes, contribRes] = await Promise.all([
+    const [itemsRes, contribRes, walletRes] = await Promise.all([
       supabase
         .from("project_items")
         .select("*")
@@ -138,25 +138,46 @@ export default function ProjectPageClient({
             .order("date", { ascending: false })
             .limit(100)
         : Promise.resolve({ data: [] }),
+
+      // Fetch project wallet initial_balance & created_at for "Setoran Awal"
+      walletId
+        ? supabase
+            .from("wallets")
+            .select("initial_balance, created_at")
+            .eq("id", walletId)
+            .single()
+        : Promise.resolve({ data: null }),
     ]);
 
     // Fetch wallet names (including inactive) for name lookup
-    const { createClient: cc } = await import("@/lib/supabase/client");
-    const sb = cc();
     const fromIds = [...new Set((contribRes.data ?? []).map((c: { from_wallet_id: string | null }) => c.from_wallet_id).filter(Boolean))];
     let walletNameMap: Record<string, string> = {};
     if (fromIds.length > 0) {
-      const { data: wData } = await sb.from("wallets").select("id, name").in("id", fromIds as string[]);
+      const { data: wData } = await supabase.from("wallets").select("id, name").in("id", fromIds as string[]);
       walletNameMap = Object.fromEntries((wData ?? []).map(w => [w.id, w.name]));
     }
 
+    const transferContribs: Contribution[] = ((contribRes.data ?? []) as Contribution[]).map(c => ({
+      ...c,
+      walletName: c.from_wallet_id ? (walletNameMap[c.from_wallet_id] ?? "—") : "—",
+    }));
+
+    // Prepend synthetic "Setoran Awal" entry from wallet initial_balance (oldest, so at end of list)
+    const walletData = walletRes.data as { initial_balance: number; created_at: string } | null;
+    const allContribs: Contribution[] = [...transferContribs];
+    if (walletData && walletData.initial_balance > 0) {
+      allContribs.push({
+        id: "initial-balance",
+        amount: walletData.initial_balance,
+        date: walletData.created_at.split("T")[0],
+        description: null,
+        from_wallet_id: null,
+        walletName: "Setoran Awal",
+      });
+    }
+
     setProjectItems(itemsRes.data ?? []);
-    setContributions(
-      ((contribRes.data ?? []) as Contribution[]).map(c => ({
-        ...c,
-        walletName: c.from_wallet_id ? (walletNameMap[c.from_wallet_id] ?? "—") : "—",
-      }))
-    );
+    setContributions(allContribs);
     setLoadingItems(false);
 
     // Backfill: deduct wallet for any paid items that have no transaction yet
@@ -381,24 +402,35 @@ export default function ProjectPageClient({
               {showContributions && (
                 <div className="divide-y divide-[var(--border)] border-t border-[var(--border)]">
                   {contributions.map(c => (
-                    <div key={c.id} className="flex items-center gap-3 px-4 py-3">
-                      <div className="w-8 h-8 rounded-full bg-brand-accent/10 text-brand-accent flex items-center justify-center flex-shrink-0">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/>
-                          <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
-                          <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
-                        </svg>
+                    <div key={c.id} className={`flex items-center gap-3 px-4 py-3 ${c.id === "initial-balance" ? "bg-[var(--bg-elevated)]/50" : ""}`}>
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${c.id === "initial-balance" ? "bg-[var(--text-secondary)]/10 text-[var(--text-secondary)]" : "bg-brand-accent/10 text-brand-accent"}`}>
+                        {c.id === "initial-balance" ? (
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+                          </svg>
+                        ) : (
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/>
+                            <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
+                            <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
+                          </svg>
+                        )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-[var(--text-primary)] truncate">
-                          {c.walletName ?? "—"}
-                        </p>
+                        <div className="flex items-center gap-1.5">
+                          <p className="text-sm font-medium text-[var(--text-primary)] truncate">
+                            {c.walletName ?? "—"}
+                          </p>
+                          {c.id === "initial-balance" && (
+                            <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-[var(--text-secondary)]/10 text-[var(--text-secondary)] flex-shrink-0">AWAL</span>
+                          )}
+                        </div>
                         {c.description && (
                           <p className="text-[10px] text-[var(--text-secondary)] truncate">{c.description}</p>
                         )}
                       </div>
                       <div className="text-right flex-shrink-0">
-                        <p className="font-financial text-sm font-semibold text-brand-accent">
+                        <p className={`font-financial text-sm font-semibold ${c.id === "initial-balance" ? "text-[var(--text-secondary)]" : "text-brand-accent"}`}>
                           +Rp {formatRupiah(c.amount)}
                         </p>
                         <p className="text-[10px] text-[var(--text-secondary)]">

@@ -22,7 +22,8 @@ export default async function TabunganPage() {
       .from("savings_goals")
       .select("*")
       .eq("household_id", householdId)
-      .order("created_at", { ascending: false }),
+      .order("created_at", { ascending: false })
+      .limit(200),
 
     supabase
       .from("wallets")

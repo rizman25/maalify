@@ -24,7 +24,7 @@ interface Props {
   wallets: Wallet[];
   userId: string;
   onClose: () => void;
-  onSaved: () => void;
+  onSaved: (debtId: string, paidAmount: number) => void;
 }
 
 export default function BayarModal({ debt, wallets, userId, onClose, onSaved }: Props) {
@@ -65,6 +65,7 @@ export default function BayarModal({ debt, wallets, userId, onClose, onSaved }: 
       const { createClient } = await import("@/lib/supabase/client");
       const supabase = createClient();
 
+      // Primary write — modal closes after this
       const { error: err } = await supabase.from("debt_payments").insert({
         debt_id: debt.id,
         wallet_id: walletId,
@@ -75,18 +76,17 @@ export default function BayarModal({ debt, wallets, userId, onClose, onSaved }: 
       });
       if (err) throw err;
 
-      // Update remaining_amount and status on debts
+      // Close modal & apply optimistic update immediately
+      onSaved(debt.id, amt);
+
+      // Secondary write — fire-and-forget, refresh() will re-sync anyway
       const newRemaining = debt.remaining_amount - amt;
-      const { error: err2 } = await supabase.from("debts").update({
+      supabase.from("debts").update({
         remaining_amount: newRemaining,
         status: newRemaining <= 0 ? "settled" : "active",
-      }).eq("id", debt.id);
-      if (err2) throw err2;
-
-      onSaved();
+      }).eq("id", debt.id).then().catch(console.error);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Terjadi kesalahan");
-    } finally {
       setLoading(false);
     }
   }
