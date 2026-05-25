@@ -11,7 +11,9 @@ import { GraduationCap, Diamond } from "lucide-react";
 import ProjectModal from "@/components/project/ProjectModal";
 import ProjectItemModal from "@/components/project/ProjectItemModal";
 import KontribusiModal from "@/components/project/KontribusiModal";
+import TransaksiModal from "@/components/transaksi/TransaksiModal";
 import { syncProjectPaidItems } from "@/app/actions/projects";
+import type { Category } from "@/types";
 
 interface Wallet {
   id: string;
@@ -23,6 +25,7 @@ interface Wallet {
 interface Props {
   projects: Project[];
   wallets: Wallet[];
+  categories: Category[];
   householdId: string;
   userId: string;
   userRole: string;
@@ -35,7 +38,8 @@ type ModalState =
   | { kind: "create" }
   | { kind: "edit"; project: Project }
   | { kind: "item"; projectId: string; item?: ProjectItem }
-  | { kind: "kontribusi"; project: Project };
+  | { kind: "kontribusi"; project: Project }
+  | { kind: "transaksi"; walletId: string };
 
 export const PROJECT_TYPE_LABELS: Record<string, { label: string; Icon: React.ComponentType<LucideProps> }> = {
   trip:      { label: "Trip",        Icon: Plane },
@@ -90,7 +94,7 @@ interface Contribution {
 }
 
 export default function ProjectPageClient({
-  projects, wallets, householdId, userId, userRole,
+  projects, wallets, categories, householdId, userId, userRole,
 }: Props) {
   const router = useRouter();
   const { refresh } = useRefresh();
@@ -266,6 +270,15 @@ export default function ProjectPageClient({
                   Kontribusi
                 </button>
               ) : null}
+              {proj.wallet_id && (
+                <button
+                  onClick={() => setModal({ kind: "transaksi", walletId: proj.wallet_id! })}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-brand-primary text-white text-sm font-medium hover:bg-brand-primary/90 transition-colors"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  Transaksi
+                </button>
+              )}
               {canManage && (
                 <button
                   onClick={() => setModal({ kind: "edit", project: proj })}
@@ -628,6 +641,23 @@ export default function ProjectPageClient({
             wallets={wallets.filter(w => w.id !== modal.project.wallet_id)}
             userId={userId}
             householdId={householdId}
+            onClose={() => setModal(null)}
+            onSaved={() => {
+              setModal(null);
+              refresh();
+              if (selectedProject) loadItems(selectedProject.id, selectedProject.wallet_id ?? undefined);
+            }}
+          />
+        )}
+        {modal?.kind === "transaksi" && (
+          <TransaksiModal
+            transaction={null}
+            wallets={wallets}
+            categories={categories}
+            householdId={householdId}
+            userId={userId}
+            defaultWalletId={modal.walletId}
+            forceShared
             onClose={() => setModal(null)}
             onSaved={() => {
               setModal(null);

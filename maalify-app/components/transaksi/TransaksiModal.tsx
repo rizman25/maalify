@@ -26,10 +26,15 @@ interface Props {
   userId: string;
   onClose: () => void;
   onSaved: (saved?: SavedTxData) => void;
+  /** Pre-select wallet (e.g. project wallet) */
+  defaultWalletId?: string;
+  /** Lock visibility to "shared" and hide the toggle */
+  forceShared?: boolean;
 }
 
 export default function TransaksiModal({
   transaction, wallets, categories, householdId, userId, onClose, onSaved,
+  defaultWalletId, forceShared,
 }: Props) {
   const isEdit = transaction !== null;
   const today = new Date().toISOString().split("T")[0];
@@ -38,10 +43,10 @@ export default function TransaksiModal({
   const [amount, setAmount] = useState(isEdit ? String(transaction.amount) : "");
   const [description, setDescription] = useState(transaction?.description ?? "");
   const [categoryId, setCategoryId] = useState(transaction?.category_id ?? "");
-  const [walletId, setWalletId] = useState(transaction?.wallet_id ?? (wallets[0]?.id ?? ""));
+  const [walletId, setWalletId] = useState(transaction?.wallet_id ?? defaultWalletId ?? (wallets[0]?.id ?? ""));
   const [date, setDate] = useState(transaction?.date ?? today);
   const [note, setNote] = useState(transaction?.note ?? "");
-  const [visibility, setVisibility] = useState<TransactionVisibility>(transaction?.visibility ?? "private");
+  const [visibility, setVisibility] = useState<TransactionVisibility>(forceShared ? "shared" : (transaction?.visibility ?? "private"));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showDelete, setShowDelete] = useState(false);
@@ -387,40 +392,47 @@ export default function TransaksiModal({
           </div>
 
           {/* Visibilitas */}
-          <div>
-            <label className="block text-xs font-medium text-[var(--text-primary)] mb-2">Visibilitas</label>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => setVisibility("private")}
-                className={[
-                  "py-2.5 rounded-xl text-sm font-medium border-2 transition-colors flex items-center justify-center gap-2",
-                  visibility === "private"
-                    ? "border-slate-400 bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-200 dark:border-slate-500"
-                    : "border-[var(--border)] text-[var(--text-secondary)] hover:border-slate-400",
-                ].join(" ")}
-              >
-                <Lock size={13} /> Pribadi
-              </button>
-              <button
-                type="button"
-                onClick={() => setVisibility("shared")}
-                className={[
-                  "py-2.5 rounded-xl text-sm font-medium border-2 transition-colors flex items-center justify-center gap-2",
-                  visibility === "shared"
-                    ? "border-brand-primary bg-brand-primary/5 text-brand-primary"
-                    : "border-[var(--border)] text-[var(--text-secondary)] hover:border-brand-primary/40",
-                ].join(" ")}
-              >
-                <Home size={13} /> Bersama
-              </button>
+          {forceShared ? (
+            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-brand-primary/5 border border-brand-primary/20">
+              <Home size={13} className="text-brand-primary flex-shrink-0" />
+              <p className="text-xs text-brand-primary font-medium">Transaksi ini otomatis <span className="font-semibold">Bersama</span> — semua anggota keluarga bisa melihat</p>
             </div>
-            <p className="text-[10px] text-[var(--text-secondary)] mt-1.5 leading-relaxed">
-              {visibility === "private"
-                ? "Hanya kamu yang bisa melihat transaksi ini"
-                : "Semua anggota keluarga bisa melihat transaksi ini"}
-            </p>
-          </div>
+          ) : (
+            <div>
+              <label className="block text-xs font-medium text-[var(--text-primary)] mb-2">Visibilitas</label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setVisibility("private")}
+                  className={[
+                    "py-2.5 rounded-xl text-sm font-medium border-2 transition-colors flex items-center justify-center gap-2",
+                    visibility === "private"
+                      ? "border-slate-400 bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-200 dark:border-slate-500"
+                      : "border-[var(--border)] text-[var(--text-secondary)] hover:border-slate-400",
+                  ].join(" ")}
+                >
+                  <Lock size={13} /> Pribadi
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setVisibility("shared")}
+                  className={[
+                    "py-2.5 rounded-xl text-sm font-medium border-2 transition-colors flex items-center justify-center gap-2",
+                    visibility === "shared"
+                      ? "border-brand-primary bg-brand-primary/5 text-brand-primary"
+                      : "border-[var(--border)] text-[var(--text-secondary)] hover:border-brand-primary/40",
+                  ].join(" ")}
+                >
+                  <Home size={13} /> Bersama
+                </button>
+              </div>
+              <p className="text-[10px] text-[var(--text-secondary)] mt-1.5 leading-relaxed">
+                {visibility === "private"
+                  ? "Hanya kamu yang bisa melihat transaksi ini"
+                  : "Semua anggota keluarga bisa melihat transaksi ini"}
+              </p>
+            </div>
+          )}
 
           {error && (
             <p className="text-xs text-danger bg-red-50 px-3 py-2 rounded-lg">{error}</p>
