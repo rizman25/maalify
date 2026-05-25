@@ -12,6 +12,7 @@ import ProjectModal from "@/components/project/ProjectModal";
 import ProjectItemModal from "@/components/project/ProjectItemModal";
 import KontribusiModal from "@/components/project/KontribusiModal";
 import ProjectItemPayModal from "@/components/project/ProjectItemPayModal";
+import ProjectExpenseTxModal, { type ExpenseTx } from "@/components/project/ProjectExpenseTxModal";
 import TransaksiModal from "@/components/transaksi/TransaksiModal";
 import { syncProjectPaidItems } from "@/app/actions/projects";
 import type { Category } from "@/types";
@@ -41,7 +42,8 @@ type ModalState =
   | { kind: "item"; projectId: string; item?: ProjectItem }
   | { kind: "kontribusi"; project: Project }
   | { kind: "transaksi"; walletId: string }
-  | { kind: "pay"; item: ProjectItem };
+  | { kind: "pay"; item: ProjectItem }
+  | { kind: "expense-tx"; tx: ExpenseTx };
 
 export const PROJECT_TYPE_LABELS: Record<string, { label: string; Icon: React.ComponentType<LucideProps> }> = {
   trip:      { label: "Trip",        Icon: Plane },
@@ -95,12 +97,8 @@ interface Contribution {
   walletName?: string;
 }
 
-interface ExpenseTx {
-  id: string;
-  amount: number;
-  date: string;
-  description: string | null;
-}
+// ExpenseTx re-exported from modal for use in loadItems
+// (imported via ProjectExpenseTxModal)
 
 export default function ProjectPageClient({
   projects, wallets, categories, householdId, userId, userRole,
@@ -167,7 +165,7 @@ export default function ProjectPageClient({
       walletId
         ? supabase
             .from("transactions")
-            .select("id, amount, date, description")
+            .select("id, amount, date, description, attachment_url, project_item_id")
             .eq("wallet_id", walletId)
             .eq("type", "expense")
             .order("date", { ascending: false })
@@ -293,15 +291,6 @@ export default function ProjectPageClient({
                   Kontribusi
                 </button>
               ) : null}
-              {proj.wallet_id && (
-                <button
-                  onClick={() => setModal({ kind: "transaksi", walletId: proj.wallet_id! })}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-brand-primary text-white text-sm font-medium hover:bg-brand-primary/90 transition-colors"
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                  Transaksi
-                </button>
-              )}
               {canManage && (
                 <button
                   onClick={() => setModal({ kind: "edit", project: proj })}
@@ -516,11 +505,19 @@ export default function ProjectPageClient({
               {showExpenses && (
                 <div className="divide-y divide-[var(--border)] border-t border-[var(--border)]">
                   {expenseTxs.map(tx => (
-                    <div key={tx.id} className="flex items-center gap-3 px-4 py-3">
-                      <div className="w-8 h-8 rounded-full bg-warning/10 text-warning flex items-center justify-center flex-shrink-0">
+                    <button
+                      key={tx.id}
+                      type="button"
+                      onClick={() => setModal({ kind: "expense-tx", tx })}
+                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[var(--bg-elevated)] transition-colors text-left"
+                    >
+                      <div className="w-8 h-8 rounded-full bg-warning/10 text-warning flex items-center justify-center flex-shrink-0 relative">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
                         </svg>
+                        {tx.attachment_url && (
+                          <span className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-brand-primary rounded-full border-2 border-[var(--bg-surface)]" title="Ada struk" />
+                        )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-[var(--text-primary)] truncate">{tx.description ?? "—"}</p>
@@ -531,7 +528,10 @@ export default function ProjectPageClient({
                           {new Date(tx.date + "T00:00:00").toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}
                         </p>
                       </div>
-                    </div>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--text-secondary)] flex-shrink-0">
+                        <polyline points="9 18 15 12 9 6"/>
+                      </svg>
+                    </button>
                   ))}
                 </div>
               )}
@@ -647,6 +647,17 @@ export default function ProjectPageClient({
             onSaved={() => {
               setModal(null);
               refresh();
+              if (selectedProject) loadItems(selectedProject.id, selectedProject.wallet_id ?? undefined);
+            }}
+          />
+        )}
+        {modal?.kind === "expense-tx" && (
+          <ProjectExpenseTxModal
+            tx={modal.tx}
+            householdId={householdId}
+            onClose={() => setModal(null)}
+            onSaved={() => {
+              setModal(null);
               if (selectedProject) loadItems(selectedProject.id, selectedProject.wallet_id ?? undefined);
             }}
           />

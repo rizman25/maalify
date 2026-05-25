@@ -152,7 +152,7 @@ async function recordPaymentTransaction(params: {
 
   if (!categoryId) return; // Can't create transaction without a category
 
-  // Create the expense transaction
+  // Create the expense transaction with project_item_id for traceability
   const { data: txn } = await svc
     .from("transactions")
     .insert({
@@ -165,13 +165,14 @@ async function recordPaymentTransaction(params: {
       description: itemName,
       date,
       visibility: "shared",
+      project_item_id: itemId,
     })
     .select("id")
     .single();
 
   if (!txn) return;
 
-  // Link transaction back to the project item
+  // Link transaction back to the project item (latest transaction pointer)
   await svc
     .from("project_items")
     .update({ transaction_id: txn.id })
@@ -180,6 +181,85 @@ async function recordPaymentTransaction(params: {
   // NOTE: wallet balance is updated automatically by the DB trigger
   // trg_update_balance_on_insert on the transactions table.
   // Do NOT manually update current_balance here — that would double-deduct.
+}
+
+/**
+ * Edit deskripsi / tanggal sebuah project expense transaction.
+ */
+export async function editProjectExpenseTx(payload: {
+  txId: string;
+  description: string;
+  date: string;
+  attachmentUrl?: string | null;
+}): Promise<{ success?: true; error?: string }> {
+  const authSupabase = await createClient();
+  const { data: { user } } = await authSupabase.auth.getUser();
+  if (!user) return { error: "Sesi tidak valid." };
+
+  const svc = service();
+  const updates: Record<string, unknown> = {
+    description: payload.description,
+    date: payload.date,
+  };
+  if (payload.attachmentUrl !== undefined) updates.attachment_url = payload.attachmentUrl;
+
+  const { error } = await svc.from("transactions").update(updates).eq("id", payload.txId);
+  if (error) return { error: error.message };
+  // Also update project_item paid_at if this is linked
+  if (payload.date) {
+    await svc.from("project_items")
+      .update({ paid_at: payload.date })
+      .eq("transaction_id", payload.txId);
+  }
+  return { success: true };
+}
+
+/**
+ * Hapus project expense transaction dan update actual_amount item terkait.
+ */
+export async function deleteProjectExpenseTx(
+  txId: string
+): Promise<{ success?: true; error?: string }> {
+  const authSupabase = await createClient();
+  const { data: { user } } = await authSupabase.auth.getUser();
+  if (!user) return { error: "Sesi tidak valid." };
+
+  const svc = service();
+
+  // Fetch transaction details
+  const { data: tx } = await svc
+    .from("transactions")
+    .select("id, amount, project_item_id")
+    .eq("id", txId)
+    .single();
+
+  if (!tx) return { error: "Transaksi tidak ditemukan." };
+
+  // If linked to an item, recompute its actual_amount after deletion
+  if (tx.project_item_id) {
+    const { data: item } = await svc
+      .from("project_items")
+      .select("id, actual_amount, planned_amount, is_paid")
+      .eq("id", tx.project_item_id)
+      .single();
+
+    if (item) {
+      const prevActual = Number(item.actual_amount ?? 0);
+      const newActual  = Math.max(0, prevActual - Number(tx.amount));
+      await svc.from("project_items").update({
+        actual_amount: newActual > 0 ? newActual : null,
+        is_paid: newActual >= Number(item.planned_amount),
+        // Reset paid_at if back to 0
+        ...(newActual === 0 ? { paid_at: null, transaction_id: null } : {}),
+      }).eq("id", item.id);
+    }
+  }
+
+  // Delete transaction — wallet balance auto-adjusts via DB trigger
+  const { error } = await svc.from("transactions").delete().eq("id", txId);
+  if (error) return { error: error.message };
+
+  return { success: true };
 }
 
 /**
