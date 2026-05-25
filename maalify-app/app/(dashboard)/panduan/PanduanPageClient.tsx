@@ -554,6 +554,44 @@ export default function PanduanPageClient() {
               <p>Di atas daftar transaksi terdapat tiga kartu: <strong>Total Pemasukan</strong>, <strong>Total Pengeluaran</strong>, dan <strong>Tabungan Bersih</strong> untuk bulan yang sedang ditampilkan.</p>
             </SubSection>
 
+            <SubSection title="Scan Struk (AI)">
+              <p>Fitur <strong>Scan Struk</strong> menggunakan kecerdasan buatan untuk membaca struk belanja, kuitansi, atau invoice dan mengisi form transaksi secara otomatis.</p>
+              <StepList steps={[
+                "Klik tombol \"Scan Struk\" di sudut kanan atas halaman Transaksi atau Dashboard",
+                "Upload foto struk (format JPG, PNG, WEBP, atau PDF — maks 10MB)",
+                "Tunggu analisis AI — akan mengekstrak merchant, tanggal, total, dan item belanja",
+                "Review hasil di tahap \"Review\" — edit nominal, item, tanggal, atau keterangan jika perlu",
+                "Pilih Visibilitas: Bersama (dicatat sebagai transaksi keluarga) atau Pribadi (hanya terlihat oleh kamu)",
+                "Pilih dompet yang digunakan",
+                "Klik Simpan",
+              ]} />
+              <SubSection title="Detail Item Belanja">
+                <BulletList items={[
+                  "AI mendeteksi setiap item beserta jumlah banyak (qty) dan harga satuan",
+                  "Kolom item menampilkan: Nama Item | Qty (×jumlah) | Harga satuan",
+                  "Edit langsung di tabel jika ada yang tidak akurat — klik nilai untuk mengubah",
+                  "Item-item ini dimasukkan ke catatan transaksi secara otomatis (contoh: \"Indomie Goreng ×6 - Rp 4.600\")",
+                ]} />
+              </SubSection>
+              <SubSection title="Toggle Pribadi / Bersama">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="p-3.5 rounded-xl border border-[var(--border)] bg-[var(--bg-elevated)]">
+                    <p className="font-semibold text-[var(--text-primary)] text-sm mb-1">Bersama (Default)</p>
+                    <p className="text-xs text-[var(--text-secondary)]">Transaksi dicatat sebagai pengeluaran keluarga — terlihat oleh semua anggota. Cocok untuk belanja rumah tangga, makan bersama, tagihan keluarga.</p>
+                  </div>
+                  <div className="p-3.5 rounded-xl border border-amber-200 bg-amber-50">
+                    <p className="font-semibold text-amber-800 text-sm mb-1 flex items-center gap-1.5">
+                      <Lock size={13} className="inline" /> Pribadi
+                    </p>
+                    <p className="text-xs text-amber-700">Transaksi hanya terlihat oleh kamu dan Super Admin. Cocok untuk belanja personal, jajan sendiri, atau pengeluaran yang tidak perlu dibagikan ke keluarga.</p>
+                  </div>
+                </div>
+              </SubSection>
+              <InfoBox type="tip">
+                Foto struk yang jelas dan tidak buram menghasilkan akurasi AI yang lebih tinggi. Confidence level ditampilkan (High/Medium/Low) di hasil analisis — jika Low, periksa kembali nominal sebelum menyimpan.
+              </InfoBox>
+            </SubSection>
+
             <InfoBox type="tip">
               Gunakan deskripsi yang konsisten agar mudah dicari. Misalnya: selalu awali pengeluaran makan dengan kata "Makan" untuk memudahkan pencarian.
             </InfoBox>
@@ -659,6 +697,16 @@ export default function PanduanPageClient() {
                 </div>
               </div>
               <p className="text-xs text-[var(--text-secondary)] mt-2">Transaksi yang dicatat ke dompet Pribadi secara otomatis hanya terlihat oleh pemiliknya — tidak perlu pengaturan tambahan per transaksi.</p>
+            </SubSection>
+
+            <SubSection title="Filter Tab: Semua / Bersama / Pribadi">
+              <p>Di halaman Dompet, terdapat tab filter untuk mempermudah navigasi saat memiliki banyak dompet:</p>
+              <BulletList items={[
+                <><strong>Semua</strong> — Menampilkan seluruh dompet aktif beserta tombol Tambah Dompet</>,
+                <><strong>Bersama</strong> — Hanya menampilkan dompet yang bersifat Bersama (terlihat semua anggota)</>,
+                <><strong>Pribadi</strong> — Hanya menampilkan dompet milik kamu yang bersifat Pribadi</>,
+              ]} />
+              <p className="text-xs text-[var(--text-secondary)] mt-2">Angka di setiap tab menunjukkan jumlah dompet dalam kategori tersebut. Tab ini tidak mengubah data — hanya filter tampilan.</p>
             </SubSection>
 
             <SubSection title="Transfer Antar Dompet">
@@ -853,17 +901,88 @@ export default function PanduanPageClient() {
               </div>
             </SubSection>
 
+            <SubSection title="Tipe Project">
+              <p>Saat membuat project, pilih tipe yang sesuai — setiap tipe memiliki ikon berbeda untuk memudahkan identifikasi:</p>
+              <BulletList items={[
+                <><strong>✈ Trip</strong> — Liburan, perjalanan wisata, atau mudik</>,
+                <><strong>💎 Pernikahan</strong> — Biaya pernikahan dan resepsi</>,
+                <><strong>🏠 Properti</strong> — Beli rumah, renovasi, atau sewa</>,
+                <><strong>🛒 Pembelian</strong> — Beli barang besar seperti elektronik atau furnitur</>,
+                <><strong>🎓 Pendidikan</strong> — Biaya sekolah, kuliah, atau kursus</>,
+                <><strong>🚗 Kendaraan</strong> — Beli atau servis kendaraan</>,
+                <><strong>❤ Kesehatan</strong> — Biaya medis atau perawatan kesehatan</>,
+                <><strong>📦 Lainnya</strong> — Tujuan finansial lain yang tidak masuk kategori di atas</>,
+              ]} />
+            </SubSection>
+
             <SubSection title="Cara Membuat Project">
               <StepList steps={[
                 "Buka halaman Project Keluarga",
                 "Klik \"+ Buat Project\"",
-                "Isi nama project dan deskripsi",
-                "Tentukan total anggaran yang dibutuhkan",
-                "Atur deadline project",
-                "Tambahkan item-item rincian biaya",
-                "Klik Simpan",
+                "Isi nama project",
+                "Pilih tipe project (masing-masing memiliki ikon khas)",
+                "Isi target dana yang dibutuhkan",
+                "Isi saldo awal jika sudah ada dana yang disiapkan (opsional)",
+                "Tentukan target tanggal dan status",
+                "Tambahkan deskripsi opsional",
+                "Klik Buat Project — dompet khusus project dibuat otomatis",
               ]} />
             </SubSection>
+
+            <SubSection title="3 Metrik Keuangan Project">
+              <p>Di halaman detail project, terdapat tiga metrik keuangan yang menggambarkan kondisi dana secara lengkap:</p>
+              <div className="grid grid-cols-3 gap-2">
+                <div className="text-center px-2 py-3 rounded-xl bg-brand-accent/8">
+                  <p className="text-[10px] text-[var(--text-secondary)] mb-1">Dana Terkumpul</p>
+                  <p className="text-xs font-semibold text-brand-accent">Total kontribusi yang pernah masuk</p>
+                </div>
+                <div className="text-center px-2 py-3 rounded-xl bg-warning/8">
+                  <p className="text-[10px] text-[var(--text-secondary)] mb-1">Digunakan</p>
+                  <p className="text-xs font-semibold text-warning">Dana yang sudah dipakai bayar item</p>
+                </div>
+                <div className="text-center px-2 py-3 rounded-xl bg-brand-primary/8">
+                  <p className="text-[10px] text-[var(--text-secondary)] mb-1">Dana Tersedia</p>
+                  <p className="text-xs font-semibold text-brand-primary">Saldo yang masih tersisa di dompet project</p>
+                </div>
+              </div>
+              <p className="text-xs text-[var(--text-secondary)] mt-2">
+                Contoh: Dana Terkumpul 95 jt + Digunakan 5 jt = Dana Tersedia 90 jt. Progress bar menunjukkan persentase Dana Terkumpul terhadap Target.
+              </p>
+            </SubSection>
+
+            <SubSection title="Kontribusi Dana">
+              <StepList steps={[
+                "Di halaman detail project, klik tombol \"+ Kontribusi\"",
+                "Pilih dompet sumber (dompet mana yang uangnya dipindah ke project)",
+                "Isi jumlah kontribusi — atau klik \"Isi Sisa\" untuk langsung mengisi kekurangan",
+                "Atur tanggal dan catatan opsional",
+                "Klik Kontribusi — saldo dompet asal berkurang, Dana Terkumpul project bertambah",
+              ]} />
+              <InfoBox type="tip">
+                Saat kontribusi membuat Dana Terkumpul mencapai atau melebihi target, akan muncul layar perayaan konfirmasi otomatis 🎉
+              </InfoBox>
+            </SubSection>
+
+            <SubSection title="Rincian Item Anggaran">
+              <p>Setiap project bisa memiliki daftar item anggaran — rincian biaya yang direncanakan. Item dibagi menjadi 3 status:</p>
+              <BulletList items={[
+                <><strong>Belum Bayar</strong> — Item yang masih dalam rencana, belum ada pembayaran</>,
+                <><Badge color="amber">DP / Belum Lunas</Badge> — Sudah dibayar sebagian (DP). Menampilkan jumlah DP dan sisa yang harus dilunasi</>,
+                <><Badge color="green">Lunas</Badge> — Item yang sudah dibayar penuh</>,
+              ]} />
+              <StepList steps={[
+                "Klik \"+ Tambah Item\" di halaman detail project",
+                "Isi nama item dan anggaran rencana",
+                "Pilih status pembayaran: Belum Bayar / DP / Lunas",
+                "Untuk DP: isi jumlah DP yang sudah dibayar dan tanggal DP",
+                "Untuk Lunas: isi jumlah aktual yang dibayar (bisa berbeda dari rencana) dan tanggal",
+                "Klik Tambah",
+              ]} />
+            </SubSection>
+
+            <InfoBox type="info">
+              Setiap kali item ditandai lunas, biaya aktual otomatis dikurangkan dari saldo dompet project — saldo ini tercermin di metrik <strong>Digunakan</strong> dan <strong>Dana Tersedia</strong>.
+            </InfoBox>
           </Section>
 
           {/* ── KATEGORI ── */}
