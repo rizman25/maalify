@@ -27,10 +27,20 @@ export default async function HutangPage() {
       .order("name"),
   ]);
 
+  const debtIds = (debtsRes.data ?? []).map(d => d.id);
+  const paymentsRes = debtIds.length > 0
+    ? await supabase.from("debt_payments")
+        .select("id, debt_id, amount, paid_at, note, wallets(name)")
+        .in("debt_id", debtIds)
+        .order("paid_at", { ascending: false })
+        .limit(500)
+    : { data: [] };
+
   return (
     <HutangPageClient
       debts={debtsRes.data ?? []}
       wallets={walletsRes.data ?? []}
+      payments={paymentsRes.data ?? []}
       householdId={householdId}
       userId={user.id}
     />

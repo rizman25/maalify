@@ -29,9 +29,19 @@ interface DebtItem {
   installment_months: number | null;
 }
 
+interface Payment {
+  id: string;
+  debt_id: string;
+  amount: number;
+  paid_at: string;
+  note: string | null;
+  wallets: { name: string } | null;
+}
+
 interface Props {
   debts: DebtItem[];
   wallets: Wallet[];
+  payments: Payment[];
   householdId: string;
   userId: string;
 }
@@ -39,12 +49,34 @@ interface Props {
 type Tab = "payable" | "receivable";
 type ModalState = { kind: "add" } | { kind: "edit"; debt: DebtItem } | { kind: "bayar"; debt: DebtItem } | null;
 
-export default function HutangPageClient({ debts, wallets, householdId, userId }: Props) {
+export default function HutangPageClient({ debts, wallets, payments, householdId, userId }: Props) {
   const router = useRouter();
   const { refresh } = useRefresh();
   const { toast, showToast, dismissToast } = useToast();
   const [tab, setTab] = useState<Tab>("payable");
   const [modal, setModal] = useState<ModalState>(null);
+  const [expandedHistory, setExpandedHistory] = useState<Set<string>>(new Set());
+
+  // Group payments by debt_id
+  const paymentsByDebt = payments.reduce<Record<string, Payment[]>>((acc, p) => {
+    if (!acc[p.debt_id]) acc[p.debt_id] = [];
+    acc[p.debt_id].push(p);
+    return acc;
+  }, {});
+
+  function toggleHistory(debtId: string) {
+    setExpandedHistory(prev => {
+      const next = new Set(prev);
+      next.has(debtId) ? next.delete(debtId) : next.add(debtId);
+      return next;
+    });
+  }
+
+  function formatPayDate(dateStr: string) {
+    return new Date(dateStr + "T00:00:00").toLocaleDateString("id-ID", {
+      day: "numeric", month: "short", year: "numeric",
+    });
+  }
 
   const handleSaved = useCallback(() => {
     if (modal?.kind === "add") showToast("Hutang berhasil ditambahkan");
@@ -256,6 +288,61 @@ export default function HutangPageClient({ debts, wallets, householdId, userId }
                         </div>
                       )}
 
+                      {/* Riwayat Pembayaran */}
+                      {(() => {
+                        const debtPayments = paymentsByDebt[d.id] ?? [];
+                        if (debtPayments.length === 0) return null;
+                        const isOpen = expandedHistory.has(d.id);
+                        return (
+                          <div className="border-t border-[var(--border)] pt-2.5">
+                            <button
+                              type="button"
+                              onClick={() => toggleHistory(d.id)}
+                              className="w-full flex items-center justify-between text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors py-0.5"
+                            >
+                              <span className="font-medium">Riwayat Pembayaran ({debtPayments.length})</span>
+                              <svg
+                                width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                                className={`transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+                              >
+                                <polyline points="6 9 12 15 18 9" />
+                              </svg>
+                            </button>
+                            {isOpen && (
+                              <div className="mt-2 space-y-1.5">
+                                {debtPayments.map((p) => (
+                                  <div key={p.id} className="flex items-center gap-3 px-3 py-2 rounded-xl bg-[var(--bg-elevated)]">
+                                    {/* Wallet icon */}
+                                    <div className="w-6 h-6 rounded-full bg-brand-primary/10 text-brand-primary flex items-center justify-center flex-shrink-0">
+                                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/>
+                                        <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
+                                        <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
+                                      </svg>
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-xs font-medium text-[var(--text-primary)] truncate">
+                                        {p.wallets?.name ?? "—"}
+                                      </p>
+                                      {p.note && (
+                                        <p className="text-[10px] text-[var(--text-secondary)] truncate">{p.note}</p>
+                                      )}
+                                    </div>
+                                    <div className="text-right flex-shrink-0">
+                                      <p className="font-financial text-xs font-semibold text-brand-accent">
+                                        +Rp {formatRupiah(p.amount)}
+                                      </p>
+                                      <p className="text-[10px] text-[var(--text-secondary)]">{formatPayDate(p.paid_at)}</p>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()}
+
                       {/* Actions */}
                       <div className="flex gap-2 pt-1">
                         <button
@@ -287,27 +374,77 @@ export default function HutangPageClient({ debts, wallets, householdId, userId }
                 <p className="text-xs font-semibold text-[var(--text-secondary)] tracking-widest uppercase px-1">
                   Lunas ({settled.length})
                 </p>
-                {settled.map(d => (
-                  <div key={d.id}
-                    className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border)] p-4 opacity-60">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <p className="font-medium text-[var(--text-primary)] text-sm">{d.party_name}</p>
-                          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-green-100 text-green-700">Lunas</span>
+                {settled.map(d => {
+                  const debtPayments = paymentsByDebt[d.id] ?? [];
+                  const isOpen = expandedHistory.has(d.id);
+                  return (
+                    <div key={d.id} className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border)] p-4 opacity-70 space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium text-[var(--text-primary)] text-sm">{d.party_name}</p>
+                            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-green-100 text-green-700">Lunas</span>
+                          </div>
+                          <p className="text-xs text-[var(--text-secondary)] mt-0.5">
+                            {formatDueDate(d.due_date)}
+                          </p>
                         </div>
-                        <p className="text-xs text-[var(--text-secondary)] mt-0.5">
-                          {formatDueDate(d.due_date)}
-                        </p>
+                        <div className="text-right">
+                          <p className="font-financial font-semibold text-sm text-[var(--text-secondary)] line-through">
+                            Rp {formatRupiah(d.total_amount)}
+                          </p>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <p className="font-financial font-semibold text-sm text-[var(--text-secondary)] line-through">
-                          Rp {formatRupiah(d.total_amount)}
-                        </p>
-                      </div>
+                      {debtPayments.length > 0 && (
+                        <div className="border-t border-[var(--border)] pt-2">
+                          <button
+                            type="button"
+                            onClick={() => toggleHistory(d.id)}
+                            className="w-full flex items-center justify-between text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors py-0.5"
+                          >
+                            <span className="font-medium">Riwayat ({debtPayments.length})</span>
+                            <svg
+                              width="14" height="14" viewBox="0 0 24 24" fill="none"
+                              stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                              className={`transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+                            >
+                              <polyline points="6 9 12 15 18 9" />
+                            </svg>
+                          </button>
+                          {isOpen && (
+                            <div className="mt-2 space-y-1.5">
+                              {debtPayments.map((p) => (
+                                <div key={p.id} className="flex items-center gap-3 px-3 py-2 rounded-xl bg-[var(--bg-elevated)]">
+                                  <div className="w-6 h-6 rounded-full bg-brand-primary/10 text-brand-primary flex items-center justify-center flex-shrink-0">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                      <path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/>
+                                      <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
+                                      <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
+                                    </svg>
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-xs font-medium text-[var(--text-primary)] truncate">
+                                      {p.wallets?.name ?? "—"}
+                                    </p>
+                                    {p.note && (
+                                      <p className="text-[10px] text-[var(--text-secondary)] truncate">{p.note}</p>
+                                    )}
+                                  </div>
+                                  <div className="text-right flex-shrink-0">
+                                    <p className="font-financial text-xs font-semibold text-brand-accent">
+                                      +Rp {formatRupiah(p.amount)}
+                                    </p>
+                                    <p className="text-[10px] text-[var(--text-secondary)]">{formatPayDate(p.paid_at)}</p>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
