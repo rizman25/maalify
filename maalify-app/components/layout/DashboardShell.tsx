@@ -11,6 +11,7 @@ import GlobalSearch from "@/components/search/GlobalSearch";
 import AiChatWidget from "@/components/chat/AiChatWidget";
 import SetupChecklistWidget from "@/components/dashboard/SetupChecklistWidget";
 import PageTransition from "@/components/ui/PageTransition";
+import { DebtReminderChecker } from "@/components/hutang/DebtReminderChecker";
 import type { AppNotification } from "@/types";
 
 interface Props {
@@ -154,6 +155,9 @@ export default function DashboardShell({ householdName, userName, avatarUrl, use
           userName={userName}
         />
       )}
+
+      {/* Debt due-date reminder — fires once per 24h on app open */}
+      <DebtReminderChecker householdId={householdId} />
 
       {/* Setup Checklist Widget */}
       <SetupChecklistWidget />

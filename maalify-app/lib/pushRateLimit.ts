@@ -34,4 +34,6 @@ export const WINDOW = {
   BUDGET_WARNING:   4 * 60 * 60 * 1000,
   /** 4 hours — recurring reminder per user (client already throttles at 8 h) */
   RECURRING:        4 * 60 * 60 * 1000,
+  /** 20 hours — debt due date reminder per user (client throttles at 24 h) */
+  DEBT_DUE:        20 * 60 * 60 * 1000,
 } as const;
