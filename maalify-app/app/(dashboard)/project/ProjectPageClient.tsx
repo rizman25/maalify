@@ -11,6 +11,7 @@ import { GraduationCap, Diamond } from "lucide-react";
 import ProjectModal from "@/components/project/ProjectModal";
 import ProjectItemModal from "@/components/project/ProjectItemModal";
 import KontribusiModal from "@/components/project/KontribusiModal";
+import ProjectItemPayModal from "@/components/project/ProjectItemPayModal";
 import TransaksiModal from "@/components/transaksi/TransaksiModal";
 import { syncProjectPaidItems } from "@/app/actions/projects";
 import type { Category } from "@/types";
@@ -39,7 +40,8 @@ type ModalState =
   | { kind: "edit"; project: Project }
   | { kind: "item"; projectId: string; item?: ProjectItem }
   | { kind: "kontribusi"; project: Project }
-  | { kind: "transaksi"; walletId: string };
+  | { kind: "transaksi"; walletId: string }
+  | { kind: "pay"; item: ProjectItem };
 
 export const PROJECT_TYPE_LABELS: Record<string, { label: string; Icon: React.ComponentType<LucideProps> }> = {
   trip:      { label: "Trip",        Icon: Plane },
@@ -93,6 +95,13 @@ interface Contribution {
   walletName?: string;
 }
 
+interface ExpenseTx {
+  id: string;
+  amount: number;
+  date: string;
+  description: string | null;
+}
+
 export default function ProjectPageClient({
   projects, wallets, categories, householdId, userId, userRole,
 }: Props) {
@@ -103,6 +112,7 @@ export default function ProjectPageClient({
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [projectItems, setProjectItems] = useState<ProjectItem[]>([]);
   const [contributions, setContributions] = useState<Contribution[]>([]);
+  const [expenseTxs, setExpenseTxs] = useState<ExpenseTx[]>([]);
   const [showContributions, setShowContributions] = useState(false);
   const [showExpenses, setShowExpenses] = useState(false);
   const [loadingItems, setLoadingItems] = useState(false);
@@ -126,7 +136,7 @@ export default function ProjectPageClient({
     const { createClient } = await import("@/lib/supabase/client");
     const supabase = createClient();
 
-    const [itemsRes, contribRes, walletRes] = await Promise.all([
+    const [itemsRes, contribRes, walletRes, expenseRes] = await Promise.all([
       supabase
         .from("project_items")
         .select("*")
@@ -152,6 +162,17 @@ export default function ProjectPageClient({
             .eq("id", walletId)
             .single()
         : Promise.resolve({ data: null }),
+
+      // Fetch expense transactions dari project wallet (Riwayat Pengeluaran)
+      walletId
+        ? supabase
+            .from("transactions")
+            .select("id, amount, date, description")
+            .eq("wallet_id", walletId)
+            .eq("type", "expense")
+            .order("date", { ascending: false })
+            .limit(200)
+        : Promise.resolve({ data: [] }),
     ]);
 
     // Fetch wallet names (including inactive) for name lookup
@@ -183,6 +204,7 @@ export default function ProjectPageClient({
 
     setProjectItems(itemsRes.data ?? []);
     setContributions(allContribs);
+    setExpenseTxs((expenseRes.data ?? []) as ExpenseTx[]);
     setLoadingItems(false);
 
     // Backfill: deduct wallet for any paid items that have no transaction yet
@@ -204,6 +226,7 @@ export default function ProjectPageClient({
     setSelectedProject(null);
     setProjectItems([]);
     setContributions([]);
+    setExpenseTxs([]);
     setShowContributions(false);
   }
 
@@ -459,84 +482,61 @@ export default function ProjectPageClient({
             </div>
           )}
 
-          {/* Riwayat Pengeluaran */}
-          {(paidItems.length > 0 || dpItems.length > 0) && (() => {
-            const spentItems = [...paidItems, ...dpItems].sort((a, b) => {
-              if (!a.paid_at && !b.paid_at) return 0;
-              if (!a.paid_at) return 1;
-              if (!b.paid_at) return -1;
-              return b.paid_at.localeCompare(a.paid_at);
-            });
-            const spentTotal = spentItems.reduce((s, i) => s + (i.actual_amount ?? i.planned_amount), 0);
-            return (
-              <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border)] overflow-hidden">
-                <button
-                  type="button"
-                  onClick={() => setShowExpenses(v => !v)}
-                  className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-[var(--bg-elevated)] transition-colors"
-                >
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-full bg-warning/15 flex items-center justify-center">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-warning">
-                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-                      </svg>
-                    </div>
-                    <span className="text-sm font-semibold text-[var(--text-primary)]">Riwayat Pengeluaran</span>
-                    <span className="text-xs bg-warning/10 text-warning font-medium px-2 py-0.5 rounded-full">{spentItems.length}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-financial text-xs font-semibold text-warning">Rp {formatRupiah(spentTotal)}</span>
-                    <svg
-                      width="16" height="16" viewBox="0 0 24 24" fill="none"
-                      stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-                      className={`text-[var(--text-secondary)] transition-transform duration-200 ${showExpenses ? "rotate-180" : ""}`}
-                    >
-                      <polyline points="6 9 12 15 18 9"/>
+          {/* Riwayat Pengeluaran — dari transactions (per pembayaran/termin) */}
+          {expenseTxs.length > 0 && (
+            <div className="bg-[var(--bg-surface)] rounded-2xl border border-[var(--border)] overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setShowExpenses(v => !v)}
+                className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-[var(--bg-elevated)] transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full bg-warning/15 flex items-center justify-center">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-warning">
+                      <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
                     </svg>
                   </div>
-                </button>
+                  <span className="text-sm font-semibold text-[var(--text-primary)]">Riwayat Pengeluaran</span>
+                  <span className="text-xs bg-warning/10 text-warning font-medium px-2 py-0.5 rounded-full">{expenseTxs.length}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="font-financial text-xs font-semibold text-warning">
+                    Rp {formatRupiah(expenseTxs.reduce((s, t) => s + t.amount, 0))}
+                  </span>
+                  <svg
+                    width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                    className={`text-[var(--text-secondary)] transition-transform duration-200 ${showExpenses ? "rotate-180" : ""}`}
+                  >
+                    <polyline points="6 9 12 15 18 9"/>
+                  </svg>
+                </div>
+              </button>
 
-                {showExpenses && (
-                  <div className="divide-y divide-[var(--border)] border-t border-[var(--border)]">
-                    {spentItems.map(item => {
-                      const amt = item.actual_amount ?? item.planned_amount;
-                      const isDP = item.actual_amount != null && item.actual_amount < item.planned_amount;
-                      return (
-                        <div key={item.id} className="flex items-center gap-3 px-4 py-3">
-                          <div className="w-8 h-8 rounded-full bg-warning/10 text-warning flex items-center justify-center flex-shrink-0">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-                            </svg>
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-1.5">
-                              <p className="text-sm font-medium text-[var(--text-primary)] truncate">{item.name}</p>
-                              {isDP && (
-                                <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-warning/15 text-warning flex-shrink-0">DP</span>
-                              )}
-                            </div>
-                            {isDP && (
-                              <p className="text-[10px] text-[var(--text-secondary)]">Rencana: Rp {formatRupiah(item.planned_amount)}</p>
-                            )}
-                          </div>
-                          <div className="text-right flex-shrink-0">
-                            <p className="font-financial text-sm font-semibold text-warning">
-                              -Rp {formatRupiah(amt)}
-                            </p>
-                            <p className="text-[10px] text-[var(--text-secondary)]">
-                              {item.paid_at
-                                ? new Date(item.paid_at + "T00:00:00").toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })
-                                : "—"}
-                            </p>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            );
-          })()}
+              {showExpenses && (
+                <div className="divide-y divide-[var(--border)] border-t border-[var(--border)]">
+                  {expenseTxs.map(tx => (
+                    <div key={tx.id} className="flex items-center gap-3 px-4 py-3">
+                      <div className="w-8 h-8 rounded-full bg-warning/10 text-warning flex items-center justify-center flex-shrink-0">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                        </svg>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-[var(--text-primary)] truncate">{tx.description ?? "—"}</p>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <p className="font-financial text-sm font-semibold text-warning">-Rp {formatRupiah(tx.amount)}</p>
+                        <p className="text-[10px] text-[var(--text-secondary)]">
+                          {new Date(tx.date + "T00:00:00").toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Items section */}
           <div className="space-y-3">
@@ -570,6 +570,7 @@ export default function ProjectPageClient({
                         key={item.id}
                         item={item}
                         onEdit={canManage ? () => setModal({ kind: "item", projectId: proj.id, item }) : undefined}
+                        onPay={canManage ? () => setModal({ kind: "pay", item }) : undefined}
                       />
                     ))}
                   </div>
@@ -585,6 +586,7 @@ export default function ProjectPageClient({
                         key={item.id}
                         item={item}
                         onEdit={canManage ? () => setModal({ kind: "item", projectId: proj.id, item }) : undefined}
+                        onPay={canManage ? () => setModal({ kind: "pay", item }) : undefined}
                       />
                     ))}
                   </div>
@@ -645,6 +647,17 @@ export default function ProjectPageClient({
             onSaved={() => {
               setModal(null);
               refresh();
+              if (selectedProject) loadItems(selectedProject.id, selectedProject.wallet_id ?? undefined);
+            }}
+          />
+        )}
+        {modal?.kind === "pay" && (
+          <ProjectItemPayModal
+            item={modal.item}
+            userId={userId}
+            onClose={() => setModal(null)}
+            onSaved={() => {
+              setModal(null);
               if (selectedProject) loadItems(selectedProject.id, selectedProject.wallet_id ?? undefined);
             }}
           />
@@ -821,9 +834,10 @@ export default function ProjectPageClient({
   );
 }
 
-function ItemRow({ item, onEdit }: { item: ProjectItem; onEdit?: () => void }) {
+function ItemRow({ item, onEdit, onPay }: { item: ProjectItem; onEdit?: () => void; onPay?: () => void }) {
   const isDP = item.is_paid && item.actual_amount != null && item.actual_amount < item.planned_amount;
   const remaining = isDP ? item.planned_amount - (item.actual_amount ?? 0) : 0;
+  const canPay = onPay && (!item.is_paid || isDP);
 
   return (
     <div
@@ -884,6 +898,21 @@ function ItemRow({ item, onEdit }: { item: ProjectItem; onEdit?: () => void }) {
           <p className="font-financial text-sm font-semibold text-[var(--text-primary)]">Rp {formatRupiah(item.planned_amount)}</p>
         )}
       </div>
+
+      {/* Tombol Bayar — hanya untuk unpaid/DP */}
+      {canPay && (
+        <button
+          type="button"
+          onClick={e => { e.stopPropagation(); onPay!(); }}
+          className={`flex-shrink-0 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+            isDP
+              ? "bg-warning/10 text-warning hover:bg-warning/20"
+              : "bg-brand-primary/10 text-brand-primary hover:bg-brand-primary/20"
+          }`}
+        >
+          Bayar
+        </button>
+      )}
     </div>
   );
 }

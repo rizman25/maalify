@@ -235,6 +235,70 @@ export async function syncProjectPaidItems(
   return { synced };
 }
 
+/**
+ * Catat pembayaran termin/cicilan untuk satu project item.
+ * - Membuat expense transaction dari project wallet
+ * - Menambah actual_amount item secara kumulatif
+ * - Auto-lunas jika actual_amount >= planned_amount
+ */
+export async function payProjectItem(payload: {
+  itemId: string;
+  amount: number;
+  date: string;
+  note: string | null;
+  userId: string;
+}): Promise<{ success?: true; error?: string }> {
+  const authSupabase = await createClient();
+  const { data: { user } } = await authSupabase.auth.getUser();
+  if (!user) return { error: "Sesi tidak valid." };
+
+  const svc = service();
+
+  // Fetch item + project
+  const { data: item } = await svc
+    .from("project_items")
+    .select("id, name, planned_amount, actual_amount, is_paid, project_id")
+    .eq("id", payload.itemId)
+    .single();
+
+  if (!item) return { error: "Item tidak ditemukan." };
+
+  const { data: project } = await svc
+    .from("projects")
+    .select("id, wallet_id, household_id")
+    .eq("id", item.project_id)
+    .single();
+
+  if (!project || !project.wallet_id) return { error: "Project wallet tidak ditemukan." };
+
+  // Hitung actual_amount baru (kumulatif)
+  const prevActual = Number(item.actual_amount ?? 0);
+  const newActual  = prevActual + payload.amount;
+  const isNowPaid  = newActual >= Number(item.planned_amount);
+
+  // Buat expense transaction dari project wallet
+  await recordPaymentTransaction({
+    svc,
+    projectId: project.id,
+    householdId: project.household_id,
+    walletId: project.wallet_id,
+    userId: payload.userId,
+    itemId: payload.itemId,
+    itemName: payload.note ? `${item.name} — ${payload.note}` : item.name,
+    amount: payload.amount,
+    date: payload.date,
+  });
+
+  // Update item
+  await svc.from("project_items").update({
+    actual_amount: newActual,
+    is_paid: isNowPaid || item.is_paid, // jangan un-pay
+    paid_at: isNowPaid ? payload.date : (item.is_paid ? undefined : payload.date),
+  }).eq("id", payload.itemId);
+
+  return { success: true };
+}
+
 export async function deleteProjectItem(itemId: string): Promise<{ success?: true; error?: string }> {
   const authSupabase = await createClient();
   const { data: { user } } = await authSupabase.auth.getUser();
