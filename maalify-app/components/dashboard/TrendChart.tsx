@@ -115,10 +115,10 @@ export default function TrendChart({ data }: { data: DataPoint[] }) {
             <p className="text-xs text-[var(--text-secondary)]">{selected.subtitle}</p>
             {momChip && (
               <span className={[
-                "inline-flex items-center gap-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded-full leading-none",
+                "inline-flex items-center gap-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded-full leading-none border",
                 momChip.improved
-                  ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                  : "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400",
+                  ? "bg-green-100 text-green-800 border-green-300 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800"
+                  : "bg-red-100 text-red-700 border-red-300 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800",
               ].join(" ")}>
                 {momChip.improved ? "↑" : "↓"} {momChip.display}% vs bln lalu
               </span>
