@@ -70,6 +70,7 @@ export async function saveProjectItem(payload: {
     const hasExistingTxn = existing?.transaction_id != null;
 
     if (payload.isPaid && !wasAlreadyPaid && !hasExistingTxn && project.wallet_id) {
+      // First time paid — create new transaction
       await recordPaymentTransaction({
         svc,
         projectId: payload.projectId,
@@ -81,6 +82,19 @@ export async function saveProjectItem(payload: {
         amount: spentAmount,
         date: payload.paidAt ?? new Date().toISOString().split("T")[0],
       });
+    } else if (payload.isPaid && wasAlreadyPaid && hasExistingTxn && project.wallet_id) {
+      // Already paid — UPDATE the existing transaction so wallet balance stays in sync.
+      // The DB trigger (trg_update_balance_on_update) automatically adjusts wallet balance
+      // when amount changes: reverses old amount, applies new amount.
+      const updateFields: Record<string, unknown> = {
+        amount: spentAmount,
+        description: payload.name,
+      };
+      if (payload.paidAt) updateFields.date = payload.paidAt;
+      await svc
+        .from("transactions")
+        .update(updateFields)
+        .eq("id", existing.transaction_id);
     }
   } else {
     // ── Insert new item ──
