@@ -60,6 +60,8 @@ export default async function DashboardPage() {
     recentTxRes, activeWalletsRes, catsRes, goalsRes, memberSpendingRes, membersCountRes, recurringRes,
     // Personal queries — filtered by private wallet IDs (is_shared = false)
     personalCurRes, personalPrevRes,
+    // Contributions: transfers TO shared wallets (show as Pemasukan Bersama)
+    curTransfersRes, prevTransfersRes, trendTransfersRes,
   ] = await Promise.all([
     // ── Household (Bersama) — include wallet_id so we can exclude private wallets ──
     supabase.from("transactions").select("type, amount, wallet_id")
@@ -70,7 +72,7 @@ export default async function DashboardPage() {
       .eq("household_id", householdId).gte("date", prevMonthStart).lt("date", monthStart)
       .limit(1000),
 
-    supabase.from("wallets").select("current_balance, is_shared")
+    supabase.from("wallets").select("id, current_balance, is_shared")
       .eq("household_id", householdId).eq("is_active", true),
 
     // Trend 12 bulan — ambil max 2000 row (≈167 tx/bln rata-rata sangat aktif)
@@ -136,6 +138,26 @@ export default async function DashboardPage() {
           .gte("date", prevMonthStart).lt("date", monthStart)
           .limit(1000)
       : Promise.resolve({ data: [] }),
+
+    // ── Transfers TO shared wallets (Kontribusi → Pemasukan Bersama) ──
+    supabase.from("transfers")
+      .select("amount, to_wallet_id, date")
+      .eq("household_id", householdId)
+      .gte("date", monthStart).lt("date", monthEnd)
+      .limit(500),
+
+    supabase.from("transfers")
+      .select("amount, to_wallet_id, date")
+      .eq("household_id", householdId)
+      .gte("date", prevMonthStart).lt("date", monthStart)
+      .limit(500),
+
+    supabase.from("transfers")
+      .select("amount, to_wallet_id, date")
+      .eq("household_id", householdId)
+      .gte("date", trendStart)
+      .order("date")
+      .limit(1000),
   ]);
 
   // ── Household stats — exclude private wallet transactions ──
@@ -143,9 +165,18 @@ export default async function DashboardPage() {
   const sharedCurData  = (curMonthRes.data  ?? []).filter(t => !privateWalletSet.has(t.wallet_id));
   const sharedPrevData = (prevMonthRes.data ?? []).filter(t => !privateWalletSet.has(t.wallet_id));
 
-  const curIncome  = sharedCurData.filter(t => t.type === "income").reduce((s,t) => s + Number(t.amount), 0);
+  // Shared wallet IDs — for filtering incoming transfers (contributions)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const sharedWalletSet = new Set<string>((walletsRes.data ?? []).filter((w: any) => w.is_shared).map((w: any) => w.id as string));
+  // Transfers INTO shared wallets = kontribusi (counts as Pemasukan Bersama)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const curContributions  = ((curTransfersRes  as any).data ?? []).filter((t: any) => sharedWalletSet.has(t.to_wallet_id)).reduce((s: number, t: any) => s + Number(t.amount), 0);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const prevContributions = ((prevTransfersRes as any).data ?? []).filter((t: any) => sharedWalletSet.has(t.to_wallet_id)).reduce((s: number, t: any) => s + Number(t.amount), 0);
+
+  const curIncome  = sharedCurData.filter(t => t.type === "income").reduce((s,t) => s + Number(t.amount), 0) + curContributions;
   const curExpense = sharedCurData.filter(t => t.type === "expense").reduce((s,t) => s + Number(t.amount), 0);
-  const prevIncome  = sharedPrevData.filter(t => t.type === "income").reduce((s,t) => s + Number(t.amount), 0);
+  const prevIncome  = sharedPrevData.filter(t => t.type === "income").reduce((s,t) => s + Number(t.amount), 0) + prevContributions;
   const prevExpense = sharedPrevData.filter(t => t.type === "expense").reduce((s,t) => s + Number(t.amount), 0);
   // Total saldo Bersama = hanya dompet yang is_shared = true
   const totalAset  = (walletsRes.data ?? []).filter(w => w.is_shared).reduce((s, w) => s + Number(w.current_balance), 0);
@@ -187,6 +218,15 @@ export default async function DashboardPage() {
       const e = trendMap.get(key)!;
       if (tx.type === "income") e.income += Number(tx.amount);
       else e.expense += Number(tx.amount);
+    }
+  }
+  // Add incoming transfers to shared wallets as income in trend
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  for (const t of ((trendTransfersRes as any).data ?? [])) {
+    if (!sharedWalletSet.has(t.to_wallet_id)) continue;
+    const key = (t.date as string).substring(0, 7);
+    if (trendMap.has(key)) {
+      trendMap.get(key)!.income += Number(t.amount);
     }
   }
   const trendData = Array.from(trendMap.entries()).map(([key, val]) => ({
