@@ -80,7 +80,7 @@ export default async function LaporanPage({ searchParams }: Props) {
   const privateWalletIds = new Set((allWallets ?? []).filter(w => !w.is_shared).map(w => w.id));
   const sharedWalletIds  = new Set((allWallets ?? []).filter(w => w.is_shared).map(w => w.id));
 
-  const [txRes, walletRes] = await Promise.all([
+  const [txRes, walletRes, transferRes] = await Promise.all([
     supabase.from("transactions")
       .select("type, amount, date, wallet_id, category_id, categories(name, icon, color)")
       .eq("household_id", householdId)
@@ -91,18 +91,31 @@ export default async function LaporanPage({ searchParams }: Props) {
       .select("name, current_balance, type, is_shared")
       .eq("household_id", householdId)
       .eq("is_active", true),
+
+    // Transfers INTO shared wallets (kontribusi → hitung sebagai Pemasukan Bersama)
+    supabase.from("transfers")
+      .select("amount, to_wallet_id, date")
+      .eq("household_id", householdId)
+      .gte("date", startDate).lt("date", endDate)
+      .order("date"),
   ]);
 
   const transactions = txRes.data ?? [];
 
+  // Transfers TO shared wallets = kontribusi (Pemasukan Bersama)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const sharedContributions = (transferRes.data ?? []).filter((t: any) => sharedWalletIds.has(t.to_wallet_id));
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const bersamaContributionTotal = sharedContributions.reduce((s: number, t: any) => s + Number(t.amount), 0);
+
   // ── Totals — semua (untuk chart/periode tetap pakai ini) ───────────────
-  const totalIncome  = transactions.filter(t => t.type === "income").reduce((s, t) => s + Number(t.amount), 0);
+  const totalIncome  = transactions.filter(t => t.type === "income").reduce((s, t) => s + Number(t.amount), 0) + bersamaContributionTotal;
   const totalExpense = transactions.filter(t => t.type === "expense").reduce((s, t) => s + Number(t.amount), 0);
   const totalAset    = (allWallets ?? []).reduce((s, w) => s + Number(w.current_balance), 0);
 
   // ── Totals — Bersama (shared wallets) ────────────────────────────────
   const bersamaTx = transactions.filter(t => sharedWalletIds.has(t.wallet_id));
-  const bersamaIncome  = bersamaTx.filter(t => t.type === "income").reduce((s, t) => s + Number(t.amount), 0);
+  const bersamaIncome  = bersamaTx.filter(t => t.type === "income").reduce((s, t) => s + Number(t.amount), 0) + bersamaContributionTotal;
   const bersamaExpense = bersamaTx.filter(t => t.type === "expense").reduce((s, t) => s + Number(t.amount), 0);
   const bersamaAset    = (allWallets ?? []).filter(w => w.is_shared).reduce((s, w) => s + Number(w.current_balance), 0);
 
@@ -134,6 +147,12 @@ export default async function LaporanPage({ searchParams }: Props) {
       if (!entry) continue;
       if (tx.type === "income")  entry.income  += Number(tx.amount);
       else                       entry.expense += Number(tx.amount);
+    }
+    // Add shared contributions (transfers) to daily income
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    for (const t of sharedContributions as any[]) {
+      const entry = dayMap.get(t.date);
+      if (entry) entry.income += Number(t.amount);
     }
 
     periodData = Array.from(dayMap.entries()).map(([date, val]) => {
@@ -171,6 +190,13 @@ export default async function LaporanPage({ searchParams }: Props) {
       if (!entry) continue;
       if (tx.type === "income")  entry.income  += Number(tx.amount);
       else                       entry.expense += Number(tx.amount);
+    }
+    // Add shared contributions (transfers) to monthly income
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    for (const t of sharedContributions as any[]) {
+      const key = (t.date as string).substring(0, 7);
+      const entry = monthMap.get(key);
+      if (entry) entry.income += Number(t.amount);
     }
 
     periodData = Array.from(monthMap.values()).map(v => ({
