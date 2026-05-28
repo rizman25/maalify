@@ -55,14 +55,17 @@ export async function updateWallet(
   if (check.error) return { error: check.error };
 
   const svc = service();
+  const diff = payload.current_balance - payload.old_balance;
 
+  // Update metadata (name, color, is_shared)
+  // current_balance handled below: via transaction trigger if diff ≠ 0, or directly if diff = 0
   const { error } = await svc
     .from("wallets")
     .update({
       name: payload.name,
       color: payload.color,
       is_shared: payload.is_shared,
-      current_balance: payload.current_balance,
+      ...(diff === 0 ? { current_balance: payload.current_balance } : {}),
     })
     .eq("id", walletId);
 
@@ -76,6 +79,58 @@ export async function updateWallet(
     new_balance: payload.current_balance,
     reason: payload.reason?.trim() || null,
   });
+
+  // Jika saldo berubah → buat transaksi income/expense agar muncul di riwayat
+  if (diff !== 0) {
+    const householdId = check.wallet.household_id;
+    const type = diff > 0 ? "income" : "expense";
+    const amount = Math.abs(diff);
+
+    // Cari kategori yang sesuai (household-specific dulu, lalu global default)
+    let categoryId: string | null = null;
+    const { data: hhCats } = await svc
+      .from("categories")
+      .select("id")
+      .eq("household_id", householdId)
+      .eq("type", type)
+      .limit(1);
+    if (hhCats && hhCats.length > 0) {
+      categoryId = hhCats[0].id;
+    } else {
+      const { data: defCats } = await svc
+        .from("categories")
+        .select("id")
+        .is("household_id", null)
+        .eq("type", type)
+        .limit(1);
+      categoryId = defCats?.[0]?.id ?? null;
+    }
+
+    const description = payload.reason?.trim()
+      ? `Penyesuaian Saldo: ${payload.reason.trim()}`
+      : "Penyesuaian Saldo";
+
+    if (categoryId) {
+      // Insert transaction → DB trigger (trg_update_balance_on_insert) auto-adjusts wallet balance
+      await svc.from("transactions").insert({
+        household_id: householdId,
+        wallet_id: walletId,
+        category_id: categoryId,
+        user_id: check.userId,
+        type,
+        amount,
+        description,
+        date: new Date().toISOString().split("T")[0],
+        visibility: "shared",
+      });
+    }
+
+    // Ensure exact balance (handles drift or missing category case)
+    await svc
+      .from("wallets")
+      .update({ current_balance: payload.current_balance })
+      .eq("id", walletId);
+  }
 
   return { success: true };
 }
