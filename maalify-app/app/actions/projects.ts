@@ -249,12 +249,27 @@ export async function deleteProjectExpenseTx(
 
   if (!tx) return { error: "Transaksi tidak ditemukan." };
 
-  // If linked to an item, recompute its actual_amount after deletion
-  if (tx.project_item_id) {
+  // Find linked item — check BOTH project_item_id on the transaction
+  // AND transaction_id on project_items (for old transactions created before
+  // the project_item_id column existed).
+  const itemId = tx.project_item_id ?? null;
+
+  // Also look up via reverse FK in case project_item_id is NULL on the transaction
+  let resolvedItemId = itemId;
+  if (!resolvedItemId) {
+    const { data: itemByTxn } = await svc
+      .from("project_items")
+      .select("id")
+      .eq("transaction_id", txId)
+      .maybeSingle();
+    resolvedItemId = itemByTxn?.id ?? null;
+  }
+
+  if (resolvedItemId) {
     const { data: item } = await svc
       .from("project_items")
       .select("id, actual_amount, planned_amount, is_paid")
-      .eq("id", tx.project_item_id)
+      .eq("id", resolvedItemId)
       .single();
 
     if (item) {
@@ -263,11 +278,20 @@ export async function deleteProjectExpenseTx(
       await svc.from("project_items").update({
         actual_amount: newActual > 0 ? newActual : null,
         is_paid: newActual >= Number(item.planned_amount),
-        // Reset paid_at if back to 0
-        ...(newActual === 0 ? { paid_at: null, transaction_id: null } : {}),
+        // Always clear transaction_id to remove the FK reference before delete
+        ...(newActual === 0
+          ? { paid_at: null, transaction_id: null }
+          : { transaction_id: null }),
       }).eq("id", item.id);
     }
   }
+
+  // Also clear any other project_items that still reference this transaction
+  // (safety net for orphaned FK references)
+  await svc
+    .from("project_items")
+    .update({ transaction_id: null })
+    .eq("transaction_id", txId);
 
   // Delete transaction — wallet balance auto-adjusts via DB trigger
   const { error } = await svc.from("transactions").delete().eq("id", txId);
